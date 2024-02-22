@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "refactor-checklist",
-    "slug": "refactor-checklist",
-    "version": "1.0.0",
+    "name": "Smartlist",
+    "slug": "checklist-app",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -16,9 +16,12 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "com.smartlistapp.app",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.smartlistapp.app",
+      "versionCode": 7,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -27,13 +30,33 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/images/icon.png"
     },
     "plugins": [
+      [
+        "expo-barcode-scanner",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access camera."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
+          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      "expo-font",
       "expo-router"
     ],
+    "extra": {
+      "eas": {
+        "projectId": "0f24ff88-44f1-4885-a8aa-4431fbb56f8b"
+      }
+    },
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": false
     }
   }
 }

@@ -1,0 +1,304 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import { Button } from '@/src/components/Button'
+import { ChecklistQuestion } from '@/src/components/ChecklistQuestion'
+import { KeyboardCoverPrevent } from '@/src/components/KeyboradCoverPrevent'
+import { QuestionPaginator } from '@/src/components/QuestionPaginator'
+import { Toast } from '@/src/components/Toast'
+import { storeFile } from '@/src/services/downloadImage'
+import { useChecklist } from '@/src/store/checklist'
+import { Checklist } from '@/src/types/Checklist'
+import { ChecklistPeriod, ChildType } from '@/src/types/ChecklistPeriod'
+import { router, useLocalSearchParams } from 'expo-router'
+import { useToast } from 'native-base'
+import React, { useEffect, useState } from 'react'
+import { Alert, BackHandler, Dimensions } from 'react-native'
+import { Buttons, Container } from './styles'
+
+interface ControlsIdAndType {
+  id: number
+  description: 'status' | 'select' | 'checkbox'
+}
+
+export const controlsIdsAndType: ControlsIdAndType[] = [
+  { id: 1, description: 'status' },
+  { id: 2, description: 'select' },
+  { id: 3, description: 'checkbox' },
+] // Temporário (ou não)
+
+const { height } = Dimensions.get('window')
+
+export default function AnswerPage() {
+  const { allChecklists } = useChecklist()
+  const { checklistId } = useLocalSearchParams()
+  const toast = useToast()
+  const [currentChecklist, setCurrentChecklist] = useState<Checklist | null>(
+    null,
+  )
+  const [currentChecklistPeriod, setCurrentChecklistPeriod] = useState(0)
+  const [alternativeSelected, setAlternativeSelected] = useState(0)
+  const [selectedChild, setSelectedChild] = useState(0)
+  const [observationText, setObservationText] = useState('')
+  const [buttonLoading, setButtonLoading] = useState(false)
+
+  useEffect(() => {
+    if (allChecklists && checklistId) {
+      const found = allChecklists.find(
+        (item) => item.id === Number(checklistId),
+      )
+
+      if (found) {
+        setCurrentChecklist(found)
+      }
+    }
+  }, [checklistId, allChecklists])
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleStop,
+    )
+
+    return () => backHandler.remove()
+    // if (isEditing !== 'true') {
+    //   const backHandler = BackHandler.addEventListener(
+    //     'hardwareBackPress',
+    //     handleStop,
+    //   )
+
+    //   return () => backHandler.remove()
+    // }
+  }, [])
+
+  useEffect(() => {
+    if (currentChecklist) {
+      setAlternativeSelected(
+        currentChecklist.checklistPeriods[currentChecklistPeriod].statusId,
+      )
+      setSelectedChild(
+        currentChecklist.checklistPeriods[currentChecklistPeriod].statusNC,
+      )
+    }
+  }, [currentChecklistPeriod])
+
+  function verifyExtraData(checklistPeriod: ChecklistPeriod, statusId: number) {
+    const option = checklistPeriod.options.find((opt) => opt.id === statusId)
+    if (option.action && !checklistPeriod.img?.length) {
+      return true // Se tiver ação e não tiver fotos
+    }
+
+    // Verificar se tem e se marcou o filho
+    const matchedWithChildren: ChildType[] = []
+    if (checklistPeriod.task.children?.length) {
+      checklistPeriod.task.children.forEach((item) => {
+        if (item.statusId === statusId) matchedWithChildren.push(item)
+      })
+
+      if (matchedWithChildren.length && !selectedChild) {
+        return false
+      }
+    }
+    return false
+  }
+
+  function checkNextDisabled() {
+    const checklistPeriod =
+      currentChecklist.checklistPeriods[currentChecklistPeriod]
+    const storedAnswer = checklistPeriod.statusId
+    if (!storedAnswer) return true // Se não tiver resposta salva
+    if (currentChecklist.checklistPeriods.length < currentChecklistPeriod + 1) {
+      return true // Se for a última pergunta
+    }
+
+    return verifyExtraData(checklistPeriod, storedAnswer)
+  }
+
+  function checkConfirmDisabled() {
+    if (!alternativeSelected) return true
+    const checklistPeriod =
+      currentChecklist.checklistPeriods[currentChecklistPeriod]
+    return verifyExtraData(checklistPeriod, alternativeSelected)
+  }
+
+  function handleStop() {
+    Alert.alert('Sair', 'Deseja abandonar esse checklist?', [
+      {
+        text: 'Não',
+        style: 'cancel',
+      },
+      {
+        text: 'Sim',
+        style: 'destructive',
+        onPress: () => {
+          // updateAnswering(false)
+          router.replace('/')
+        },
+      },
+    ])
+    return true
+    // if (isEditing !== 'true') {
+    //   Alert.alert('Sair', 'Deseja abandonar esse checklist?', [
+    //     {
+    //       text: 'Não',
+    //       style: 'cancel',
+    //     },
+    //     {
+    //       text: 'Sim',
+    //       style: 'destructive',
+    //       onPress: () => {
+    //         updateAnswering(false)
+    //         router.replace('/')
+    //       },
+    //     },
+    //   ])
+    //   return true
+    // } else {
+    //   updateAnswering(false)
+    //   console.log('Editou e saiu')
+    //   router.back()
+    // }
+  }
+
+  function handlePrev() {
+    setAlternativeSelected(
+      currentChecklist.checklistPeriods[currentChecklistPeriod].statusId,
+    )
+    setSelectedChild(
+      currentChecklist.checklistPeriods[currentChecklistPeriod].statusNC,
+    )
+    if (currentChecklistPeriod > 0) {
+      setCurrentChecklistPeriod((prevState) => prevState - 1)
+    }
+  }
+
+  function handleNext() {
+    setAlternativeSelected(
+      currentChecklist.checklistPeriods[currentChecklistPeriod].statusId,
+    )
+    setSelectedChild(
+      currentChecklist.checklistPeriods[currentChecklistPeriod].statusNC,
+    )
+    if (currentChecklistPeriod < currentChecklist.checklistPeriods.length - 1) {
+      setCurrentChecklistPeriod((prevState) => prevState + 1)
+    } else {
+      handleFinish()
+    }
+  }
+
+  async function handleFinish() {
+    try {
+      // updateChecklists(currentChecklist.id, currentChecklist, user.login)
+      // finalizeChecklist(currentChecklist.id, user.login)
+      toast.show({
+        render: () => (
+          <Toast.Success>Checklist respondido com sucesso!</Toast.Success>
+        ),
+      })
+
+      router.replace({
+        pathname: '/',
+      })
+    } catch (err) {
+      toast.show({
+        render: () => (
+          <Toast.Error>Não foi possivel salvar o checklist</Toast.Error>
+        ),
+      })
+      console.log(err)
+    }
+  }
+
+  async function handleConfirm() {
+    setButtonLoading(true)
+    const checklistPeriod =
+      currentChecklist.checklistPeriods[currentChecklistPeriod]
+    // const answer = checklistPeriod.options.find(
+    //   (opt) => opt.id === alternativeSelected,
+    // ).description
+    const images = checklistPeriod.img
+
+    if (images.length) {
+      for (const img of images) {
+        img.path = await storeFile(img.path)
+      }
+    }
+
+    // answerChecklistPeriod({
+    //   id: checklistPeriod.id,
+    //   checklistId: currentChecklist.id,
+    //   statusId: alternativeSelected,
+    //   answer,
+    //   images,
+    //   statusNC: selectedChild,
+    // })
+
+    setButtonLoading(false)
+    handleNext()
+    // if (isEditing === 'true') {
+    //   toast.show({
+    //     render: () => <Toast.Success>Checklist Salvo!</Toast.Success>,
+    //   })
+    // } else {
+    //   handleNext()
+    // }
+  }
+
+  return (
+    <KeyboardCoverPrevent style={{ height: '100%' }}>
+      <Container style={{ height: height * 0.9 }}>
+        <ChecklistQuestion
+          currentChecklistPeriod={
+            currentChecklist.checklistPeriods[currentChecklistPeriod]
+          }
+          checklistPeriodIndex={currentChecklistPeriod}
+          alternativeSelected={alternativeSelected}
+          setAlternativeSelected={setAlternativeSelected}
+          observationText={observationText}
+          setObservationText={setObservationText}
+          selectedChild={selectedChild}
+          setSelectedChild={setSelectedChild}
+        />
+
+        <Buttons>
+          <Button.Trigger
+            onPress={handleStop}
+            variant="secondary"
+            style={{ width: '49%' }}
+          >
+            <Button.Text>Sair</Button.Text>
+          </Button.Trigger>
+          <Button.Trigger
+            disabled={checkConfirmDisabled()}
+            variant="green"
+            style={{ width: '49%' }}
+            onPress={handleConfirm}
+            loading={buttonLoading}
+          >
+            <Button.Text>Confirmar</Button.Text>
+            <Button.Icon.CheckCircle />
+          </Button.Trigger>
+        </Buttons>
+
+        <QuestionPaginator
+          currentQuestionIndex={currentChecklistPeriod}
+          handleNext={handleNext}
+          handlePrev={handlePrev}
+          nextDisabled={checkNextDisabled()}
+          numberOfQuestions={currentChecklist.checklistPeriods.length}
+          prevDisabled={!(currentChecklistPeriod > 0)}
+        />
+        {/* {isEditing === 'true' ? (
+          ''
+        ) : (
+          <QuestionPaginator
+            currentQuestionIndex={currentChecklistPeriod}
+            handleNext={handleNext}
+            handlePrev={handlePrev}
+            nextDisabled={checkNextDisabled()}
+            numberOfQuestions={currentChecklist.checklistPeriods.length}
+            prevDisabled={!(currentChecklistPeriod > 0)}
+          />
+        )} */}
+      </Container>
+    </KeyboardCoverPrevent>
+  )
+}
