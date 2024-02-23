@@ -21,7 +21,7 @@ const { width } = Dimensions.get('screen')
 
 export function ChecklistItem({ checklist }: { checklist: Checklist }) {
   const theme = useTheme()
-  const { setCurrentChecklist, checklistLoadingId } = useChecklist()
+  const { checklistLoadingId } = useChecklist()
   return (
     <ChecklistItemView>
       <Container>
@@ -38,7 +38,7 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
               </>
             )}
             <Text screenWidth={width}>
-              {checklist.closure === 'open' ? 'ABERTO' : 'FECHADO'}
+              {checklist.status === 'open' ? 'ABERTO' : 'FECHADO'}
             </Text>
           </TextContent>
           <TextContent>
@@ -62,11 +62,11 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
       </Container>
       <Link
         disabled={checklistLoadingId === checklist.id}
-        onPress={() => {
-          setCurrentChecklist(checklist.id)
-        }}
+        // onPress={() => {
+        //   setCurrentChecklist(checklist.id)
+        // }}
         href={{
-          pathname: '/edit-checklist',
+          pathname: `/edit-checklist/${checklist.id}`,
         }}
         asChild
       >

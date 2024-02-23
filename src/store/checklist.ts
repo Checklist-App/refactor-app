@@ -1,9 +1,9 @@
 import dayjs from 'dayjs'
 import * as MediaLibrary from 'expo-media-library'
-import { useState } from 'react'
 import { create } from 'zustand'
 import { api } from '../libs/api'
 import db from '../libs/database'
+import { createTasks } from '../services/createTasks'
 import { findTasks } from '../services/findTasks'
 import { uploadSingleImage } from '../services/uploadImages'
 import { Checklist } from '../types/Checklist'
@@ -13,14 +13,12 @@ import { Period } from '../types/Period'
 
 interface ChecklistsData {
   allChecklists: Checklist[] | null
-  currentChecklist: Checklist | null
-  isLoading: boolean
-  isAnswering: boolean
   checklistLoadingId: number
+  needToClearImages: boolean
 
   loadChecklists: (user: string) => void
   findChecklist: (checklistId: number) => Checklist
-  updateChecklist: (checklistId: number, checklist: Checklist) => void
+  updateChecklist: (checklist: Checklist) => void
   createChecklist: ({
     period,
     mileage,
@@ -32,39 +30,38 @@ interface ChecklistsData {
     equipment: Checklist['equipment']
     user: string
   }) => Checklist
+  finalizeChecklist: (checklistId: number) => void
 
   findChecklistPeriod: (
     checklistPeriodId: number,
     checklistId: number,
   ) => ChecklistPeriod
-  updateChecklistPeriod: ({
+  updateChecklistPeriod: (checklistPeriod: ChecklistPeriod) => void
+  answerChecklistPeriod: ({
     checklistId,
     checklistPeriodId,
     statusId,
     answer,
-    images,
     statusNC,
+    images,
   }: {
     checklistId: number
     checklistPeriodId: number
     statusId: number
     statusNC?: number
-    answer: string
     images?: ChecklistPeriodImage[]
+    answer: string
   }) => void
-  editCurrentImage: ({
-    checklistPeriodIndex,
+  insertPeriodImages: ({
+    checklistId,
+    checklistPeriodId,
     images,
   }: {
-    checklistPeriodIndex: number
+    checklistId: number
+    checklistPeriodId: number
     images: ChecklistPeriodImage[]
   }) => void
-
-  setCurrentChecklist: (arg: number) => void
   setChecklistLoadingId: (arg: number) => void
-  updateLoading: (arg: boolean) => void
-  updateAnswering: (arg: boolean) => void
-
   updateChecklistSync: ({
     oldId,
     newId,
@@ -90,13 +87,10 @@ interface ChecklistsData {
 }
 
 export const useChecklist = create<ChecklistsData>((set, get) => {
-  const [needToClearImages, setNeedToClearImages] = useState(true)
   return {
     allChecklists: null,
-    currentChecklist: null,
-    isLoading: false,
-    isAnswering: false,
     checklistLoadingId: 0,
+    needToClearImages: true,
 
     loadChecklists: async (user) => {
       try {
@@ -120,13 +114,13 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       return checklist
     },
 
-    updateChecklist: (checklistId, checklist) => {
+    updateChecklist: (checklist) => {
       const allChecklists = get().allChecklists
       const newChecklists: Checklist[] = []
       if (!allChecklists) throw new Error('Checklists não carregados')
 
       allChecklists.forEach((item) => {
-        if (item.id === checklistId) {
+        if (item.id === checklist.id) {
           checklist.syncStatus = 'updated'
           newChecklists.push(checklist)
         } else {
@@ -139,7 +133,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       set({ allChecklists: newChecklists })
     },
 
-    createChecklist: ({ period, mileage, equipment }) => {
+    createChecklist: ({ period, mileage, equipment, user }) => {
       const productionRegisterId = Number(
         new Date().getTime().toFixed().slice(6),
       )
@@ -154,13 +148,23 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         status: 'open',
         equipment,
         signatures: [],
-        checklistPeriods: [],
+        checklistPeriods: createTasks({
+          familyId: equipment.familyId,
+          checklistId: productionRegisterId,
+          branchId: equipment.branchId,
+          user,
+        }),
         error: {},
         syncStatus: 'inserted',
       }
 
       const checklists = get().allChecklists
       if (!checklists) throw new Error('Checklists não carregados')
+
+      if (!newChecklist.checklistPeriods.length) {
+        throw new Error('Não há perguntas vinculadas para esse equipamento')
+      }
+
       checklists.forEach((checklist) => {
         if (checklist.equipment.id === equipment.id) {
           if (
@@ -184,11 +188,20 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         }
       })
 
-      if (!newChecklist.checklistPeriods.length) {
-        throw new Error('Não há perguntas vinculadas para esse equipamento')
-      }
+      const newChecklists = [...get().allChecklists, newChecklist]
+      set({ allChecklists: newChecklists })
+      db.storeChecklists(newChecklists)
+      db.setNeedToUpdate(true)
 
       return newChecklist
+    },
+
+    finalizeChecklist: (checklistId) => {
+      const checklist = get().findChecklist(checklistId)
+
+      checklist.status = 'close'
+
+      get().updateChecklist(checklist)
     },
 
     findChecklistPeriod: (checklistPeriodId, checklistId) => {
@@ -203,38 +216,19 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       return checklistPeriod
     },
 
-    setCurrentChecklist: (id) => {
-      const checklist = get().findChecklist(id)
-
-      set({ currentChecklist: checklist })
-    },
-
-    updateChecklistPeriod: ({
-      checklistId,
-      checklistPeriodId,
-      statusId,
-      statusNC = 0,
-      answer,
-      images = [],
-    }) => {
-      const period = get().findChecklistPeriod(checklistPeriodId, checklistId)
-      period.statusId = statusId
-      period.task.answer = answer
-      period.img = images
-      period.statusNC = statusNC
-
+    updateChecklistPeriod: (checklistPeriod) => {
       const allChecklists = get().allChecklists
       const newChecklists: Checklist[] = []
       if (!allChecklists) throw new Error('Checklists não carregados')
 
       allChecklists.forEach((checklist) => {
-        if (checklist.id === checklistId) {
+        if (checklist.id === checklistPeriod.productionRegisterId) {
           const updatedChecklist = { ...checklist }
           const newChecklistPeriods: ChecklistPeriod[] = []
           updatedChecklist.checklistPeriods.forEach((item) => {
-            if (item.id === checklistPeriodId) {
-              period.syncStatus = 'updated'
-              newChecklistPeriods.push(period)
+            if (item.id === checklistPeriod.id) {
+              checklistPeriod.syncStatus = 'updated'
+              newChecklistPeriods.push(checklistPeriod)
             } else {
               newChecklistPeriods.push(item)
             }
@@ -246,31 +240,42 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         }
       })
 
-      const updated = newChecklists.find((item) => item.id === checklistId)
+      const updated = newChecklists.find(
+        (item) => item.id === checklistPeriod.productionRegisterId,
+      )
       if (!updated) return
-      get().updateChecklist(checklistId, updated)
+      get().updateChecklist(updated)
     },
 
-    editCurrentImage: ({ checklistPeriodIndex, images }) => {
-      const newChecklist = { ...get().currentChecklist }
-      newChecklist.checklistPeriods[checklistPeriodIndex].img = images
+    answerChecklistPeriod: ({
+      checklistId,
+      checklistPeriodId,
+      answer,
+      statusId,
+      statusNC,
+      images = [],
+    }) => {
+      const period = get().findChecklistPeriod(checklistPeriodId, checklistId)
 
-      set({
-        currentChecklist: newChecklist,
-      })
+      period.statusId = statusId
+      period.task.answer = answer
+      period.statusNC = statusNC
+      period.img = images
+
+      get().updateChecklistPeriod(period)
+    },
+
+    insertPeriodImages: ({ checklistId, checklistPeriodId, images }) => {
+      const period = get().findChecklistPeriod(checklistPeriodId, checklistId)
+
+      period.img = images
+
+      get().updateChecklistPeriod(period)
     },
 
     setChecklistLoadingId: (id) => {
       if (id) console.log('Sincronizando checklist de id ' + id)
       set({ checklistLoadingId: id })
-    },
-
-    updateLoading: (state) => {
-      set({ isLoading: state })
-    },
-
-    updateAnswering: (state) => {
-      set({ isAnswering: state })
     },
 
     updateChecklistSync: ({ newId, oldId, syncStatus }) => {
@@ -361,7 +366,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
             error: {},
           }))
 
-        if (!checklists || !checklists.length) {
+        db.storeChecklists(checklists)
+        if (!checklists || !checklists?.length) {
           console.log('Nenhum checklist')
         }
       } catch (err) {
@@ -375,7 +381,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
 
     syncChecklists: async (user, token) => {
       try {
-        if (needToClearImages) {
+        if (get().needToClearImages) {
           const permission = await MediaLibrary.requestPermissionsAsync()
           if (permission.status === 'granted') {
             console.log('Buscando album...')
@@ -385,11 +391,16 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
             await MediaLibrary.deleteAlbumsAsync(album, true).then(() =>
               console.log('Imagens excluidas'),
             )
-            setNeedToClearImages(false)
+            set({ needToClearImages: false })
           }
         }
 
         const storedChecklists = db.retrieveChecklists(user)
+        console.log({ storedChecklists })
+        if (!storedChecklists) {
+          console.log('Não há checklists carregados')
+          return get().generateChecklists(user)
+        }
         const checklists = storedChecklists.filter(
           (item) =>
             item.syncStatus === 'inserted' || item.syncStatus === 'updated',

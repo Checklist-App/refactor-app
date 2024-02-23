@@ -2,6 +2,7 @@
 import { Button } from '@/src/components/Button'
 import { ChecklistQuestion } from '@/src/components/ChecklistQuestion'
 import { KeyboardCoverPrevent } from '@/src/components/KeyboradCoverPrevent'
+import { Loading } from '@/src/components/Loading'
 import { QuestionPaginator } from '@/src/components/QuestionPaginator'
 import { Toast } from '@/src/components/Toast'
 import { storeFile } from '@/src/services/downloadImage'
@@ -28,7 +29,7 @@ export const controlsIdsAndType: ControlsIdAndType[] = [
 const { height } = Dimensions.get('window')
 
 export default function AnswerPage() {
-  const { allChecklists } = useChecklist()
+  const { allChecklists, answerChecklistPeriod } = useChecklist()
   const { checklistId } = useLocalSearchParams()
   const toast = useToast()
   const [currentChecklist, setCurrentChecklist] = useState<Checklist | null>(
@@ -195,7 +196,7 @@ export default function AnswerPage() {
       })
 
       router.replace({
-        pathname: '/',
+        pathname: '/home',
       })
     } catch (err) {
       toast.show({
@@ -211,9 +212,9 @@ export default function AnswerPage() {
     setButtonLoading(true)
     const checklistPeriod =
       currentChecklist.checklistPeriods[currentChecklistPeriod]
-    // const answer = checklistPeriod.options.find(
-    //   (opt) => opt.id === alternativeSelected,
-    // ).description
+    const answer = checklistPeriod.options.find(
+      (opt) => opt.id === alternativeSelected,
+    ).description
     const images = checklistPeriod.img
 
     if (images.length) {
@@ -222,14 +223,13 @@ export default function AnswerPage() {
       }
     }
 
-    // answerChecklistPeriod({
-    //   id: checklistPeriod.id,
-    //   checklistId: currentChecklist.id,
-    //   statusId: alternativeSelected,
-    //   answer,
-    //   images,
-    //   statusNC: selectedChild,
-    // })
+    answerChecklistPeriod({
+      checklistPeriodId: checklistPeriod.id,
+      checklistId: currentChecklist.id,
+      statusId: alternativeSelected,
+      answer,
+      statusNC: selectedChild,
+    })
 
     setButtonLoading(false)
     handleNext()
@@ -240,6 +240,14 @@ export default function AnswerPage() {
     // } else {
     //   handleNext()
     // }
+  }
+
+  if (!currentChecklist) {
+    return (
+      <Container>
+        <Loading />
+      </Container>
+    )
   }
 
   return (

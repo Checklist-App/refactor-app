@@ -1,4 +1,3 @@
-import { Header } from '@/src/components/Header'
 import { useConnection } from '@/src/store/connection'
 import { theme } from '@/src/themes'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
@@ -67,7 +66,7 @@ function RootLayoutNav() {
       <NativeBaseProvider>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="home" options={{ header: Header }} />
+          <Stack.Screen name="home" options={{ headerShown: false }} />
           <Stack.Screen name="login/index" options={{ headerShown: false }} />
           <Stack.Screen name="camera/index" options={{ headerShown: false }} />
         </Stack>

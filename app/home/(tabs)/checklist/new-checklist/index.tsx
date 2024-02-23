@@ -93,8 +93,6 @@ export default function NewChecklist() {
         user: user.login,
       })
 
-      console.log(newChecklist)
-
       toast.show({
         placement: 'top',
         render: () => (
@@ -105,7 +103,7 @@ export default function NewChecklist() {
       })
 
       router.replace({
-        pathname: 'checklist',
+        pathname: `/home/checklist/answer/${newChecklist.id}`,
       })
     } catch (err) {
       const error: Error = err

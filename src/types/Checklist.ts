@@ -2,12 +2,12 @@ import { ChecklistPeriod } from './ChecklistPeriod'
 
 export interface Checklist {
   id: number
-  status: string
   initialTime: string
   finalTime: string
   date: string
   mileage: number
   signatures: unknown[]
+  status: 'close' | 'open'
   equipment: {
     id: number
     clientId: number

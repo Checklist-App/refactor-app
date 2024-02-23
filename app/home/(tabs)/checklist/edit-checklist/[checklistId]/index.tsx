@@ -133,7 +133,7 @@ export default function EditChecklist() {
           {currentChecklist.equipment.code} -{' '}
           {currentChecklist.equipment.description}
         </Title>
-        {currentChecklist.status === 'errored' && (
+        {currentChecklist.syncStatus === 'errored' && (
           <Button.Trigger
             variant="transparent"
             onPress={() => alert('Erro ao sincronizar esse checklist')}

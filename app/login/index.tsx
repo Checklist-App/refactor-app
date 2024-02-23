@@ -11,7 +11,7 @@ import { Warning } from 'phosphor-react-native'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Dimensions } from 'react-native'
 import { z } from 'zod'
-// import BackgroundSvg from '../../assets/images/'
+import BackgroundSvg from '../../assets/images/wave.svg'
 import {
   ConnectedView,
   Container,
@@ -20,6 +20,7 @@ import {
   Header,
   Main,
   OfflineText,
+  WaveContainer,
   Welcome,
 } from './styles'
 
@@ -33,7 +34,7 @@ export type LoginData = {
   pass: string
 }
 
-const { width } = Dimensions.get('screen')
+const { width, height } = Dimensions.get('screen')
 
 export default function Login() {
   const { isConnected } = useConnection()
@@ -71,11 +72,13 @@ export default function Login() {
     <Container>
       <StatusBar style="light" />
       <Header>
-        {/* <BackgroundSvg
+        <BackgroundSvg
           style={{ height: height / 1.6, width, position: 'absolute', top: 0 }}
-        /> */}
-        {/* <WaveContainer screenWidth={width} screenHeight={height}>
-        </WaveContainer> */}
+        />
+        <WaveContainer
+          screenWidth={width}
+          screenHeight={height}
+        ></WaveContainer>
 
         <ContainerWelcome>
           <Welcome screenWidth={width}>Bem vindo de volta!</Welcome>

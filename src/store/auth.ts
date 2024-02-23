@@ -24,6 +24,7 @@ interface AuthStore {
   storeAuth: (token: string, user: User) => void
   login: (data: LoginData) => Promise<void>
   offlineLogin: (data: LoginData) => Promise<void>
+  logout: () => void
 }
 
 export const useAuth = create<AuthStore>((set, get) => {
@@ -99,6 +100,11 @@ export const useAuth = create<AuthStore>((set, get) => {
 
         reject(new Error('Credenciais inválidas'))
       })
+    },
+
+    logout: () => {
+      set({ user: null, token: null })
+      db.deleteKey('activeToken')
     },
   }
 })

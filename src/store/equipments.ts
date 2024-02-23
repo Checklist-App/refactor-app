@@ -13,9 +13,7 @@ export const useEquipments = create<EquipmentsData>((set) => {
     equipments: null,
 
     loadEquipments: (user) => {
-      console.log('load equipments')
       const equipments = db.retrieveEquipments(user)
-      console.log(equipments)
       set({ equipments })
     },
   }
