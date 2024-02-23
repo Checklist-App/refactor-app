@@ -1,13 +1,22 @@
-import { ChecklistPeriodImage } from '@/src/types/ChecklistPeriod'
+import { ListImages } from '@/app/home/(tabs)/checklist/edit-checklist/[checklistId]/CardImage'
+import {
+  ChecklistPeriod,
+  ChecklistPeriodImage,
+} from '@/src/types/ChecklistPeriod'
 import { ChecklistStatus } from '@/src/types/ChecklistStatus'
-import { Text } from 'native-base'
+import { Link } from 'expo-router'
+import { Button } from '../Button'
+import { CheckboxModel } from '../CheckboxModel'
+import { ObservationField } from '../ObservationField'
+import { Container } from './styles'
 
 interface ChildrenModelProps {
   hasPhoto: boolean
   hasChildren: boolean
+  checklistPeriod: ChecklistPeriod
   childrenOptions: ChecklistStatus[]
-  periodIndex: number
   images: ChecklistPeriodImage[]
+
   selectedChild: number
   setSelectedChild: (arg: number) => void
   observationText: string
@@ -16,64 +25,59 @@ interface ChildrenModelProps {
 
 export function ChildrenModel({
   hasPhoto,
-  // hasChildren,
-  // childrenOptions,
-  // periodIndex,
-  // images,
-  // selectedChild,
-  // setSelectedChild,
-  // observationText,
-  // setObservationText,
+  hasChildren,
+  childrenOptions,
+  checklistPeriod,
+  images,
+  selectedChild,
+  setSelectedChild,
+  observationText,
+  setObservationText,
 }: ChildrenModelProps) {
-  console.log(hasPhoto)
-  return <Text>Children Model</Text>
+  // function setCurrentPictures() {
+  //   const mappedImages: CameraCapturedPicture[] = images.map((img) => ({
+  //     uri: img.path,
+  //     width: 100,
+  //     height: 100,
+  //   }))
+  //   setPictures(mappedImages)
+  // }
+
+  return (
+    <Container>
+      {hasChildren && (
+        <CheckboxModel
+          options={childrenOptions}
+          selectedChild={selectedChild}
+          setSelectedChild={setSelectedChild}
+        />
+      )}
+
+      {hasPhoto && (
+        <>
+          <ObservationField
+            observationText={observationText}
+            setObservationText={setObservationText}
+          />
+
+          <Link
+            asChild
+            href={{
+              pathname: 'camera',
+              params: {
+                checklistId: checklistPeriod.productionRegisterId,
+                checklistPeriodId: checklistPeriod.id,
+              },
+            }}
+          >
+            <Button.Trigger>
+              <Button.Icon.Camera />
+              <Button.Text>Tirar foto</Button.Text>
+            </Button.Trigger>
+          </Link>
+          {images?.length > 0 && <ListImages images={images} size={100} />}
+        </>
+      )}
+    </Container>
+  )
 }
-//   const { setPictures } = useDataImage()
-
-//   function setCurrentPictures() {
-//     const mappedImages: CameraCapturedPicture[] = images.map((img) => ({
-//       uri: img.path,
-//       width: 100,
-//       height: 100,
-//     }))
-//     setPictures(mappedImages)
-//   }
-
-//   return (
-//     <Container>
-//       {hasChildren && (
-//         <CheckboxModel
-//           options={childrenOptions}
-//           selectedChild={selectedChild}
-//           setSelectedChild={setSelectedChild}
-//         />
-//       )}
-
-//       {hasPhoto && (
-//         <>
-//           <ObservationField
-//             observationText={observationText}
-//             setObservationText={setObservationText}
-//           />
-
-//           <Link
-//             asChild
-//             href={{
-//               pathname: 'camera',
-//               params: {
-//                 periodIndex,
-//                 mode: 'period',
-//               },
-//             }}
-//           >
-//             <Button.Trigger onPress={setCurrentPictures}>
-//               <Button.Icon.Camera />
-//               <Button.Text>Tirar foto</Button.Text>
-//             </Button.Trigger>
-//           </Link>
-//           {images?.length > 0 && <ListImages images={images} size={100} />}
-//         </>
-//       )}
-//     </Container>
-//   )
-// }

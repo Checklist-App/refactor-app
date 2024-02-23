@@ -23,7 +23,7 @@ export default function AppIndex() {
       <SafeAreaView style={{ flex: 1 }}>
         <Main>
           <TitleContainer>
-            <Title>Olá 👋, seja bem vindo ao Smart Services!</Title>
+            <Title>Olá 👋, seja bem vindo ao Smartlist!</Title>
           </TitleContainer>
           <Button.Trigger onPress={handleInitApp}>
             <Button.Text>Iniciar</Button.Text>

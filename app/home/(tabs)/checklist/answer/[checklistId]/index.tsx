@@ -8,7 +8,11 @@ import { Toast } from '@/src/components/Toast'
 import { storeFile } from '@/src/services/downloadImage'
 import { useChecklist } from '@/src/store/checklist'
 import { Checklist } from '@/src/types/Checklist'
-import { ChecklistPeriod, ChildType } from '@/src/types/ChecklistPeriod'
+import {
+  ChecklistPeriod,
+  ChecklistPeriodImage,
+  ChildType,
+} from '@/src/types/ChecklistPeriod'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useToast } from 'native-base'
 import React, { useEffect, useState } from 'react'
@@ -29,17 +33,23 @@ export const controlsIdsAndType: ControlsIdAndType[] = [
 const { height } = Dimensions.get('window')
 
 export default function AnswerPage() {
-  const { allChecklists, answerChecklistPeriod } = useChecklist()
-  const { checklistId } = useLocalSearchParams()
+  const { allChecklists, answerChecklistPeriod, currentImages } = useChecklist()
+  const { checklistId, isEditing, checklistPeriodIndex } =
+    useLocalSearchParams()
   const toast = useToast()
   const [currentChecklist, setCurrentChecklist] = useState<Checklist | null>(
     null,
   )
-  const [currentChecklistPeriod, setCurrentChecklistPeriod] = useState(0)
+  const [currentChecklistPeriod, setCurrentChecklistPeriod] = useState(
+    checklistPeriodIndex ? Number(checklistPeriodIndex) : 0,
+  )
   const [alternativeSelected, setAlternativeSelected] = useState(0)
   const [selectedChild, setSelectedChild] = useState(0)
   const [observationText, setObservationText] = useState('')
   const [buttonLoading, setButtonLoading] = useState(false)
+  const [currentShowImages, setCurrentShowImages] = useState<
+    ChecklistPeriodImage[]
+  >([])
 
   useEffect(() => {
     if (allChecklists && checklistId) {
@@ -54,20 +64,14 @@ export default function AnswerPage() {
   }, [checklistId, allChecklists])
 
   useEffect(() => {
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      handleStop,
-    )
+    if (isEditing !== 'true') {
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        handleStop,
+      )
 
-    return () => backHandler.remove()
-    // if (isEditing !== 'true') {
-    //   const backHandler = BackHandler.addEventListener(
-    //     'hardwareBackPress',
-    //     handleStop,
-    //   )
-
-    //   return () => backHandler.remove()
-    // }
+      return () => backHandler.remove()
+    }
   }, [])
 
   useEffect(() => {
@@ -78,12 +82,23 @@ export default function AnswerPage() {
       setSelectedChild(
         currentChecklist.checklistPeriods[currentChecklistPeriod].statusNC,
       )
+      setCurrentShowImages(
+        currentChecklist.checklistPeriods[currentChecklistPeriod].img,
+      )
     }
-  }, [currentChecklistPeriod])
+  }, [currentChecklist])
+
+  useEffect(() => {
+    if (currentImages?.checklistId === currentChecklist?.id) {
+      console.log('Novas imagens')
+      console.log(currentImages.images)
+      setCurrentShowImages(currentImages.images)
+    }
+  }, [currentImages])
 
   function verifyExtraData(checklistPeriod: ChecklistPeriod, statusId: number) {
     const option = checklistPeriod.options.find((opt) => opt.id === statusId)
-    if (option.action && !checklistPeriod.img?.length) {
+    if (option.action && !currentShowImages.length) {
       return true // Se tiver ação e não tiver fotos
     }
 
@@ -121,42 +136,25 @@ export default function AnswerPage() {
   }
 
   function handleStop() {
-    Alert.alert('Sair', 'Deseja abandonar esse checklist?', [
-      {
-        text: 'Não',
-        style: 'cancel',
-      },
-      {
-        text: 'Sim',
-        style: 'destructive',
-        onPress: () => {
-          // updateAnswering(false)
-          router.replace('/')
+    if (isEditing !== 'true') {
+      Alert.alert('Sair', 'Deseja abandonar esse checklist?', [
+        {
+          text: 'Não',
+          style: 'cancel',
         },
-      },
-    ])
-    return true
-    // if (isEditing !== 'true') {
-    //   Alert.alert('Sair', 'Deseja abandonar esse checklist?', [
-    //     {
-    //       text: 'Não',
-    //       style: 'cancel',
-    //     },
-    //     {
-    //       text: 'Sim',
-    //       style: 'destructive',
-    //       onPress: () => {
-    //         updateAnswering(false)
-    //         router.replace('/')
-    //       },
-    //     },
-    //   ])
-    //   return true
-    // } else {
-    //   updateAnswering(false)
-    //   console.log('Editou e saiu')
-    //   router.back()
-    // }
+        {
+          text: 'Sim',
+          style: 'destructive',
+          onPress: () => {
+            router.replace('/home')
+          },
+        },
+      ])
+      return true
+    } else {
+      console.log('Editou e saiu')
+      router.back()
+    }
   }
 
   function handlePrev() {
@@ -215,10 +213,14 @@ export default function AnswerPage() {
     const answer = checklistPeriod.options.find(
       (opt) => opt.id === alternativeSelected,
     ).description
-    const images = checklistPeriod.img
+    const images =
+      currentImages?.checklistId === currentChecklist.id
+        ? currentImages.images
+        : []
 
     if (images.length) {
       for (const img of images) {
+        console.log('Lendo imagens')
         img.path = await storeFile(img.path)
       }
     }
@@ -229,17 +231,17 @@ export default function AnswerPage() {
       statusId: alternativeSelected,
       answer,
       statusNC: selectedChild,
+      images,
     })
 
     setButtonLoading(false)
-    handleNext()
-    // if (isEditing === 'true') {
-    //   toast.show({
-    //     render: () => <Toast.Success>Checklist Salvo!</Toast.Success>,
-    //   })
-    // } else {
-    //   handleNext()
-    // }
+    if (isEditing === 'true') {
+      toast.show({
+        render: () => <Toast.Success>Checklist Salvo!</Toast.Success>,
+      })
+    } else {
+      handleNext()
+    }
   }
 
   if (!currentChecklist) {
@@ -257,13 +259,13 @@ export default function AnswerPage() {
           currentChecklistPeriod={
             currentChecklist.checklistPeriods[currentChecklistPeriod]
           }
-          checklistPeriodIndex={currentChecklistPeriod}
           alternativeSelected={alternativeSelected}
           setAlternativeSelected={setAlternativeSelected}
           observationText={observationText}
           setObservationText={setObservationText}
           selectedChild={selectedChild}
           setSelectedChild={setSelectedChild}
+          images={currentShowImages}
         />
 
         <Buttons>
@@ -286,15 +288,7 @@ export default function AnswerPage() {
           </Button.Trigger>
         </Buttons>
 
-        <QuestionPaginator
-          currentQuestionIndex={currentChecklistPeriod}
-          handleNext={handleNext}
-          handlePrev={handlePrev}
-          nextDisabled={checkNextDisabled()}
-          numberOfQuestions={currentChecklist.checklistPeriods.length}
-          prevDisabled={!(currentChecklistPeriod > 0)}
-        />
-        {/* {isEditing === 'true' ? (
+        {isEditing === 'true' ? (
           ''
         ) : (
           <QuestionPaginator
@@ -305,7 +299,7 @@ export default function AnswerPage() {
             numberOfQuestions={currentChecklist.checklistPeriods.length}
             prevDisabled={!(currentChecklistPeriod > 0)}
           />
-        )} */}
+        )}
       </Container>
     </KeyboardCoverPrevent>
   )

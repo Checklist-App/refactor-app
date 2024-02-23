@@ -32,7 +32,7 @@ export type Pictures = {
 }
 
 export default function CameraPage() {
-  const { findChecklistPeriod, insertPeriodImages } = useChecklist()
+  const { findChecklistPeriod, saveCurrentImages } = useChecklist()
   const { checklistId, checklistPeriodId } = useLocalSearchParams()
   const [selectedPeriod, setSelectedPeriod] = useState<ChecklistPeriod | null>(
     null,
@@ -43,11 +43,8 @@ export default function CameraPage() {
   const [takingPicture, setTakingPicture] = useState(false)
   const camera = useRef<Camera>(null)
   const [pictures, setPictures] = useState<Pictures[]>([])
-  // const { setPictures: onSave, pictures: currentPictures } = useDataImage()
   const [modalImage, setModalImage] = useState(null)
   const modalControl = useDisclose()
-  // const { periodIndex, mode } = useLocalSearchParams()
-  // const { editCurrentImage, editCurrentActionImage } = useChecklist()
 
   useEffect(() => {
     const period = findChecklistPeriod(
@@ -61,7 +58,7 @@ export default function CameraPage() {
   }, [checklistId, checklistPeriodId])
 
   useEffect(() => {
-    if (selectedPeriod.img.length) {
+    if (selectedPeriod?.img.length) {
       setPictures(
         selectedPeriod.img.map((pic) => ({
           id: pic.path,
@@ -73,7 +70,7 @@ export default function CameraPage() {
     }
   }, [selectedPeriod])
 
-  if (!permission) {
+  if (!permission || !selectedPeriod) {
     // Camera permissions are still loading
     return <View />
   }
@@ -136,7 +133,7 @@ export default function CameraPage() {
   function handleSavePictures() {
     const data = pictures.map((picture) => picture.image)
 
-    insertPeriodImages({
+    saveCurrentImages({
       checklistId: Number(checklistId),
       checklistPeriodId: Number(checklistPeriodId),
       images: data,

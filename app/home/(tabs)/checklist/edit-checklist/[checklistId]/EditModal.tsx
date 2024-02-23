@@ -35,7 +35,7 @@ export function EditModal({
     if (modalData.canEdit) {
       setShowModal(false)
       router.push({
-        pathname: '/home/checklist/answer',
+        pathname: `/home/checklist/answer/${modalData.checklistId}`,
         params: {
           checklistPeriodIndex: String(modalData.checklistPeriodIndex),
           isEditing: 'true',
@@ -127,17 +127,17 @@ export function EditModal({
                   </Button.Trigger>
                 </Link>
               )
-            ) : (
-              <Button.Trigger
-                style={{ flex: 1 }}
-                size="sm"
-                variant="secondary"
-                onPress={() => setShowModal(false)}
-              >
-                <Button.Icon.X />
-                <Button.Text>Cancelar</Button.Text>
-              </Button.Trigger>
-            )} */}
+            ) : ( */}
+            <Button.Trigger
+              style={{ flex: 1 }}
+              size="sm"
+              variant="secondary"
+              onPress={() => setShowModal(false)}
+            >
+              <Button.Icon.X />
+              <Button.Text>Cancelar</Button.Text>
+            </Button.Trigger>
+
             <Button.Trigger
               style={{ flex: 1 }}
               size="sm"

@@ -43,6 +43,7 @@ export interface ModalData {
   }
   checklistPeriodIndex: number
   checklistPeriodId: number
+  checklistId: number
   images: ChecklistPeriodImage[]
   statusNC?: number
   answer: string
@@ -162,6 +163,7 @@ export default function EditChecklist() {
                 (opt) => opt.id === item.statusId,
               )
               setModalData({
+                checklistId: item.productionRegisterId,
                 task: item.task,
                 images: item.img,
                 answer: item.task.answer,

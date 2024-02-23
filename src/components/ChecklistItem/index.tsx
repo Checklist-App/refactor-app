@@ -66,7 +66,7 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
         //   setCurrentChecklist(checklist.id)
         // }}
         href={{
-          pathname: `/edit-checklist/${checklist.id}`,
+          pathname: `/home/checklist/edit-checklist/${checklist.id}`,
         }}
         asChild
       >

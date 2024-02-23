@@ -1,12 +1,15 @@
-import { ChecklistPeriod } from '@/src/types/ChecklistPeriod'
+import {
+  ChecklistPeriod,
+  ChecklistPeriodImage,
+} from '@/src/types/ChecklistPeriod'
 import { useEffect, useState } from 'react'
 import { ChildrenModel } from '../ChildrenModel'
 import { OptionsModel } from '../OptionsModel'
 import { Container, QuestionText } from './styles'
 
 interface ChecklistQuestionProps {
+  images: ChecklistPeriodImage[]
   currentChecklistPeriod: ChecklistPeriod
-  checklistPeriodIndex: number
   alternativeSelected: number
   setAlternativeSelected: (arg: number) => void
   selectedChild: number
@@ -17,7 +20,7 @@ interface ChecklistQuestionProps {
 
 export function ChecklistQuestion({
   currentChecklistPeriod,
-  checklistPeriodIndex,
+  images,
   alternativeSelected,
   setAlternativeSelected,
   selectedChild,
@@ -62,10 +65,10 @@ export function ChecklistQuestion({
 
       {(needPhoto || taskChildren.length > 0) && (
         <ChildrenModel
+          images={images}
           hasChildren={taskChildren.length > 0}
           hasPhoto={needPhoto}
-          images={currentChecklistPeriod.img}
-          periodIndex={checklistPeriodIndex}
+          checklistPeriod={currentChecklistPeriod}
           childrenOptions={taskChildren}
           observationText={observationText}
           setObservationText={setObservationText}

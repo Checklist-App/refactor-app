@@ -16,7 +16,8 @@ import { useAuth } from '@/src/store/auth'
 import { useChecklist } from '@/src/store/checklist'
 import { useConnection } from '@/src/store/connection'
 import { useEquipments } from '@/src/store/equipments'
-import { Tabs } from 'expo-router'
+import { Tabs, useSegments } from 'expo-router'
+import { ClipboardText, XCircle } from 'phosphor-react-native'
 import { useEffect, useState } from 'react'
 
 export default function HomeLayout() {
@@ -24,6 +25,7 @@ export default function HomeLayout() {
   const { allChecklists, loadChecklists, syncChecklists } = useChecklist()
   const { equipments, loadEquipments } = useEquipments()
   const { user, token } = useAuth()
+  const segments = useSegments()
 
   const [needToUpdate, setNeedToUpdate] = useState(true)
 
@@ -58,7 +60,8 @@ export default function HomeLayout() {
 
   useEffect(() => {
     console.log({ needToUpdate })
-    if (isConnected && needToUpdate && user && token) {
+    console.log(segments)
+    if (isConnected && needToUpdate && user && token && segments.length < 3) {
       requestData(user.login, token)
         .then(() => syncChecklists(user.login, token))
         .then(() => {
@@ -80,8 +83,26 @@ export default function HomeLayout() {
 
   return (
     <Tabs initialRouteName="checklist">
-      <Tabs.Screen name="checklist" options={{ headerShown: false }} />
-      <Tabs.Screen name="actions" options={{ headerShown: false }} />
+      <Tabs.Screen
+        name="checklist"
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Checklist',
+          tabBarIcon: ({ color, size }) => (
+            <ClipboardText size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="actions"
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Ações Geradas',
+          tabBarIcon: ({ color, size }) => (
+            <XCircle color={color} size={size} />
+          ),
+        }}
+      />
     </Tabs>
   )
 }

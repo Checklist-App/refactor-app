@@ -15,6 +15,11 @@ interface ChecklistsData {
   allChecklists: Checklist[] | null
   checklistLoadingId: number
   needToClearImages: boolean
+  currentImages: {
+    checklistId: number
+    checklistPeriodId: number
+    images: ChecklistPeriodImage[]
+  } | null
 
   loadChecklists: (user: string) => void
   findChecklist: (checklistId: number) => Checklist
@@ -52,7 +57,7 @@ interface ChecklistsData {
     images?: ChecklistPeriodImage[]
     answer: string
   }) => void
-  insertPeriodImages: ({
+  saveCurrentImages: ({
     checklistId,
     checklistPeriodId,
     images,
@@ -91,6 +96,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
     allChecklists: null,
     checklistLoadingId: 0,
     needToClearImages: true,
+    currentImages: null,
 
     loadChecklists: async (user) => {
       try {
@@ -265,12 +271,13 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       get().updateChecklistPeriod(period)
     },
 
-    insertPeriodImages: ({ checklistId, checklistPeriodId, images }) => {
-      const period = get().findChecklistPeriod(checklistPeriodId, checklistId)
+    saveCurrentImages: ({ checklistId, checklistPeriodId, images }) => {
+      // const period = get().findChecklistPeriod(checklistPeriodId, checklistId)
 
-      period.img = images
+      // period.img = images
 
-      get().updateChecklistPeriod(period)
+      // get().updateChecklistPeriod(period)
+      set({ currentImages: { checklistId, checklistPeriodId, images } })
     },
 
     setChecklistLoadingId: (id) => {
@@ -526,8 +533,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         } else {
           get().generateChecklists(user)
         }
-      } catch {
-        get().generateChecklists(user)
+      } catch (err) {
+        console.log(err)
       }
     },
   }
