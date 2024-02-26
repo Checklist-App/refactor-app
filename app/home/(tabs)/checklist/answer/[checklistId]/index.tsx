@@ -91,8 +91,8 @@ export default function AnswerPage() {
   useEffect(() => {
     if (currentImages?.checklistId === currentChecklist?.id) {
       console.log('Novas imagens')
-      console.log(currentImages.images)
-      setCurrentShowImages(currentImages.images)
+      console.log(currentImages?.images)
+      setCurrentShowImages(currentImages?.images || null)
     }
   }, [currentImages])
 
