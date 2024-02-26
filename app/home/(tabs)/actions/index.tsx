@@ -1,8 +1,12 @@
-import { Container, Title } from './styles'
+import { useActions } from '@/src/store/actions'
+import { Action } from '@/src/types/Action'
+import { FlashList } from '@shopify/flash-list'
+import { ActionCard } from './ActionCard'
+import { Container, EmptyContainer, EmptyText, Title } from './styles'
 
 export default function Actions() {
   // const { user } = useAuth()
-  // const { loadActions, allActions } = useChecklist()
+  const { actions } = useActions()
   // const segments = useSegments()
 
   // useEffect(() => {
@@ -11,9 +15,9 @@ export default function Actions() {
   //   }
   // }, [segments])
 
-  // console.log(allActions)
+  // console.log(actions)
 
-  // if (!allActions) {
+  // if (!actions) {
   //   return (
   //     <EmptyContainer>
   //       <Loading />
@@ -24,12 +28,12 @@ export default function Actions() {
   return (
     <Container>
       <Title>Ações Geradas</Title>
-      {/* <FlashList
+      <FlashList
         estimatedItemSize={10}
-        data={allActions}
-        extraData={allActions}
+        data={actions}
+        extraData={actions}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }: { item: ActionType }) => (
+        renderItem={({ item }: { item: Action }) => (
           <ActionCard key={item.id} action={item} />
         )}
         ListEmptyComponent={() => (
@@ -37,7 +41,7 @@ export default function Actions() {
             <EmptyText>Não há nenhuma ação registrada</EmptyText>
           </EmptyContainer>
         )}
-      /> */}
+      />
     </Container>
   )
 }

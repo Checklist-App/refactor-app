@@ -1,5 +1,7 @@
+import { Action } from '@/src/types/Action'
 import { Checklist } from '@/src/types/Checklist'
 import { Equipment } from '@/src/types/Equipment'
+import { Responsible } from '@/src/types/Responsible'
 import { User } from '@/src/types/User'
 import IDataBaseRepository from './IDataBaseRepository'
 import IDataBaseService from './IDataBaseService'
@@ -14,7 +16,37 @@ export default class DataBaseRepository implements IDataBaseRepository {
       const checklists: Checklist[] = JSON.parse(storedChecklists)
       return checklists
     } else {
-      throw new Error('Não foi possível carregar os atendimentos')
+      return []
+    }
+  }
+
+  retrieveActions(user: string) {
+    const storedActions = this.mmkv.getString(`${user}/actions`)
+    if (storedActions) {
+      const actions: Action[] = JSON.parse(storedActions)
+      return actions
+    } else {
+      return []
+    }
+  }
+
+  retrieveEquipments(user: string) {
+    const storedEquipments = this.mmkv.getString(`${user}/@equipments`)
+    if (storedEquipments) {
+      const equipments: Equipment[] = JSON.parse(storedEquipments)
+      return equipments
+    } else {
+      return []
+    }
+  }
+
+  retrieveResponsibles(user: string) {
+    const storedResponsibles = this.mmkv.getString(`${user}/@responsibles`)
+    if (storedResponsibles) {
+      const responsibles: Responsible[] = JSON.parse(storedResponsibles)
+      return responsibles
+    } else {
+      return []
     }
   }
 
@@ -27,16 +59,6 @@ export default class DataBaseRepository implements IDataBaseRepository {
       throw new Error(
         'Não foi possível carregar as informações salvas de ' + path,
       )
-    }
-  }
-
-  retrieveEquipments(user: string) {
-    const storedEquipments = this.mmkv.getString(`${user}/@equipments`)
-    if (storedEquipments) {
-      const equipments: Equipment[] = JSON.parse(storedEquipments)
-      return equipments
-    } else {
-      throw new Error('Não foi possível carregar os atendimentos')
     }
   }
 
@@ -73,6 +95,15 @@ export default class DataBaseRepository implements IDataBaseRepository {
     const user = this.retrieveLastUser()
     if (user) {
       this.mmkv.set(`${user.login}/checklists`, JSON.stringify(checklists))
+    } else {
+      throw new Error('Usuário não encontrado')
+    }
+  }
+
+  storeActions(actions: Action[]) {
+    const user = this.retrieveLastUser()
+    if (user) {
+      this.mmkv.set(`${user.login}/actions`, JSON.stringify(actions))
     } else {
       throw new Error('Usuário não encontrado')
     }

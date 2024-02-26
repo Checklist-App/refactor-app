@@ -306,3 +306,14 @@ export async function fetchEquipments(login: string, token: string) {
       )
   })
 }
+
+export async function fetchResponsibles(login: string, token: string) {
+  return await api
+    .get('/responsibles', {
+      headers: {
+        Authorization: `bearer ${token}`,
+      },
+    })
+    .then((res) => res.data)
+    .then((data) => db.storeReceivedData(login + '/@responsibles', data))
+}

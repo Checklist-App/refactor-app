@@ -24,7 +24,7 @@ export function Header() {
 
   function handleGoBack() {
     if (!router.canGoBack()) return
-
+    console.log(segments)
     router.back()
   }
   return segments.includes('answer') ? (

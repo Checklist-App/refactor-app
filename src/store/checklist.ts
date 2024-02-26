@@ -1,5 +1,4 @@
 import dayjs from 'dayjs'
-import * as MediaLibrary from 'expo-media-library'
 import { create } from 'zustand'
 import { api } from '../libs/api'
 import db from '../libs/database'
@@ -14,7 +13,6 @@ import { Period } from '../types/Period'
 interface ChecklistsData {
   allChecklists: Checklist[] | null
   checklistLoadingId: number
-  needToClearImages: boolean
   currentImages: {
     checklistId: number
     checklistPeriodId: number
@@ -87,7 +85,7 @@ interface ChecklistsData {
     productionRegisterId: number
     syncStatus: 'synced' | 'updated' | 'errored'
   }) => void
-  generateChecklists: (user: string) => void
+  generateChecklists: (user: string) => Promise<void>
   syncChecklists: (user: string, token: string) => Promise<void>
 }
 
@@ -95,7 +93,6 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
   return {
     allChecklists: null,
     checklistLoadingId: 0,
-    needToClearImages: true,
     currentImages: null,
 
     loadChecklists: async (user) => {
@@ -127,7 +124,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
 
       allChecklists.forEach((item) => {
         if (item.id === checklist.id) {
-          checklist.syncStatus = 'updated'
+          checklist.syncStatus =
+            item.syncStatus === 'inserted' ? 'inserted' : 'updated'
           newChecklists.push(checklist)
         } else {
           newChecklists.push(item)
@@ -323,8 +321,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       set({ allChecklists: newChecklists })
     },
 
-    generateChecklists: (user) => {
-      console.log('generateChecklists')
+    generateChecklists: async (user) => {
       try {
         const equipments = db.retrieveEquipments(user)
         const checklistSchemas: ChecklistSchema[] = db.retrieveReceivedData(
@@ -348,9 +345,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
               status: checklist.status,
               mileage: matchEquipment.mileage,
               signatures: [],
-              equipment: {
-                ...matchEquipment,
-              },
+              equipment: matchEquipment,
               period: periods
                 .map((period) => ({
                   id: period.id,
@@ -364,14 +359,11 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
                 checklistId: checklist.id,
                 user,
               }),
-            }
+              syncStatus: 'synced',
+              error: {},
+            } as Checklist
           })
           .filter((checklist) => checklist.initialTime?.length)
-          .map((checklist) => ({
-            ...checklist,
-            syncStatus: 'synced',
-            error: {},
-          }))
 
         db.storeChecklists(checklists)
         if (!checklists || !checklists?.length) {
@@ -388,22 +380,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
 
     syncChecklists: async (user, token) => {
       try {
-        if (get().needToClearImages) {
-          const permission = await MediaLibrary.requestPermissionsAsync()
-          if (permission.status === 'granted') {
-            console.log('Buscando album...')
-            const album = await MediaLibrary.getAlbumAsync('Smartlist')
-            console.log(album)
-            console.log('Deletando imagens...')
-            await MediaLibrary.deleteAlbumsAsync(album, true).then(() =>
-              console.log('Imagens excluidas'),
-            )
-            set({ needToClearImages: false })
-          }
-        }
-
         const storedChecklists = db.retrieveChecklists(user)
-        console.log({ storedChecklists })
         if (!storedChecklists) {
           console.log('Não há checklists carregados')
           return get().generateChecklists(user)
@@ -531,7 +508,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
             }
           }
         } else {
-          get().generateChecklists(user)
+          await get().generateChecklists(user)
         }
       } catch (err) {
         console.log(err)

@@ -146,7 +146,7 @@ export default function AnswerPage() {
           text: 'Sim',
           style: 'destructive',
           onPress: () => {
-            router.replace('/home')
+            router.replace('/home/checklist')
           },
         },
       ])

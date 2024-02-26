@@ -1,5 +1,6 @@
 // import { DrawerActions } from '@react-navigation/native'
 import { Action } from '@/src/types/Action'
+import { Link } from 'expo-router'
 import { User, XCircle } from 'phosphor-react-native'
 import {
   ActionCardContent,
@@ -69,11 +70,11 @@ export function ActionCard({ action }: { action: Action }) {
     <ActionCardView>
       <ActionCardHeader>
         <ActionCardLeft>
-          <IconContainer
-          // onPress={handlePress}
-          >
-            <XCircle size={24} color="white" />
-          </IconContainer>
+          <Link asChild href={`/home/actions/${action.id}`}>
+            <IconContainer>
+              <XCircle size={24} color="white" />
+            </IconContainer>
+          </Link>
           <ActionCardTitle>
             {/* {currentEquipment.code} - {currentEquipment.description} */}
             CB003 - CAMINHAO BASCULANTE

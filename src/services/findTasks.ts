@@ -73,22 +73,6 @@ export function findTasks({
         statusNC: checklistPeriod.statusNC,
         controlId: checklistPeriod.checklistItem?.controlId,
         branchId,
-        // actions: actions
-        //   ?.map((action) => ({
-        //     id: action.id,
-        //     checklistId: action.id_registro_producao,
-        //     checklistPeriodId: action.id_item,
-        //     description: action.descricao_acao,
-        //     title: action.descricao,
-        //     dueDate: action.data_fechamento,
-        //     endDate: action.data_fim,
-        //     equipmentId: action.productionRegister.id_equipamento,
-        //     img: action.img,
-        //     responsible: action.responsavel,
-        //     startDate: action.data_inicio,
-        //     type: 'synced' as 'synced' | 'updated' | 'inserted',
-        //   }))
-        //   .filter((item) => item.checklistPeriodId === checklistPeriod.id),
         img: checklistPeriod.img
           .map((img) => ({
             name: img.name,

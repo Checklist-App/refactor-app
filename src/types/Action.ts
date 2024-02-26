@@ -5,14 +5,36 @@ export interface Action {
   description: string
   checklistId: number
   checklistPeriodId: number
-  startDate: string
-  dueDate: string
-  endDate: string
+  startDate: Date
+  dueDate: Date
+  endDate: Date | null
   equipmentId: number
-  type: 'inserted' | 'updated' | 'synced'
   img: {
     name: string
     path: string
     url: string
+  }[]
+  syncStatus: 'inserted' | 'updated' | 'synced'
+}
+
+export interface ReceivedAction {
+  id: number
+  id_grupo: number
+  id_registro_producao: number
+  id_item: number
+  descricao: string
+  responsavel: string
+  data_inicio: string
+  data_fim: string
+  data_fechamento: string
+  descricao_acao: string
+  log_date: string
+  productionRegister: {
+    id_equipamento: number
+  }
+  img: {
+    name: string
+    url: string
+    path: string
   }[]
 }

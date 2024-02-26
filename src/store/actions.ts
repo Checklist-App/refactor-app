@@ -1,186 +1,160 @@
-// import { create } from 'zustand'
-// import { Action } from '../types/Action'
-// import { ChecklistPeriodImage } from '../types/ChecklistPeriod'
+import { create } from 'zustand'
+import db from '../libs/database'
+import { downloadImage } from '../services/downloadImage'
+import { Action, ReceivedAction } from '../types/Action'
 
-// interface ActionsData {
-//   actions: Action[] | null
-//   createNewAction: ({
-//     checklistPeriodId,
-//     checklistId,
-//     actionProps,
-//     user,
-//   }: {
-//     checklistPeriodId: number
-//     checklistId: number
-//     actionProps: {
-//       title: string
-//       responsible: string
-//       description: string
-//       startDate: string
-//       dueDate: string
-//       endDate: string
-//     }
-//     user: string
-//   }) => Action
-//   updateAction: ({
-//     checklistId,
-//     checklistPeriodId,
-//     actionProps,
-//     user,
-//   }: {
-//     checklistId: number
-//     checklistPeriodId: number
-//     actionProps: {
-//       id: number
-//       responsible: string
-//       title: string
-//       description: string
-//       endDate: string
-//       img: ChecklistPeriodImage[]
-//     }
-//     user: string
-//   }) => void
-//   editActionImages: ({
-//     actionId,
-//     images,
-//   }: {
-//     actionId: number
-//     images: ChecklistPeriodImage[]
-//   }) => void
-// }
+interface ActionsData {
+  actions: Action[] | null
 
-// export const useActions = create<ActionsData>((set, get) => {
-//   return {
-//     actions: null,
+  loadActions: (user: string) => void
+  createNewAction: ({
+    checklistPeriodId,
+    checklistId,
+    equipmentId,
+    title,
+    responsible,
+    description,
+    dueDate,
+  }: {
+    checklistPeriodId: number
+    checklistId: number
+    equipmentId: number
+    title: string
+    responsible: string
+    description: string
+    dueDate: Date
+  }) => Action
+  updateAction: (action: Action) => void
+  generateActions: (user: string) => Promise<void>
+  syncActions: (user: string, token: string) => Promise<void>
+}
 
-//     createNewAction: async ({
-//       actionProps,
-//       checklistPeriodId,
-//       checklistId,
-//       user,
-//     }) => {
-//       try {
-//         const checklist = get().allChecklists.find(
-//           (item) => item.id === checklistId,
-//         )
-//         if (!checklist) return
+export const useActions = create<ActionsData>((set, get) => {
+  return {
+    actions: null,
 
-//         const period = checklist.checklistPeriods.find(
-//           (item) => item.id === checklistPeriodId,
-//         )
-//         if (!period) return
+    loadActions: async (user) => {
+      try {
+        const actions = db.retrieveActions(user)
 
-//         const dataAction: ActionType = {
-//           id: new Date().getTime(),
-//           checklistId,
-//           checklistPeriodId,
-//           ...actionProps,
-//           img: [],
-//           equipmentId: checklist.equipment.id,
-//           type: 'inserted',
-//         }
+        set({ actions })
+      } catch {
+        // console.log(err)
+      }
+    },
 
-//         period.actions.push(dataAction)
-//         if (period.status !== 'inserted') {
-//           period.status = 'updated'
-//         }
-//         set({
-//           currentChecklist: checklist,
-//         })
+    createNewAction: ({ ...props }) => {
+      const newAction: Action = {
+        id: Number(new Date().getTime()),
+        checklistId: props.checklistId,
+        checklistPeriodId: props.checklistPeriodId,
+        equipmentId: props.equipmentId,
+        title: props.title,
+        description: props.description,
+        startDate: new Date(),
+        dueDate: props.dueDate,
+        endDate: null,
+        responsible: props.responsible,
+        img: [],
+        syncStatus: 'inserted',
+      }
 
-//         await fillDbs.update({
-//           checklistId: checklist.id,
-//           checklistPeriods: checklist.checklistPeriods,
-//           user,
-//         })
-//         // await Promise.all([
-//         //   fillDbs.update({
-//         //     checklistId: checklist.id,
-//         //     checklistPeriods: checklist.checklistPeriods,
-//         //     user,
-//         //   }),
-//         //   fillDbs.updateActions({
-//         //     actionId: dataAction.id,
-//         //     user,
-//         //     props: { ...dataAction },
-//         //   }),
-//         // ])
-//         return dataAction
-//       } catch (err) {
-//         console.log('Erro ao criar ')
-//         console.log(err)
-//       }
-//     },
+      const actions = get().actions
+      actions.forEach((action) => {
+        if (action.equipmentId === props.equipmentId && !action.endDate) {
+          throw new Error('Já existe uma ação em aberta para esse equipamento')
+        }
+      })
 
-//     updateAction: async ({
-//       actionProps,
-//       checklistId,
-//       checklistPeriodId,
-//       user,
-//     }) => {
-//       console.log('UpdateAction')
-//       const checklist = get().allChecklists.find(
-//         (item) => item.id === checklistId,
-//       )
-//       if (!checklist) {
-//         throw Error('Checklist não encontrado')
-//       }
+      const newActions = [...get().actions, newAction]
+      db.storeActions(newActions)
+      db.setNeedToUpdate(true)
+      set({ actions: newActions })
+      return newAction
+    },
 
-//       const period = checklist.checklistPeriods.find(
-//         (item) => item.id === checklistPeriodId,
-//       )
-//       if (!period) {
-//         throw Error('Período não encontrado')
-//       }
+    updateAction: (action) => {
+      const allActions = get().actions
+      const newActions: Action[] = []
+      if (!allActions) throw new Error('Ações não carregadas')
 
-//       const action = period.actions?.find((act) => act.id === actionProps.id)
-//       if (!action) {
-//         throw Error('Essa ação não foi encontrada')
-//       }
+      allActions.forEach((item) => {
+        if (item.id === action.id) {
+          action.syncStatus =
+            item.syncStatus === 'inserted' ? 'inserted' : 'updated'
+          newActions.push(action)
+        } else {
+          newActions.push(item)
+        }
+      })
 
-//       action.responsible = actionProps.responsible
-//       action.title = actionProps.title
-//       action.description = actionProps.description
-//       action.endDate = actionProps.endDate
-//       action.img = actionProps.img
-//       if (action.img.length) {
-//         console.log(action.img)
-//       }
+      db.storeActions(newActions)
+      db.setNeedToUpdate(true)
+      set({ actions: newActions })
+    },
 
-//       if (action.type !== 'inserted') {
-//         action.type = 'updated'
-//       }
-//       if (period.status !== 'inserted') {
-//         period.status = 'updated'
-//       }
-//       set({
-//         currentChecklist: checklist,
-//       })
+    generateActions: async (user) => {
+      try {
+        const receivedActions: ReceivedAction[] = db.retrieveReceivedData(
+          user,
+          '/@actions',
+        )
 
-//       await fillDbs.update({
-//         checklistId: checklist.id,
-//         checklistPeriods: checklist.checklistPeriods,
-//         user,
-//       })
-//       // await Promise.all([
-//       //   fillDbs.update({
-//       //     checklistId: checklist.id,
-//       //     checklistPeriods: checklist.checklistPeriods,
-//       //     user,
-//       //   }),
-//       // fillDbs.updateActions({
-//       //   actionId: action.id,
-//       //   user,
-//       //   props: newAction,
-//       // }),
-//       // ])
-//     },
+        const actions: Action[] = []
+        for (const action of receivedActions) {
+          actions.push({
+            id: action.id,
+            checklistId: action.id_registro_producao,
+            checklistPeriodId: action.id_item,
+            equipmentId: action.productionRegister.id_equipamento,
+            title: action.descricao,
+            description: action.descricao_acao,
+            startDate: new Date(action.data_inicio),
+            dueDate: new Date(action.data_fechamento),
+            endDate: action.data_fim ? new Date(action.data_fim) : null,
+            responsible: action.responsavel,
+            img: await Promise.all(
+              action.img.map(async (img) => ({
+                name: img.name,
+                url: img.url,
+                path: await downloadImage(img.url),
+              })),
+            ),
+            syncStatus: 'synced',
+          })
+        }
+        db.storeActions(actions)
+        if (!actions.length) {
+          console.log('Nenuma ação')
+        }
+      } catch (err) {
+        console.log('Erro ao gerar ações')
+        console.log(err)
+        throw new Error('Falha ao escrever ações', { cause: err })
+      }
+    },
 
-//     editActionImages: ({ actionId, images }) => {
-//       console.log('Definindo imagens para ação atual...')
-//       const newAction = { ...get().currentAction }
-//       newAction.img = images
-//       console.log(images)
-//     },
-//   }
-// })
+    syncActions: async (user) => {
+      try {
+        const storedActions = db.retrieveActions(user)
+        console.log({ storedActions })
+        if (!storedActions) {
+          console.log('Não há ações carregadas')
+          return get().generateActions(user)
+        }
+        const actions = storedActions.filter(
+          (item) =>
+            item.syncStatus === 'inserted' || item.syncStatus === 'updated',
+        )
+
+        if (actions.length) {
+          console.log('Enviar ações a API...')
+        } else {
+          await get().generateActions(user)
+        }
+      } catch (err) {
+        console.log(err)
+      }
+    },
+  }
+})

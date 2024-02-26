@@ -11,7 +11,7 @@ export const ContainerHeader = styled.View``
 
 export const Title = styled.Text`
   font-size: 32px;
-  font-weight: 800;
+  font-weight: 700;
   font-family: 'Poppins_700Bold';
 `
 
