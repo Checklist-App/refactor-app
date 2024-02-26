@@ -18,18 +18,6 @@ export default function DrawerLayout() {
             ),
           }}
         />
-        <Drawer.Screen
-          name="actions"
-          options={{
-            drawerItemStyle: { display: 'none' },
-          }}
-        />
-        <Drawer.Screen
-          name="checklist"
-          options={{
-            drawerItemStyle: { display: 'none' },
-          }}
-        />
       </Drawer>
     </GestureHandlerRootView>
   )
