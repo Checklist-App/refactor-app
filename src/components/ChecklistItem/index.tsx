@@ -56,7 +56,7 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
               ? 'errored'
               : checklistLoadingId === checklist.id
                 ? 'loading'
-                : checklist.status
+                : checklist.syncStatus
           }
         />
       </Container>

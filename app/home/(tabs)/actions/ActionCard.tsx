@@ -1,134 +1,56 @@
 // import { DrawerActions } from '@react-navigation/native'
 import { Action } from '@/src/types/Action'
+import dayjs from 'dayjs'
 import { Link } from 'expo-router'
-import { User, XCircle } from 'phosphor-react-native'
+import { Calendar, Dot, User, XCircle } from 'phosphor-react-native'
 import {
-  ActionCardContent,
-  ActionCardHeader,
-  ActionCardLeft,
+  ActionCardBody,
+  ActionCardFooter,
+  ActionCardFooterText,
+  ActionCardInfo,
   ActionCardTitle,
   ActionCardView,
-  ActionSubtitle,
-  Actions,
-  ActionsList,
-  ActionsListColumn,
-  ActionsListContentText,
-  ActionsListHeaderText,
-  ActionsListRow,
   IconContainer,
   StatusContainer,
   StatusText,
 } from './styles'
 
 export function ActionCard({ action }: { action: Action }) {
-  // const { user, token } = useAuth()
-  // const { setCurrentAction, equipments, fetchEquipments, allChecklists } =
-  //   useChecklist()
-  // const [currentEquipment, setCurrentEquipment] = useState<Equipment | null>(
-  //   null,
-  // )
-  // const [currentPeriod, setCurrentPeriod] = useState<IChecklistPeriod | null>(
-  //   null,
-  // )
-
-  // useEffect(() => {
-  //   if (equipments) {
-  //     setCurrentEquipment(
-  //       equipments.find((eq) => eq.id === action?.equipmentId) || null,
-  //     )
-  //   }
-  // }, [equipments, action])
-
-  // useEffect(() => {
-  //   if (allChecklists) {
-  //     const period = allChecklists
-  //       .find((item) => item.id === action.checklistId)
-  //       ?.checklistPeriods.find((item) => item.id === action.checklistPeriodId)
-
-  //     setCurrentPeriod(period)
-  //   }
-  // }, [allChecklists, action])
-  // const { dispatch } = useNavigation()
-
-  // function handlePress() {
-  //   setCurrentAction(action.id)
-  //   router.push('/action')
-  // }
-
-  // if (!equipments) {
-  //   if (user && token) {
-  //     fetchEquipments(user.login, token)
-  //   }
-  //   return
-  // }
-
-  // if (!action || !currentEquipment || !currentPeriod) {
-  //   return
-  // }
-
   return (
     <ActionCardView>
-      <ActionCardHeader>
-        <ActionCardLeft>
-          <Link asChild href={`/home/actions/${action.id}`}>
-            <IconContainer>
-              <XCircle size={24} color="white" />
-            </IconContainer>
-          </Link>
-          <ActionCardTitle>
-            {/* {currentEquipment.code} - {currentEquipment.description} */}
-            CB003 - CAMINHAO BASCULANTE
-          </ActionCardTitle>
-        </ActionCardLeft>
-        <ActionsListContentText>
+      <Link asChild href={`/home/actions/${action.id}`}>
+        <IconContainer>
+          <XCircle size={40} color="white" weight="bold" />
+        </IconContainer>
+      </Link>
+      <ActionCardInfo>
+        <ActionCardBody>
           <StatusContainer>
             <StatusText>
-              {/* {action.endDate
+              {action.endDate
                 ? dayjs(action.endDate).isBefore(action.dueDate)
                   ? 'CONCLUÍDO'
                   : 'VENCIDO'
-                : 'EM ANDAMENTO'} */}
-              Em andamento
+                : 'ABERTO'}
             </StatusText>
           </StatusContainer>
-        </ActionsListContentText>
-      </ActionCardHeader>
-      <ActionCardContent>
-        <ActionSubtitle>
-          {/* {currentPeriod.task.description} | {currentPeriod.task.answer} */}
-          Para brisa | Não conforme
-        </ActionSubtitle>
-        <Actions>
-          <ActionsList>
-            <ActionsListRow>
-              <ActionsListColumn>
-                <ActionsListHeaderText>Data abertura</ActionsListHeaderText>
-                <ActionsListContentText>
-                  23/01/2024
-                  {/* {dayjs(action.startDate).format('DD/MM/YY HH:mm')} */}
-                </ActionsListContentText>
-              </ActionsListColumn>
-              <ActionsListColumn>
-                <ActionsListHeaderText>Data conclusão</ActionsListHeaderText>
-                <ActionsListContentText>
-                  --/--/----
-                  {/* {action.endDate
-                    ? dayjs(action.endDate).format('DD/MM/YY HH:mm')
-                    : '-'} */}
-                </ActionsListContentText>
-              </ActionsListColumn>
-              <ActionsListColumn>
-                <ActionsListHeaderText>
-                  <User />
-                </ActionsListHeaderText>
-                <ActionsListContentText>
-                  {action.responsible}
-                </ActionsListContentText>
-              </ActionsListColumn>
-            </ActionsListRow>
-          </ActionsList>
-        </Actions>
-      </ActionCardContent>
+          <ActionCardTitle>{action.title}</ActionCardTitle>
+        </ActionCardBody>
+        <ActionCardFooter>
+          <User size={14} color="#64748B" />
+          <ActionCardFooterText>{action.responsible}</ActionCardFooterText>
+          <Calendar size={14} color="#64748B" />
+          <ActionCardFooterText>
+            {dayjs(action.startDate).format('DD/MM/YYYY')}
+          </ActionCardFooterText>
+          <Dot size={14} color="#64748B" />
+          <ActionCardFooterText>
+            {action.endDate
+              ? dayjs(action.endDate).format('DD/MM/YY HH:mm')
+              : '--/--/----'}
+          </ActionCardFooterText>
+        </ActionCardFooter>
+      </ActionCardInfo>
     </ActionCardView>
   )
 }

@@ -15,7 +15,7 @@ import {
 } from '@/src/types/ChecklistPeriod'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useToast } from 'native-base'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Alert, BackHandler, Dimensions } from 'react-native'
 import { Buttons, Container } from './styles'
 
@@ -33,7 +33,12 @@ export const controlsIdsAndType: ControlsIdAndType[] = [
 const { height } = Dimensions.get('window')
 
 export default function AnswerPage() {
-  const { allChecklists, answerChecklistPeriod, currentImages } = useChecklist()
+  const {
+    allChecklists,
+    answerChecklistPeriod,
+    currentImages,
+    finalizeChecklist,
+  } = useChecklist()
   const { checklistId, isEditing, checklistPeriodIndex } =
     useLocalSearchParams()
   const toast = useToast()
@@ -76,6 +81,7 @@ export default function AnswerPage() {
 
   useEffect(() => {
     if (currentChecklist) {
+      console.log('editou o checklist')
       setAlternativeSelected(
         currentChecklist.checklistPeriods[currentChecklistPeriod].statusId,
       )
@@ -86,7 +92,7 @@ export default function AnswerPage() {
         currentChecklist.checklistPeriods[currentChecklistPeriod].img,
       )
     }
-  }, [currentChecklist])
+  }, [currentChecklist, currentChecklistPeriod])
 
   useEffect(() => {
     if (currentImages?.checklistId === currentChecklist?.id) {
@@ -170,14 +176,14 @@ export default function AnswerPage() {
   }
 
   function handleNext() {
-    setAlternativeSelected(
-      currentChecklist.checklistPeriods[currentChecklistPeriod].statusId,
-    )
-    setSelectedChild(
-      currentChecklist.checklistPeriods[currentChecklistPeriod].statusNC,
-    )
     if (currentChecklistPeriod < currentChecklist.checklistPeriods.length - 1) {
       setCurrentChecklistPeriod((prevState) => prevState + 1)
+      setAlternativeSelected(
+        currentChecklist.checklistPeriods[currentChecklistPeriod].statusId,
+      )
+      setSelectedChild(
+        currentChecklist.checklistPeriods[currentChecklistPeriod].statusNC,
+      )
     } else {
       handleFinish()
     }
@@ -186,7 +192,7 @@ export default function AnswerPage() {
   async function handleFinish() {
     try {
       // updateChecklists(currentChecklist.id, currentChecklist, user.login)
-      // finalizeChecklist(currentChecklist.id, user.login)
+      finalizeChecklist(currentChecklist.id)
       toast.show({
         render: () => (
           <Toast.Success>Checklist respondido com sucesso!</Toast.Success>

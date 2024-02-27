@@ -1,10 +1,10 @@
+import { useSync } from '@/src/hooks/useSync'
 import { useAuth } from '@/src/store/auth'
 import { DrawerActions } from '@react-navigation/native'
 import { router, useNavigation, useSegments } from 'expo-router'
 import { Jeep, User } from 'phosphor-react-native'
 import { useTheme } from 'styled-components'
 import { Button } from '../Button'
-import { SyncButton } from '../SyncButton'
 import { WifiIndicator } from '../WifiIndicator'
 import {
   ButtonsContainer,
@@ -15,16 +15,13 @@ import {
 
 export function Header() {
   const { dispatch } = useNavigation()
-  const segments = useSegments()
-
-  // const { currentChecklist } = useChecklist()
-
+  const { isSyncing, syncData } = useSync()
   const { color } = useTheme()
   const { user } = useAuth()
+  const segments = useSegments()
 
   function handleGoBack() {
     if (!router.canGoBack()) return
-    console.log(segments)
     router.back()
   }
   return segments.includes('answer') ? (
@@ -51,18 +48,23 @@ export function Header() {
           onlyIcon
           variant="transparent"
           size="sm"
-          // style={
-          //   !(
-          //     segments.includes('edit-checklist') || segments.includes('action')
-          //   ) && { display: 'none' }
-          // }
+          style={segments.length < 4 && { display: 'none' }}
         >
           <Button.Icon.CaretLeft />
         </Button.Trigger>
         <WifiIndicator />
       </ButtonsContainer>
       <ButtonsContainer>
-        <SyncButton />
+        <Button.Trigger
+          variant="secondary"
+          rounded
+          onlyIcon
+          size="sm"
+          onPress={() => syncData}
+          disabled={isSyncing}
+        >
+          <Button.Icon.CloudArrowUp />
+        </Button.Trigger>
         <Button.Trigger
           size="sm"
           onlyIcon

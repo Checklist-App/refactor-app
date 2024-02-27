@@ -19,82 +19,93 @@ export function findTasks({
   branchId: number
   user: string
 }): ChecklistPeriod[] {
-  const checklistItems: ChecklistItemType[] = db.retrieveReceivedData(
-    user,
-    '/@checklistItems',
-  )
-  const tasks: Task[] = db.retrieveReceivedData(user, '/@tasks')
-  const checklistStatusAction: ChecklistStatusAction[] =
-    db.retrieveReceivedData(user, '/@checklistStatusAction')
-  const checklistPeriods: ReceivedChecklistPeriod[] = JSON.parse(
-    db.retrieveReceivedData(user, '/@checklistPeriods'),
-  )
-  const checklistStatus: ChecklistStatus[] = db.retrieveReceivedData(
-    user,
-    '/@checklistStatus',
-  )
-  const controlIds: ControlId[] = db.retrieveReceivedData(user, '/@controlIds')
-  // const actions: IAction[] = JSON.parse(db.getString(user + '/@actions'))
+  try {
+    const checklistItems: ChecklistItemType[] = db.retrieveReceivedData(
+      user,
+      '/@checklistItems',
+    )
+    const tasks: Task[] = db.retrieveReceivedData(user, '/@tasks')
+    const checklistStatusAction: ChecklistStatusAction[] =
+      db.retrieveReceivedData(user, '/@checklistStatusAction')
+    const checklistPeriods: ReceivedChecklistPeriod[] = db.retrieveReceivedData(
+      user,
+      '/@checklistPeriods',
+    )
 
-  return checklistPeriods
-    .filter((item) => item.productionRegisterId === checklistId)
-    .map((checklistPeriod) => ({
-      ...checklistPeriod,
-      checklistItem: checklistItems.find(
-        (item) => item.id === checklistPeriod.checkListItemId,
-      ),
-    }))
+    const checklistStatus: ChecklistStatus[] = db.retrieveReceivedData(
+      user,
+      '/@checklistStatus',
+    )
+    const controlIds: ControlId[] = db.retrieveReceivedData(
+      user,
+      '/@controlIds',
+    )
+    // const actions: IAction[] = JSON.parse(db.getString(user + '/@actions'))
 
-    .map((checklistPeriod) => ({
-      ...checklistPeriod,
-      task: {
-        ...tasks.find(
-          (task) => task.id === checklistPeriod.checklistItem.taskId,
+    return checklistPeriods
+      .filter((item) => item.productionRegisterId === checklistId)
+      .map((checklistPeriod) => ({
+        ...checklistPeriod,
+        checklistItem: checklistItems.find(
+          (item) => item.id === checklistPeriod.checkListItemId,
         ),
-        children: checklistStatusAction
-          .filter(
-            (item) => item.taskId === checklistPeriod.checklistItem?.taskId,
-          )
-          .map((child) => ({
-            ...child,
-            type: controlIds.find((item) => item.id === child.controlId)
-              .description,
-          })),
-      },
-    }))
+      }))
 
-    .map((checklistPeriod) => {
-      const returned: ChecklistPeriod = {
-        id: checklistPeriod.id,
-        _id: '',
-        productionRegisterId: checklistPeriod.productionRegisterId,
-        checklistItemId: checklistPeriod.checklistItem?.id,
-        statusId: checklistPeriod.statusItem,
-        statusNC: checklistPeriod.statusNC,
-        controlId: checklistPeriod.checklistItem?.controlId,
-        branchId,
-        img: checklistPeriod.img
-          .map((img) => ({
-            name: img.name,
-            url: img.url,
-            path: '',
-          }))
-          .reverse(),
+      .map((checklistPeriod) => ({
+        ...checklistPeriod,
         task: {
-          ...checklistPeriod.task,
-          answer: checklistStatus.find(
-            (item) => item.id === checklistPeriod.statusItem,
-          )?.description,
-          type: controlIds.find(
-            (item) => item.id === checklistPeriod.checklistItem?.controlId,
-          ).description,
+          ...tasks.find(
+            (task) => task.id === checklistPeriod.checklistItem.taskId,
+          ),
+          children: checklistStatusAction
+            .filter(
+              (item) => item.taskId === checklistPeriod.checklistItem?.taskId,
+            )
+            .map((child) => ({
+              ...child,
+              type: controlIds.find((item) => item.id === child.controlId)
+                .description,
+            })),
         },
-        syncStatus: 'synced',
-        options: checklistStatus.filter(
-          (item) => item.controlId === checklistPeriod.checklistItem?.controlId,
-        ),
-        error: null,
-      }
-      return returned
-    })
+      }))
+
+      .map((checklistPeriod) => {
+        const returned: ChecklistPeriod = {
+          id: checklistPeriod.id,
+          _id: '',
+          productionRegisterId: checklistPeriod.productionRegisterId,
+          checklistItemId: checklistPeriod.checklistItem?.id,
+          statusId: checklistPeriod.statusItem,
+          statusNC: checklistPeriod.statusNC,
+          controlId: checklistPeriod.checklistItem?.controlId,
+          branchId,
+          img: checklistPeriod.img
+            .map((img) => ({
+              name: img.name,
+              url: img.url,
+              path: '',
+            }))
+            .reverse(),
+          task: {
+            ...checklistPeriod.task,
+            answer: checklistStatus.find(
+              (item) => item.id === checklistPeriod.statusItem,
+            )?.description,
+            type: controlIds.find(
+              (item) => item.id === checklistPeriod.checklistItem?.controlId,
+            ).description,
+          },
+          syncStatus: 'synced',
+          options: checklistStatus.filter(
+            (item) =>
+              item.controlId === checklistPeriod.checklistItem?.controlId,
+          ),
+          error: null,
+        }
+        return returned
+      })
+  } catch (err) {
+    console.log('Erro ao gerar tasks')
+    throw new Error(err)
+  }
 }

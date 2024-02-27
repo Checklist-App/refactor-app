@@ -147,13 +147,13 @@ export async function fetchCheckListPeriods(login: string, token: string) {
         db.storeReceivedData(login + '/@checklistPeriods', data.checkListPeriod)
         resolve()
       })
-      .catch((error: AxiosError) =>
+      .catch((error: AxiosError) => {
         reject(
           new Error(
             `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`,
           ),
-        ),
-      )
+        )
+      })
   })
 }
 

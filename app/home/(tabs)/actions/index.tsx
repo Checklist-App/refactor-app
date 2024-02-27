@@ -5,25 +5,7 @@ import { ActionCard } from './ActionCard'
 import { Container, EmptyContainer, EmptyText, Title } from './styles'
 
 export default function Actions() {
-  // const { user } = useAuth()
   const { actions } = useActions()
-  // const segments = useSegments()
-
-  // useEffect(() => {
-  //   if (user) {
-  //     loadActions(user.login)
-  //   }
-  // }, [segments])
-
-  // console.log(actions)
-
-  // if (!actions) {
-  //   return (
-  //     <EmptyContainer>
-  //       <Loading />
-  //     </EmptyContainer>
-  //   )
-  // }
 
   return (
     <Container>

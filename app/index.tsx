@@ -25,9 +25,9 @@ export default function AppIndex() {
           <TitleContainer>
             <Title>Olá 👋, seja bem vindo ao Smartlist!</Title>
           </TitleContainer>
-          <Button.Trigger onPress={handleInitApp}>
+          <Button.Trigger onPress={handleInitApp} variant="secondary">
             <Button.Text>Iniciar</Button.Text>
-            <Button.Icon.ArrowRight size={20} color="#FFF" />
+            <Button.Icon.ArrowRight size={20} color="#7C3AED" />
           </Button.Trigger>
         </Main>
       </SafeAreaView>

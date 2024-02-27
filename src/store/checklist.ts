@@ -231,7 +231,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
           const newChecklistPeriods: ChecklistPeriod[] = []
           updatedChecklist.checklistPeriods.forEach((item) => {
             if (item.id === checklistPeriod.id) {
-              checklistPeriod.syncStatus = 'updated'
+              checklistPeriod.syncStatus =
+                item.syncStatus !== 'inserted' ? 'updated' : 'inserted'
               newChecklistPeriods.push(checklistPeriod)
             } else {
               newChecklistPeriods.push(item)
@@ -330,7 +331,6 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         )
 
         const periods: Period[] = db.retrieveReceivedData(user, '/@periods')
-
         const checklists: Checklist[] = checklistSchemas
           .map((checklist) => {
             const matchEquipment = equipments.find(
@@ -401,33 +401,32 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
           }
 
           for await (const checklist of checklists) {
+            const updatedIdChecklist = { ...checklist }
+            get().setChecklistLoadingId(checklist.id)
+            const postChcklist = {
+              type: checklist.syncStatus,
+              checkListSchema: {
+                _id: String(checklist.id),
+                id: checklist.id,
+                date: checklist.date,
+                code: checklist.equipment.code,
+                period: '',
+                description: checklist.equipment.description,
+                status: checklist.status,
+                equipmentId: checklist.equipment.id,
+                mileage: checklist.mileage,
+                finalMileage: checklist.mileage,
+                initialTime: checklist.initialTime,
+                finalTime: checklist.finalTime || '',
+                login: user,
+                periodId: checklist.period?.id || 0,
+              },
+            }
+
+            console.log(JSON.stringify(postChcklist, null, 2))
             try {
-              const updatedIdChecklist = { ...checklist }
-              get().setChecklistLoadingId(checklist.id)
               await api
-                .post(
-                  '/sync/checkListSchema',
-                  {
-                    type: checklist.syncStatus,
-                    checklistSchema: {
-                      _id: String(checklist.id),
-                      id: checklist.id,
-                      date: checklist.date,
-                      code: checklist.equipment.code,
-                      period: '',
-                      description: checklist.equipment.description,
-                      status: checklist.status,
-                      equipmentId: checklist.equipment.id,
-                      mileage: checklist.mileage,
-                      finalMileage: checklist.mileage,
-                      initialTime: checklist.initialTime,
-                      finalTime: checklist.finalTime || '',
-                      login: user,
-                      periodId: checklist.period?.id || null,
-                    },
-                  },
-                  options,
-                )
+                .post('/sync/checkListSchema', postChcklist, options)
                 .then((res) => res.data)
                 .then(async (data: { id: number }) => {
                   if (checklist.syncStatus === 'inserted') {
@@ -503,7 +502,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
                 })
             } catch (err) {
               get().setChecklistLoadingId(0)
-              console.log(err)
+              console.log(JSON.stringify(err, null, 2))
+              console.log(JSON.stringify(postChcklist, null, 2))
               throw new Error('Teve erro no checklist ' + checklist.id)
             }
           }
