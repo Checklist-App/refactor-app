@@ -7,6 +7,7 @@ import { useChecklist } from '@/src/store/checklist'
 import { useConnection } from '@/src/store/connection'
 import { useEquipments } from '@/src/store/equipments'
 import { useResponsibles } from '@/src/store/responsibles'
+import { useSyncStatus } from '@/src/store/syncStatus'
 import { Tabs, useSegments } from 'expo-router'
 import { Text, useToast } from 'native-base'
 import { ClipboardText, XCircle } from 'phosphor-react-native'
@@ -15,7 +16,8 @@ import { ActivityIndicator } from 'react-native'
 import { Container } from './styles'
 
 export default function HomeLayout() {
-  const { isSyncing, syncData, syncCount, doneRequests } = useSync()
+  const { syncData } = useSync()
+  const { doneRequests, isSyncing, syncCount } = useSyncStatus()
   const { isConnected } = useConnection()
   const { allChecklists, loadChecklists } = useChecklist()
   const { actions, loadActions } = useActions()
@@ -50,7 +52,7 @@ export default function HomeLayout() {
         })
       })
     }
-  }, [isConnected, needToUpdate, user, token])
+  }, [isConnected, needToUpdate, user, token, segments])
 
   useEffect(() => {
     const interval = setInterval(() => {

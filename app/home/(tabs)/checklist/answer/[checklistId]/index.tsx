@@ -251,6 +251,8 @@ export default function AnswerPage() {
   }
 
   if (!currentChecklist) {
+    console.log('buscando checklist')
+    console.log(checklistId)
     return (
       <Container>
         <Loading />

@@ -1,8 +1,10 @@
+import { AxiosError } from 'axios'
 import dayjs from 'dayjs'
 import { create } from 'zustand'
 import { api } from '../libs/api'
 import db from '../libs/database'
 import { createTasks } from '../services/createTasks'
+import { downloadImage } from '../services/downloadImage'
 import { findTasks } from '../services/findTasks'
 import { uploadSingleImage } from '../services/uploadImages'
 import { Checklist } from '../types/Checklist'
@@ -72,7 +74,7 @@ interface ChecklistsData {
   }: {
     oldId: number
     newId: number
-    syncStatus: 'synced' | 'updated' | 'errored'
+    syncStatus: 'synced' | 'updated'
   }) => void
   updatePeriodSync: ({
     oldId,
@@ -85,7 +87,8 @@ interface ChecklistsData {
     productionRegisterId: number
     syncStatus: 'synced' | 'updated' | 'errored'
   }) => void
-  generateChecklists: (user: string) => Promise<void>
+  loadImages: (checklists: Checklist[]) => Promise<void>
+  generateChecklists: (user: string) => Checklist[]
   syncChecklists: (user: string, token: string) => Promise<void>
 }
 
@@ -144,9 +147,9 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
 
       const newChecklist: Checklist = {
         id: productionRegisterId,
-        date: new Date().toISOString(),
-        finalTime: '',
-        initialTime: new Date().toISOString(),
+        date: new Date(),
+        finalTime: null,
+        initialTime: new Date(),
         period,
         mileage,
         status: 'open',
@@ -158,7 +161,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
           branchId: equipment.branchId,
           user,
         }),
-        error: {},
+        error: null,
         syncStatus: 'inserted',
       }
 
@@ -232,7 +235,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
           updatedChecklist.checklistPeriods.forEach((item) => {
             if (item.id === checklistPeriod.id) {
               checklistPeriod.syncStatus =
-                item.syncStatus !== 'inserted' ? 'updated' : 'inserted'
+                item.syncStatus === 'synced' ? 'updated' : item.syncStatus
               newChecklistPeriods.push(checklistPeriod)
             } else {
               newChecklistPeriods.push(item)
@@ -292,6 +295,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         if (checklist.id === oldId) {
           checklist.id = newId
           checklist.syncStatus = syncStatus
+          checklist.error = null
         }
         newChecklists.push(checklist)
       })
@@ -322,8 +326,29 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       set({ allChecklists: newChecklists })
     },
 
-    generateChecklists: async (user) => {
+    loadImages: async (checklists) => {
+      console.log('load images')
+      const newChecklists: Checklist[] = []
+      for await (const checklist of checklists) {
+        const newPeriods: ChecklistPeriod[] = []
+        for await (const period of checklist.checklistPeriods) {
+          const newImages: { name: string; url: string; path: string }[] = []
+          for await (const img of period.img) {
+            const newImgPath = await downloadImage(img.url)
+            newImages.push({ ...img, path: newImgPath })
+          }
+          newPeriods.push({ ...period, img: newImages })
+        }
+        newChecklists.push({ ...checklist, checklistPeriods: newPeriods })
+      }
+      console.log('terminou load images')
+
+      db.storeChecklists(newChecklists)
+    },
+
+    generateChecklists: (user) => {
       try {
+        console.log('generate')
         const equipments = db.retrieveEquipments(user)
         const checklistSchemas: ChecklistSchema[] = db.retrieveReceivedData(
           user,
@@ -331,44 +356,62 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         )
 
         const periods: Period[] = db.retrieveReceivedData(user, '/@periods')
-        const checklists: Checklist[] = checklistSchemas
-          .map((checklist) => {
-            const matchEquipment = equipments.find(
-              (eq) => eq.id === checklist.equipmentId,
-            )
-            return {
-              id: checklist.id,
-              _id: '',
-              initialTime: checklist.initialTime,
-              finalTime: checklist.finalTime,
-              date: checklist.date,
-              status: checklist.status,
-              mileage: matchEquipment.mileage,
-              signatures: [],
-              equipment: matchEquipment,
-              period: periods
-                .map((period) => ({
-                  id: period.id,
-                  period: period.period,
-                  branchId: period.branchId,
-                }))
-                .find((period) => period.id === checklist.periodId),
-              checklistPeriods: findTasks({
-                familyId: matchEquipment.familyId,
-                branchId: matchEquipment.branchId,
-                checklistId: checklist.id,
-                user,
-              }),
-              syncStatus: 'synced',
-              error: {},
-            } as Checklist
-          })
-          .filter((checklist) => checklist.initialTime?.length)
+        const checklists: Checklist[] = checklistSchemas.map((checklist) => {
+          const matchEquipment = equipments.find(
+            (eq) => eq.id === checklist.equipmentId,
+          )
+          const data = {
+            id: checklist.id,
+            _id: '',
+            initialTime: checklist.initialTime,
+            finalTime: checklist.finalTime,
+            date: checklist.date,
+            status: checklist.status,
+            mileage: matchEquipment.mileage,
+            signatures: [],
+            equipment: matchEquipment,
+            period: periods
+              .map((period) => ({
+                id: period.id,
+                period: period.period,
+                branchId: period.branchId,
+              }))
+              .find((period) => period.id === checklist.periodId),
+            checklistPeriods: findTasks({
+              familyId: matchEquipment.familyId,
+              branchId: matchEquipment.branchId,
+              checklistId: checklist.id,
+              user,
+            }),
+            // checklistPeriods: await Promise.all(
+            //   findTasks({
+            //     familyId: matchEquipment.familyId,
+            //     branchId: matchEquipment.branchId,
+            //     checklistId: checklist.id,
+            //     user,
+            //   }).map(async (period) => ({
+            //     ...period,
+            //     img: await Promise.all(
+            //       period.img.map(async (img) => ({
+            //         name: img.name,
+            //         url: img.url,
+            //         path: await downloadImage(img.url),
+            //       })),
+            //     ),
+            //   })),
+            // ),
+            syncStatus: 'synced',
+            error: null,
+          } as Checklist
 
-        db.storeChecklists(checklists)
+          return data
+        })
+
+        console.log('terminou genera')
         if (!checklists || !checklists?.length) {
           console.log('Nenhum checklist')
         }
+        return checklists
       } catch (err) {
         console.log('Erro generate')
         console.log(err)
@@ -382,8 +425,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       try {
         const storedChecklists = db.retrieveChecklists(user)
         if (!storedChecklists) {
-          console.log('Não há checklists carregados')
-          return get().generateChecklists(user)
+          console.log('Não há checklists ')
+          return get().loadImages(get().generateChecklists(user))
         }
         const checklists = storedChecklists.filter(
           (item) =>
@@ -393,6 +436,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         if (checklists.length) {
           console.log('Há checklists para serem sincronizados')
           console.log('Enviando dados...')
+          console.log(checklists)
 
           const options = {
             headers: {
@@ -401,7 +445,6 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
           }
 
           for await (const checklist of checklists) {
-            const updatedIdChecklist = { ...checklist }
             get().setChecklistLoadingId(checklist.id)
             const postChcklist = {
               type: checklist.syncStatus,
@@ -410,29 +453,32 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
                 id: checklist.id,
                 date: checklist.date,
                 code: checklist.equipment.code,
-                period: '',
                 description: checklist.equipment.description,
                 status: checklist.status,
                 equipmentId: checklist.equipment.id,
                 mileage: checklist.mileage,
                 finalMileage: checklist.mileage,
                 initialTime: checklist.initialTime,
-                finalTime: checklist.finalTime || '',
+                finalTime: checklist.finalTime,
                 login: user,
                 periodId: checklist.period?.id || 0,
               },
             }
 
-            console.log(JSON.stringify(postChcklist, null, 2))
             try {
               await api
                 .post('/sync/checkListSchema', postChcklist, options)
                 .then((res) => res.data)
-                .then(async (data: { id: number }) => {
-                  if (checklist.syncStatus === 'inserted') {
-                    updatedIdChecklist.id = data.id
-                  }
+                .then((data: { id: number }) => {
+                  get().updateChecklistSync({
+                    oldId: checklist.id,
+                    newId: data.id,
+                    syncStatus: 'synced',
+                  })
 
+                  return data.id
+                })
+                .then(async (newId) => {
                   for await (const checklistPeriod of checklist.checklistPeriods) {
                     if (checklistPeriod.syncStatus !== 'synced') {
                       console.log(
@@ -447,7 +493,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
                               _id: String(checklistPeriod.id),
                               id: checklistPeriod.id,
                               branchId: checklistPeriod.branchId,
-                              productionRegisterId: data?.id || checklist.id,
+                              productionRegisterId: newId || checklist.id,
                               checkListItemId: checklistPeriod.checklistItemId,
                               statusItem: checklistPeriod.statusId || 0,
                               statusNC: checklistPeriod.statusNC || 0,
@@ -464,8 +510,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
                           get().updatePeriodSync({
                             newId: insertedPeriod.id,
                             oldId: checklistPeriod.id,
-                            productionRegisterId:
-                              checklistPeriod.productionRegisterId,
+                            productionRegisterId: newId,
                             syncStatus: 'synced',
                           })
                           try {
@@ -494,21 +539,31 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
                   }
                 })
                 .then(() => {
-                  get().updateChecklistSync({
-                    oldId: checklist.id,
-                    newId: updatedIdChecklist.id,
-                    syncStatus: 'synced',
-                  })
+                  get().setChecklistLoadingId(0)
                 })
             } catch (err) {
+              const error: AxiosError = err
+              const errorMessage = error.response?.data
+                ? JSON.stringify(error.response.data)
+                : JSON.stringify(err)
               get().setChecklistLoadingId(0)
-              console.log(JSON.stringify(err, null, 2))
+              console.log(errorMessage)
+              console.log('Checklist que não subiu: ')
               console.log(JSON.stringify(postChcklist, null, 2))
+              const erroredChecklist = get().findChecklist(
+                postChcklist.checkListSchema.id,
+              )
+              get().updateChecklist({
+                ...erroredChecklist,
+                error: errorMessage,
+              })
               throw new Error('Teve erro no checklist ' + checklist.id)
             }
           }
+
+          console.log('terminou de enviar')
         } else {
-          await get().generateChecklists(user)
+          return get().loadImages(get().generateChecklists(user))
         }
       } catch (err) {
         console.log(err)

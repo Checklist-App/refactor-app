@@ -2,9 +2,9 @@ import { ChecklistPeriod } from './ChecklistPeriod'
 
 export interface Checklist {
   id: number
-  initialTime: string
-  finalTime: string
-  date: string
+  initialTime: Date
+  finalTime: Date | null
+  date: Date
   mileage: number
   signatures: unknown[]
   status: 'close' | 'open'
@@ -25,8 +25,8 @@ export interface Checklist {
     branchId: number
   }
   checklistPeriods: ChecklistPeriod[]
-  syncStatus: 'inserted' | 'synced' | 'errored' | 'updated'
-  error: object
+  syncStatus: 'inserted' | 'synced' | 'updated'
+  error: string | null
 }
 
 export interface ReceivedChecklist {
@@ -34,9 +34,9 @@ export interface ReceivedChecklist {
   costCenterId: number
   equipmentId: number
   periodId: number
-  date: string
-  initialTime: string
-  finalTime: string
+  date: Date
+  initialTime: Date
+  finalTime: Date | null
   status: 'close' | 'open'
   dataLog: string
   login: string

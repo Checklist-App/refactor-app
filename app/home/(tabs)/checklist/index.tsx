@@ -68,7 +68,10 @@ export default function Page() {
         extraData={allChecklists}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }: { item: Checklist }) => (
-          <ChecklistItem key={item.id} checklist={item} />
+          <ChecklistItem
+            key={item.id + Math.random() * 100000}
+            checklist={item}
+          />
         )}
         ListEmptyComponent={() => (
           <Loading>

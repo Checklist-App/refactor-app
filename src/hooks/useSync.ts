@@ -20,11 +20,9 @@ import { useChecklist } from '../store/checklist'
 import { useConnection } from '../store/connection'
 import { useEquipments } from '../store/equipments'
 import { useResponsibles } from '../store/responsibles'
+import { useSyncStatus } from '../store/syncStatus'
 
 interface SyncData {
-  isSyncing: boolean
-  syncCount: number
-  doneRequests: number
   syncData: (login: string, token: string) => Promise<void>
 }
 
@@ -34,21 +32,8 @@ export function useSync(): SyncData {
   const { syncActions, loadActions } = useActions()
   const { loadEquipments } = useEquipments()
   const { loadResponsibles } = useResponsibles()
-  const [syncCount, setSyncCount] = useState(0)
-  const [doneRequests, setDoneRequests] = useState(0)
-  const [isSyncing, setIsSyncing] = useState(false)
   const [needToClearImages, setNeedToClearImages] = useState(true)
-
-  function updateSyncing(arg: boolean) {
-    if (!arg) {
-      setSyncCount(syncCount + 1)
-    }
-    setIsSyncing(arg)
-  }
-
-  function increaseDoneRequests() {
-    setDoneRequests(doneRequests + 1)
-  }
+  const { increaseDoneRequests, updateSyncing } = useSyncStatus()
 
   async function requestData(login: string, token: string) {
     if (isConnected) {
@@ -88,32 +73,26 @@ export function useSync(): SyncData {
     if (needToClearImages) {
       const permission = await MediaLibrary.requestPermissionsAsync()
       if (permission.status === 'granted') {
-        console.log('Buscando album...')
         const album = await MediaLibrary.getAlbumAsync('Smartlist')
-        console.log(album)
-        console.log('Deletando imagens...')
-        await MediaLibrary.deleteAlbumsAsync(album, true).then(() =>
-          console.log('Imagens excluidas'),
-        )
+        await MediaLibrary.deleteAlbumsAsync(album, true)
         setNeedToClearImages(false)
       }
     }
   }
 
   return {
-    isSyncing,
-    syncCount,
-    doneRequests,
-
     syncData: async (login: string, token: string) => {
       updateSyncing(true)
+      loadChecklists(login)
       await requestData(login, token)
         .then(() => clearImagesIfNeeded())
         .then(() => syncData(login, token))
-        .finally(() => {
-          updateSyncing(false)
+        .then(() => {
           console.log('Synced')
           db.setNeedToUpdate(false)
+        })
+        .finally(() => {
+          updateSyncing(false)
           loadChecklists(login)
           loadActions(login)
           loadEquipments(login)

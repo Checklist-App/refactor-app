@@ -137,7 +137,6 @@ export const useActions = create<ActionsData>((set, get) => {
     syncActions: async (user) => {
       try {
         const storedActions = db.retrieveActions(user)
-        console.log({ storedActions })
         if (!storedActions) {
           console.log('Não há ações carregadas')
           return get().generateActions(user)

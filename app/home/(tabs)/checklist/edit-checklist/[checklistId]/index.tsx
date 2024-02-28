@@ -1,6 +1,7 @@
 import { Button } from '@/src/components/Button'
 import { Loading } from '@/src/components/Loading'
 import { Toast } from '@/src/components/Toast'
+import db from '@/src/libs/database'
 import { useChecklist } from '@/src/store/checklist'
 import { Checklist } from '@/src/types/Checklist'
 import { ChecklistPeriodImage } from '@/src/types/ChecklistPeriod'
@@ -121,6 +122,17 @@ export default function EditChecklist() {
     )
   }
 
+  console.log(
+    JSON.stringify(
+      db
+        .retrieveChecklists('bruno.matias')
+        .find((item) => item.id === currentChecklist.id)
+        .checklistPeriods.find((item) => item.id === 207018331),
+      null,
+      2,
+    ),
+  )
+
   return (
     <Container>
       <EditModal
@@ -134,7 +146,7 @@ export default function EditChecklist() {
           {currentChecklist.equipment.code} -{' '}
           {currentChecklist.equipment.description}
         </Title>
-        {currentChecklist.syncStatus === 'errored' && (
+        {currentChecklist.error && (
           <Button.Trigger
             variant="transparent"
             onPress={() => alert('Erro ao sincronizar esse checklist')}

@@ -28,7 +28,7 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
         <TextContentUpper>
           <TextContent>
             <Text screenWidth={width}>
-              {dayjs(checklist.initialTime).format('DD/MM/YYYY HH:mm')}
+              {dayjs(checklist.date).format('DD/MM/YYYY HH:mm')}
             </Text>
             <Dot />
             {checklist.period && (
@@ -52,7 +52,7 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
         </TextContent>
         <SyncedItem
           status={
-            Object.entries(checklist?.error)[0]
+            checklist.error
               ? 'errored'
               : checklistLoadingId === checklist.id
                 ? 'loading'
