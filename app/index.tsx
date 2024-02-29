@@ -1,8 +1,8 @@
 import { useAuth } from '@/src/store/auth'
 import { router } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import styled from 'styled-components/native'
 import { Button } from '../src/components/Button'
-import { Container, Main, Title, TitleContainer } from './styles'
 
 export default function AppIndex() {
   const { authenticateLastUser } = useAuth()
@@ -34,3 +34,27 @@ export default function AppIndex() {
     </Container>
   )
 }
+
+const Container = styled.View`
+  flex: 1;
+  background: ${({ theme }) => theme.color['purple-500']};
+`
+
+const Main = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+`
+
+const TitleContainer = styled.View`
+  flex: 1;
+  justify-content: center;
+  gap: 16px;
+`
+
+const Title = styled.Text`
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+`

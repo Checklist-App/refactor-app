@@ -56,9 +56,7 @@ export default class DataBaseRepository implements IDataBaseRepository {
       const data = JSON.parse(stored)
       return data
     } else {
-      throw new Error(
-        'Não foi possível carregar as informações salvas de ' + path,
-      )
+      return []
     }
   }
 
