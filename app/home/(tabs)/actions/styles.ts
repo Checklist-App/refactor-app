@@ -71,7 +71,7 @@ export const StatusContainer = styled.View`
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  width: 64px;
+  width: 82px;
   background-color: ${({ theme }) => theme.color['violet-200']};
   padding: 8px;
   border-radius: 99px;

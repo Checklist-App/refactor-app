@@ -32,7 +32,7 @@ export default function HomeLayout() {
   useEffect(() => {
     if (
       (!allChecklists || !actions || !equipments || !responsibles) &&
-      !needToUpdate &&
+      !syncCount &&
       user
     ) {
       console.log('load')
@@ -44,7 +44,14 @@ export default function HomeLayout() {
   }, [allChecklists, actions, equipments, responsibles])
 
   useEffect(() => {
-    if (needToUpdate && user && token && !isSyncing && segments.length < 4) {
+    if (
+      needToUpdate &&
+      user &&
+      token &&
+      !isSyncing &&
+      segments.length < 4 &&
+      segments.includes('checklist')
+    ) {
       syncData(user.login, token).catch((err: Error) => {
         console.log(err)
         toast.show({
@@ -52,7 +59,7 @@ export default function HomeLayout() {
         })
       })
     }
-  }, [isConnected, needToUpdate, user, token, segments])
+  }, [isConnected, needToUpdate, user, token])
 
   useEffect(() => {
     const interval = setInterval(() => {

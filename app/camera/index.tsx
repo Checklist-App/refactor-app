@@ -1,10 +1,7 @@
 import { Button } from '@/src/components/Button'
 import { SheetModal } from '@/src/components/SheetModal'
-import { useChecklist } from '@/src/store/checklist'
-import {
-  ChecklistPeriod,
-  ChecklistPeriodImage,
-} from '@/src/types/ChecklistPeriod'
+import { useCamera } from '@/src/store/camera'
+import { ChecklistPeriodImage } from '@/src/types/ChecklistPeriod'
 import { Camera, CameraType, FlashMode } from 'expo-camera'
 import { router, useLocalSearchParams } from 'expo-router'
 import { View, useDisclose } from 'native-base'
@@ -32,11 +29,8 @@ export type Pictures = {
 }
 
 export default function CameraPage() {
-  const { findChecklistPeriod, saveCurrentImages } = useChecklist()
-  const { checklistId, checklistPeriodId } = useLocalSearchParams()
-  const [selectedPeriod, setSelectedPeriod] = useState<ChecklistPeriod | null>(
-    null,
-  )
+  const { checklistId, checklistPeriodId, actionId } = useLocalSearchParams()
+  const { currentImages, saveCurrentImages } = useCamera()
   const [type, setType] = useState(CameraType.back)
   const [flashMode, setFlashMode] = useState(FlashMode.off)
   const [permission, requestPermission] = Camera.useCameraPermissions()
@@ -47,36 +41,25 @@ export default function CameraPage() {
   const modalControl = useDisclose()
 
   useEffect(() => {
-    const period = findChecklistPeriod(
-      Number(checklistPeriodId),
-      Number(checklistId),
-    )
-
-    if (period) {
-      setSelectedPeriod(period)
-    }
-  }, [checklistId, checklistPeriodId])
-
-  useEffect(() => {
-    if (selectedPeriod?.img.length) {
+    if (
+      currentImages &&
+      (currentImages.actionId === Number(actionId) ||
+        currentImages.checklistPeriodId === Number(checklistPeriodId))
+    ) {
       setPictures(
-        selectedPeriod.img.map((pic) => ({
-          id: pic.path,
+        currentImages.images.map((pic) => ({
+          id: pic.name,
           image: pic,
-          // id: pic.uri,
-          // image: pic,
         })),
       )
     }
-  }, [selectedPeriod])
+  }, [currentImages])
 
-  if (!permission || !selectedPeriod) {
-    // Camera permissions are still loading
+  if (!permission) {
     return <View />
   }
 
   if (!permission.granted) {
-    // Camera permissions are not granted yet
     requestPermission()
     return (
       <NoPermissionCamera>
@@ -134,8 +117,9 @@ export default function CameraPage() {
     const data = pictures.map((picture) => picture.image)
 
     saveCurrentImages({
-      checklistId: Number(checklistId),
-      checklistPeriodId: Number(checklistPeriodId),
+      checklistId: Number(checklistId) || null,
+      checklistPeriodId: Number(checklistPeriodId) || null,
+      actionId: Number(actionId) || null,
       images: data,
     })
 

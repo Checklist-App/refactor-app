@@ -1,5 +1,4 @@
 import { useActions } from '@/src/store/actions'
-import { Action } from '@/src/types/Action'
 import { FlashList } from '@shopify/flash-list'
 import { ActionCard } from './ActionCard'
 import { Container, EmptyContainer, EmptyText, Title } from './styles'
@@ -15,8 +14,8 @@ export default function Actions() {
         data={actions}
         extraData={actions}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }: { item: Action }) => (
-          <ActionCard key={item.id} action={item} />
+        renderItem={({ item, index }) => (
+          <ActionCard key={item.id + '-' + index} action={item} />
         )}
         ListEmptyComponent={() => (
           <EmptyContainer>

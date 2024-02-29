@@ -1,7 +1,6 @@
 import { Button } from '@/src/components/Button'
 import { Loading } from '@/src/components/Loading'
 import { Toast } from '@/src/components/Toast'
-import db from '@/src/libs/database'
 import { useChecklist } from '@/src/store/checklist'
 import { Checklist } from '@/src/types/Checklist'
 import { ChecklistPeriodImage } from '@/src/types/ChecklistPeriod'
@@ -122,17 +121,6 @@ export default function EditChecklist() {
     )
   }
 
-  console.log(
-    JSON.stringify(
-      db
-        .retrieveChecklists('bruno.matias')
-        .find((item) => item.id === currentChecklist.id)
-        .checklistPeriods.find((item) => item.id === 207018331),
-      null,
-      2,
-    ),
-  )
-
   return (
     <Container>
       <EditModal
@@ -216,8 +204,12 @@ export default function EditChecklist() {
                 <ListImages images={item.img} size={64} />
               ) : (
                 <CardImages>
-                  {item.img.map((img) => (
-                    <CardImage src={img.path} size={64} key={img.name} />
+                  {item.img.map((img, index) => (
+                    <CardImage
+                      src={img.path}
+                      size={64}
+                      key={img.name + '-' + index}
+                    />
                   ))}
                 </CardImages>
               )

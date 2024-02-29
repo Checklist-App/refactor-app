@@ -1,6 +1,8 @@
 import { create } from 'zustand'
+import { api } from '../libs/api'
 import db from '../libs/database'
 import { downloadImage } from '../services/downloadImage'
+import { uploadSingleImage } from '../services/uploadImages'
 import { Action, ReceivedAction } from '../types/Action'
 
 interface ActionsData {
@@ -25,6 +27,7 @@ interface ActionsData {
     dueDate: Date
   }) => Action
   updateAction: (action: Action) => void
+  updateActionSync: ({ oldId, newId }: { oldId: number; newId: number }) => void
   generateActions: (user: string) => Promise<void>
   syncActions: (user: string, token: string) => Promise<void>
 }
@@ -93,6 +96,22 @@ export const useActions = create<ActionsData>((set, get) => {
       set({ actions: newActions })
     },
 
+    updateActionSync: ({ newId, oldId }) => {
+      const actions = db.retrieveActions(db.retrieveLastUser().login)
+
+      const newActions: Action[] = []
+      actions.forEach((action) => {
+        if (action.id === oldId) {
+          action.id = newId
+          action.syncStatus = 'synced'
+        }
+        newActions.push(action)
+      })
+
+      db.storeActions(newActions)
+      set({ actions: newActions })
+    },
+
     generateActions: async (user) => {
       try {
         const receivedActions: ReceivedAction[] = db.retrieveReceivedData(
@@ -101,7 +120,7 @@ export const useActions = create<ActionsData>((set, get) => {
         )
 
         const actions: Action[] = []
-        for (const action of receivedActions) {
+        for await (const action of receivedActions) {
           actions.push({
             id: action.id,
             checklistId: action.id_registro_producao,
@@ -134,22 +153,92 @@ export const useActions = create<ActionsData>((set, get) => {
       }
     },
 
-    syncActions: async (user) => {
+    syncActions: async (user, token) => {
       try {
         const storedActions = db.retrieveActions(user)
+
         if (!storedActions) {
           console.log('Não há ações carregadas')
           return get().generateActions(user)
         }
         const actions = storedActions.filter(
-          (item) =>
-            item.syncStatus === 'inserted' || item.syncStatus === 'updated',
+          (item) => item.syncStatus !== 'synced',
         )
 
         if (actions.length) {
-          console.log('Enviar ações a API...')
+          const options = {
+            headers: {
+              Authorization: `bearer ${token}`,
+            },
+          }
+
+          for await (const action of actions) {
+            const updatedAction = { ...action }
+            const postAction = {
+              checklistId: action.checklistId,
+              checklistPeriodId: action.checklistPeriodId,
+              description: action.description,
+              dueDate: action.dueDate,
+              endDate: action.endDate,
+              equipmentId: action.equipmentId,
+              responsible: action.responsible,
+              startDate: action.startDate,
+              title: action.title,
+            }
+
+            if (action.syncStatus === 'inserted') {
+              await api
+                .post('/actions', postAction, options)
+                .then((res) => res.data)
+                .then(async (data: { id: number; id_grupo: number }) => {
+                  updatedAction.id = data.id
+                  for (const img of action.img) {
+                    if (img.url === '') {
+                      await uploadSingleImage({
+                        img,
+                        route: 'actions/image/upload',
+                        id: data.id_grupo,
+                        token,
+                      })
+                    }
+                  }
+                })
+                .catch((err) => {
+                  console.log(err)
+                  throw new Error(`Erro ao enviar ação de id ${action.id}`)
+                })
+            } else {
+              await api
+                .put(`/actions/${action.id}`, postAction, options)
+                .then((res) => res.data)
+                .then(async (data: { id: number; id_grupo: number }) => {
+                  updatedAction.id = data.id
+                  for (const img of action.img) {
+                    if (img.url === '') {
+                      await uploadSingleImage({
+                        img,
+                        route: 'actions/image/upload',
+                        id: data.id_grupo,
+                        token,
+                      })
+                    }
+                  }
+                })
+                .catch((err) => {
+                  console.log(err)
+                  throw new Error(
+                    `Erro ao atualizar ação para a rota /actions/${action.id}`,
+                  )
+                })
+            }
+
+            get().updateActionSync({
+              oldId: action.id,
+              newId: updatedAction.id,
+            })
+          }
         } else {
-          await get().generateActions(user)
+          return get().generateActions(user)
         }
       } catch (err) {
         console.log(err)

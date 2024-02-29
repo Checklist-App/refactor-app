@@ -1,15 +1,20 @@
 import { Button } from '@/src/components/Button'
+import { EmptyDateInput } from '@/src/components/EmptyDateInput'
 import { Form } from '@/src/components/Form'
 import { KeyboardCoverPrevent } from '@/src/components/KeyboradCoverPrevent'
 import { Loading } from '@/src/components/Loading'
 import { ObservationField } from '@/src/components/ObservationField'
 import { Toast } from '@/src/components/Toast'
 import { useActions } from '@/src/store/actions'
+import { useCamera } from '@/src/store/camera'
 import { useChecklist } from '@/src/store/checklist'
 import { useEquipments } from '@/src/store/equipments'
 import { useResponsibles } from '@/src/store/responsibles'
 import { Action } from '@/src/types/Action'
-import { ChecklistPeriod } from '@/src/types/ChecklistPeriod'
+import {
+  ChecklistPeriod,
+  ChecklistPeriodImage,
+} from '@/src/types/ChecklistPeriod'
 import { Equipment } from '@/src/types/Equipment'
 import { zodResolver } from '@hookform/resolvers/zod'
 import dayjs from 'dayjs'
@@ -20,6 +25,7 @@ import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Alert, BackHandler, Dimensions } from 'react-native'
 import { z } from 'zod'
+import { ListImages } from '../../checklist/edit-checklist/[checklistId]/CardImage'
 import {
   Buttons,
   Container,
@@ -56,7 +62,8 @@ export default function ActionScreen() {
   })
   const { handleSubmit, setValue } = editActionForm
   const { allChecklists } = useChecklist()
-  const { actions } = useActions()
+  const { actions, updateAction } = useActions()
+  const { currentImages } = useCamera()
   const { equipments } = useEquipments()
   const { responsibles } = useResponsibles()
   const { actionId } = useLocalSearchParams()
@@ -70,7 +77,7 @@ export default function ActionScreen() {
   )
   const [observationText, setObservationText] = useState('')
   const [isAnswering, setIsAnswering] = useState(false)
-  // const [images, setImages] = useState<ChecklistPeriodImage[]>([])
+  const [images, setImages] = useState<ChecklistPeriodImage[]>([])
 
   const deviceWidth = Dimensions.get('window').width
   const isSmallDevice = deviceWidth < 400
@@ -90,21 +97,12 @@ export default function ActionScreen() {
     }
   }, [actions, actionId])
 
-  // useEffect(() => {
-  //   if (equipments) {
-  //     setCurrentEquipment(
-  //       equipments.find((eq) => eq.id === currentAction?.equipmentId) || null,
-  //     )
-  //   }
-  // }, [equipments, currentAction])
-
   useEffect(() => {
     if (currentAction) {
       setValue('responsible', currentAction.responsible)
       setValue('title', currentAction.title)
       setObservationText(currentAction.description)
-      // setImages(currentAction.img)
-      console.log(currentAction)
+      setImages(currentAction.img)
       if (currentAction?.endDate) {
         setValue('endDate', new Date(currentAction.endDate))
       }
@@ -121,7 +119,7 @@ export default function ActionScreen() {
         }
       }
 
-      const equipment = equipments.find(
+      const equipment = equipments?.find(
         (item) => item.id === currentAction.equipmentId,
       )
       if (equipment) {
@@ -130,48 +128,39 @@ export default function ActionScreen() {
     }
   }, [currentAction, allChecklists, equipments])
 
-  // function setCurrentPictures() {
-  //   const mappedImages: CameraCapturedPicture[] = images.map((img) => ({
-  //     uri: img.path,
-  //     width: 100,
-  //     height: 100,
-  //   }))
-  //   setPictures(mappedImages)
-  // }
+  useEffect(() => {
+    if (currentImages && currentAction) {
+      if (currentImages.actionId === currentAction.id) {
+        setImages(currentImages.images)
+      }
+    }
+  }, [currentImages, currentAction])
 
-  function handleEdit() {
+  function handleEdit(data: EditActionData) {
     try {
       if (!observationText) {
         return toast.show({
           render: () => <Toast.Error>Adicione uma descrição</Toast.Error>,
         })
       }
-      // if (!images.length) {
-      //   return toast.show({
-      //     render: () => <Toast.Error>Adicione uma ou mais imagens</Toast.Error>,
-      //   })
-      // }
-      // updateAction({
-      //   actionProps: {
-      //     id: currentAction.id,
-      //     title: data.title,
-      //     description: observationText,
-      //     endDate:
-      //       new Date(data.endDate).toISOString() || currentAction.endDate,
-      //     responsible: data.responsible || currentAction.responsible,
-      //     img: images,
-      //   },
-      //   checklistId: currentAction.checklistId,
-      //   checklistPeriodId: currentAction.checklistPeriodId,
-      //   user: user.login,
-      // })
+      if (!images.length) {
+        return toast.show({
+          render: () => <Toast.Error>Adicione uma ou mais imagens</Toast.Error>,
+        })
+      }
+      updateAction({
+        ...currentAction,
+        endDate: new Date(data.endDate) || currentAction.endDate,
+        responsible: data.responsible || currentAction.responsible,
+        description: observationText,
+        img: images,
+      })
       setIsAnswering(false)
       toast.show({
         render: () => <Toast.Success>Ação Salva!</Toast.Success>,
       })
     } catch (err) {
       setIsAnswering(false)
-      // console.log('Caiu no catch')
       console.log(err)
       toast.show({
         render: () => <Toast.Error>Erro ao salvar ação!</Toast.Error>,
@@ -303,12 +292,23 @@ export default function ActionScreen() {
               <FormInput>
                 <Form.Field>
                   <Form.Label>Data Conclusão: </Form.Label>
-                  <Form.DatePicker
-                    name="endDate"
-                    placehilderFormat="DD/MM/YYYY HH:mm"
-                    mode="datetime"
-                    disabled={!isAnswering}
-                  />
+                  {isAnswering ? (
+                    <Form.DatePicker
+                      name="endDate"
+                      placehilderFormat="DD/MM/YYYY HH:mm"
+                      mode="datetime"
+                      disabled={!isAnswering}
+                    />
+                  ) : currentAction.endDate ? (
+                    <Form.DatePicker
+                      name="endDate"
+                      placehilderFormat="DD/MM/YYYY HH:mm"
+                      mode="datetime"
+                      disabled={!isAnswering}
+                    />
+                  ) : (
+                    <EmptyDateInput placeholder="DD/MM/YYYY HH:mm" />
+                  )}
                 </Form.Field>
               </FormInput>
             </FormInputs>
@@ -322,7 +322,7 @@ export default function ActionScreen() {
               />
             </Form.Field>
 
-            {/* {images?.length > 0 && <ListImages images={images} size={100} />} */}
+            {images?.length > 0 && <ListImages images={images} size={100} />}
             {isAnswering && (
               <>
                 <Link
@@ -330,7 +330,7 @@ export default function ActionScreen() {
                   href={{
                     pathname: 'camera',
                     params: {
-                      mode: 'action',
+                      actionId: currentAction.id,
                     },
                   }}
                 >

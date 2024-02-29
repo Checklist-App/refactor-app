@@ -6,10 +6,11 @@ import db from '@/src/libs/database'
 import { useAuth } from '@/src/store/auth'
 import { useChecklist } from '@/src/store/checklist'
 import { useEquipments } from '@/src/store/equipments'
+import { useSyncStatus } from '@/src/store/syncStatus'
 import { Equipment } from '@/src/types/Equipment'
 import { Period } from '@/src/types/Period'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, router } from 'expo-router'
+import { router } from 'expo-router'
 import { useToast } from 'native-base'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -53,8 +54,9 @@ export default function NewChecklist() {
   const { user } = useAuth()
   const { color } = useTheme()
   // const { isSyncing } = useData()
-  const { createChecklist } = useChecklist()
+  const { createChecklist, updateAnswering } = useChecklist()
   const { equipments } = useEquipments()
+  const { isSyncing } = useSyncStatus()
   const toast = useToast()
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(
     null,
@@ -101,7 +103,7 @@ export default function NewChecklist() {
           </ToastChecklistCreated>
         ),
       })
-
+      updateAnswering(true)
       router.replace({
         pathname: `/home/checklist/answer/${newChecklist.id}`,
       })
@@ -151,11 +153,11 @@ export default function NewChecklist() {
         <Header>
           <Title>Novo Checklist</Title>
 
-          <Link asChild href="/qrcode-scanner">
+          {/* <Link asChild href="/qrcode-scanner">
             <Button.Trigger rounded onlyIcon>
               <Button.Icon.QrCode />
             </Button.Trigger>
-          </Link>
+          </Link> */}
         </Header>
 
         <FormProvider {...newCheckListForm}>
@@ -228,7 +230,7 @@ export default function NewChecklist() {
               </Button.Trigger>
               <Button.Trigger
                 loading={isSubmitting}
-                // disabled={isSyncing}
+                disabled={isSyncing}
                 onPress={handleSubmit(handleNewChecklist)}
                 style={{ flex: 1 }}
               >

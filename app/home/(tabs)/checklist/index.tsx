@@ -10,7 +10,6 @@ import { ChecklistItem } from '@/src/components/ChecklistItem'
 import { useAuth } from '@/src/store/auth'
 import { useChecklist } from '@/src/store/checklist'
 import { useConnection } from '@/src/store/connection'
-import { Checklist } from '@/src/types/Checklist'
 import {
   Container,
   ErrorText,
@@ -65,11 +64,10 @@ export default function Page() {
       <FlashList
         estimatedItemSize={40}
         data={allChecklists}
-        extraData={allChecklists}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }: { item: Checklist }) => (
+        renderItem={({ item, index }) => (
           <ChecklistItem
-            key={item.id + Math.random() * 100000}
+            key={item.id + Math.random() * 100000 + '-' + index}
             checklist={item}
           />
         )}

@@ -6,6 +6,7 @@ import { Loading } from '@/src/components/Loading'
 import { QuestionPaginator } from '@/src/components/QuestionPaginator'
 import { Toast } from '@/src/components/Toast'
 import { storeFile } from '@/src/services/downloadImage'
+import { useCamera } from '@/src/store/camera'
 import { useChecklist } from '@/src/store/checklist'
 import { Checklist } from '@/src/types/Checklist'
 import {
@@ -36,9 +37,10 @@ export default function AnswerPage() {
   const {
     allChecklists,
     answerChecklistPeriod,
-    currentImages,
     finalizeChecklist,
+    updateAnswering,
   } = useChecklist()
+  const { currentImages } = useCamera()
   const { checklistId, isEditing, checklistPeriodIndex } =
     useLocalSearchParams()
   const toast = useToast()
@@ -95,10 +97,15 @@ export default function AnswerPage() {
   }, [currentChecklist, currentChecklistPeriod])
 
   useEffect(() => {
-    if (currentImages?.checklistId === currentChecklist?.id) {
-      console.log('Novas imagens')
-      console.log(currentImages?.images)
-      setCurrentShowImages(currentImages?.images || null)
+    if (currentChecklist) {
+      if (
+        currentImages?.checklistPeriodId ===
+        currentChecklist.checklistPeriods[currentChecklistPeriod].id
+      ) {
+        console.log('Novas imagens')
+        console.log(currentImages?.images)
+        setCurrentShowImages(currentImages?.images || null)
+      }
     }
   }, [currentImages])
 
@@ -152,6 +159,7 @@ export default function AnswerPage() {
           text: 'Sim',
           style: 'destructive',
           onPress: () => {
+            updateAnswering(false)
             router.replace('/home/checklist')
           },
         },
@@ -159,6 +167,7 @@ export default function AnswerPage() {
       return true
     } else {
       console.log('Editou e saiu')
+      updateAnswering(false)
       router.back()
     }
   }
@@ -198,11 +207,12 @@ export default function AnswerPage() {
           <Toast.Success>Checklist respondido com sucesso!</Toast.Success>
         ),
       })
-
+      updateAnswering(false)
       router.replace({
-        pathname: '/home',
+        pathname: '/home/checklist',
       })
     } catch (err) {
+      updateAnswering(false)
       toast.show({
         render: () => (
           <Toast.Error>Não foi possivel salvar o checklist</Toast.Error>
@@ -220,7 +230,7 @@ export default function AnswerPage() {
       (opt) => opt.id === alternativeSelected,
     ).description
     const images =
-      currentImages?.checklistId === currentChecklist.id
+      currentImages?.checklistPeriodId === checklistPeriod.id
         ? currentImages.images
         : []
 
@@ -251,8 +261,6 @@ export default function AnswerPage() {
   }
 
   if (!currentChecklist) {
-    console.log('buscando checklist')
-    console.log(checklistId)
     return (
       <Container>
         <Loading />

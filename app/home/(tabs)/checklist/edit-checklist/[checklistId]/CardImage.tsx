@@ -56,8 +56,8 @@ export function ListImages({ images, size }: ListImageProps) {
   if (!images?.length) return <View></View>
   return (
     <CardImages>
-      {images.slice(0, 3).map((img) => (
-        <CardImage size={size} src={img.path} key={img.name} />
+      {images.slice(0, 3).map((img, index) => (
+        <CardImage size={size} src={img.path} key={img.name + '-' + index} />
       ))}
       {images.length > 3 && (
         <MoreImages

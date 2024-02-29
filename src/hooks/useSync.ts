@@ -63,10 +63,8 @@ export function useSync(): SyncData {
 
   async function syncData(login: string, token: string) {
     console.log('sync data')
-    return await Promise.all([
-      syncChecklists(login, token).then(() => increaseDoneRequests()),
-      syncActions(login, token).then(() => increaseDoneRequests()),
-    ])
+    await syncChecklists(login, token).then(() => increaseDoneRequests())
+    await syncActions(login, token).then(() => increaseDoneRequests())
   }
 
   async function clearImagesIfNeeded() {

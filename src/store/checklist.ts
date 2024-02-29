@@ -7,6 +7,7 @@ import { createTasks } from '../services/createTasks'
 import { downloadImage } from '../services/downloadImage'
 import { findTasks } from '../services/findTasks'
 import { uploadSingleImage } from '../services/uploadImages'
+import { Action } from '../types/Action'
 import { Checklist } from '../types/Checklist'
 import { ChecklistPeriod, ChecklistPeriodImage } from '../types/ChecklistPeriod'
 import { ChecklistSchema } from '../types/ChecklistSchema'
@@ -15,12 +16,9 @@ import { Period } from '../types/Period'
 interface ChecklistsData {
   allChecklists: Checklist[] | null
   checklistLoadingId: number
-  currentImages: {
-    checklistId: number
-    checklistPeriodId: number
-    images: ChecklistPeriodImage[]
-  } | null
+  isAnswering: boolean
 
+  updateAnswering: (arg: boolean) => void
   loadChecklists: (user: string) => void
   findChecklist: (checklistId: number) => Checklist
   updateChecklist: (checklist: Checklist) => void
@@ -57,15 +55,6 @@ interface ChecklistsData {
     images?: ChecklistPeriodImage[]
     answer: string
   }) => void
-  saveCurrentImages: ({
-    checklistId,
-    checklistPeriodId,
-    images,
-  }: {
-    checklistId: number
-    checklistPeriodId: number
-    images: ChecklistPeriodImage[]
-  }) => void
   setChecklistLoadingId: (arg: number) => void
   updateChecklistSync: ({
     oldId,
@@ -96,7 +85,11 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
   return {
     allChecklists: null,
     checklistLoadingId: 0,
-    currentImages: null,
+    isAnswering: false,
+
+    updateAnswering: (arg) => {
+      set({ isAnswering: arg })
+    },
 
     loadChecklists: async (user) => {
       try {
@@ -273,15 +266,6 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       get().updateChecklistPeriod(period)
     },
 
-    saveCurrentImages: ({ checklistId, checklistPeriodId, images }) => {
-      // const period = get().findChecklistPeriod(checklistPeriodId, checklistId)
-
-      // period.img = images
-
-      // get().updateChecklistPeriod(period)
-      set({ currentImages: { checklistId, checklistPeriodId, images } })
-    },
-
     setChecklistLoadingId: (id) => {
       if (id) console.log('Sincronizando checklist de id ' + id)
       set({ checklistLoadingId: id })
@@ -289,8 +273,10 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
 
     updateChecklistSync: ({ newId, oldId, syncStatus }) => {
       const checklists = get().allChecklists
+      const storedActions = db.retrieveActions(db.retrieveLastUser().login)
 
       const newChecklists: Checklist[] = []
+      const newActions: Action[] = []
       checklists.forEach((checklist) => {
         if (checklist.id === oldId) {
           checklist.id = newId
@@ -300,14 +286,24 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         newChecklists.push(checklist)
       })
 
+      storedActions.forEach((action) => {
+        if (action.checklistId === oldId) {
+          action.checklistId = newId
+        }
+        newActions.push(action)
+      })
+
       db.storeChecklists(newChecklists)
+      db.storeActions(newActions)
       set({ allChecklists: newChecklists })
     },
 
     updatePeriodSync: ({ newId, oldId, productionRegisterId, syncStatus }) => {
       const checklists = get().allChecklists
+      const storedActions = db.retrieveActions(db.retrieveLastUser().login)
 
       const newChecklists: Checklist[] = []
+      const newActions: Action[] = []
       checklists.forEach((checklist) => {
         if (checklist.id === productionRegisterId) {
           const newPeriods: ChecklistPeriod[] = []
@@ -322,7 +318,15 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         newChecklists.push(checklist)
       })
 
+      storedActions.forEach((action) => {
+        if (action.checklistPeriodId === oldId) {
+          action.checklistId = newId
+        }
+        newActions.push(action)
+      })
+
       db.storeChecklists(newChecklists)
+      db.storeActions(newActions)
       set({ allChecklists: newChecklists })
     },
 
@@ -334,8 +338,12 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         for await (const period of checklist.checklistPeriods) {
           const newImages: { name: string; url: string; path: string }[] = []
           for await (const img of period.img) {
-            const newImgPath = await downloadImage(img.url)
-            newImages.push({ ...img, path: newImgPath })
+            if (img.url) {
+              const newImgPath = await downloadImage(img.url)
+              newImages.push({ ...img, path: newImgPath })
+            } else {
+              newImages.push(img)
+            }
           }
           newPeriods.push({ ...period, img: newImages })
         }
@@ -383,23 +391,6 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
               checklistId: checklist.id,
               user,
             }),
-            // checklistPeriods: await Promise.all(
-            //   findTasks({
-            //     familyId: matchEquipment.familyId,
-            //     branchId: matchEquipment.branchId,
-            //     checklistId: checklist.id,
-            //     user,
-            //   }).map(async (period) => ({
-            //     ...period,
-            //     img: await Promise.all(
-            //       period.img.map(async (img) => ({
-            //         name: img.name,
-            //         url: img.url,
-            //         path: await downloadImage(img.url),
-            //       })),
-            //     ),
-            //   })),
-            // ),
             syncStatus: 'synced',
             error: null,
           } as Checklist
@@ -434,10 +425,6 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         )
 
         if (checklists.length) {
-          console.log('Há checklists para serem sincronizados')
-          console.log('Enviando dados...')
-          console.log(checklists)
-
           const options = {
             headers: {
               Authorization: `bearer ${token}`,
