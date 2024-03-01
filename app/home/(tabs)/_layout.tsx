@@ -44,19 +44,13 @@ export default function HomeLayout() {
   }, [allChecklists, actions, equipments, responsibles])
 
   useEffect(() => {
-    console.log({
-      needToUpdate,
-      user,
-      token,
-      isSyncing,
-      segments,
-    })
     if (
       (needToUpdate || syncCount === 0) &&
       user &&
       token &&
       !isSyncing &&
-      segments.length < 4
+      segments.length < 4 &&
+      !segments.includes('camera')
     ) {
       syncData(user.login, token).catch((err: Error) => {
         console.log(err)
