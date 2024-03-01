@@ -212,6 +212,7 @@ export default function ActionScreen() {
           </Title>
           <Button.Trigger
             rounded
+            onlyIcon
             size="sm"
             disabled={isAnswering}
             onPress={() => setIsAnswering(true)}

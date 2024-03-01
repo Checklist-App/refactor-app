@@ -6,7 +6,7 @@ import {
 } from '@react-navigation/drawer'
 import { router } from 'expo-router'
 import { View } from 'native-base'
-import { SignOut, WarningOctagon } from 'phosphor-react-native'
+import { SignOut, User, WarningOctagon } from 'phosphor-react-native'
 import { Linking } from 'react-native'
 import { useAuth } from '../store/auth'
 import {
@@ -18,7 +18,7 @@ import {
 } from './styles'
 
 export function CustomDrawerContent(props: DrawerContentComponentProps) {
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
 
   function handleLogout() {
     logout()
@@ -49,13 +49,18 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
           }
         />
         <DrawerItem
+          label={user.name}
+          icon={({ color, size }) => <User color={color} size={size} />}
+          onPress={() => {}}
+        />
+        <DrawerItem
           label="Sair"
           icon={({ color, size }) => <SignOut color={color} size={size} />}
           onPress={handleLogout}
         />
       </View>
       <Footer>
-        <FooterTextLight>2.0.0</FooterTextLight>
+        <FooterTextLight>2.1.0</FooterTextLight>
         <FooterText>Desenvolvido por SmartNew System</FooterText>
         <FooterText>2023 © Todos os direitos reservados</FooterText>
       </Footer>

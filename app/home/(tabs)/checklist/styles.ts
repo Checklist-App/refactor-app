@@ -15,6 +15,7 @@ export const Title = styled.Text`
 
 export const HomeHeader = styled.View`
   flex-direction: row;
+  align-items: center;
   justify-content: space-between;
 `
 

@@ -13,7 +13,7 @@ import { Text, useToast } from 'native-base'
 import { ClipboardText, XCircle } from 'phosphor-react-native'
 import { useEffect, useState } from 'react'
 import { ActivityIndicator } from 'react-native'
-import { Container } from './styles'
+import styled from 'styled-components/native'
 
 export default function HomeLayout() {
   const { syncData } = useSync()
@@ -44,13 +44,19 @@ export default function HomeLayout() {
   }, [allChecklists, actions, equipments, responsibles])
 
   useEffect(() => {
+    console.log({
+      needToUpdate,
+      user,
+      token,
+      isSyncing,
+      segments,
+    })
     if (
-      needToUpdate &&
+      (needToUpdate || syncCount === 0) &&
       user &&
       token &&
       !isSyncing &&
-      segments.length < 4 &&
-      segments.includes('checklist')
+      segments.length < 4
     ) {
       syncData(user.login, token).catch((err: Error) => {
         console.log(err)
@@ -102,3 +108,9 @@ export default function HomeLayout() {
     </Tabs>
   )
 }
+
+const Container = styled.View`
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+`
