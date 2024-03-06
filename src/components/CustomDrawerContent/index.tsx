@@ -8,7 +8,7 @@ import { router } from 'expo-router'
 import { View } from 'native-base'
 import { SignOut, User, WarningOctagon } from 'phosphor-react-native'
 import { Linking } from 'react-native'
-import { useAuth } from '../store/auth'
+import { useAuth } from '../../store/auth'
 import {
   Divider,
   DividerLine,

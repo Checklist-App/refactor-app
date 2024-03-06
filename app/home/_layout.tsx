@@ -1,4 +1,4 @@
-import { CustomDrawerContent } from '@/src/CustomDrawerContent'
+import { CustomDrawerContent } from '@/src/components/CustomDrawerContent'
 import { Header } from '@/src/components/Header'
 import { Drawer } from 'expo-router/drawer'
 import { House } from 'phosphor-react-native'
