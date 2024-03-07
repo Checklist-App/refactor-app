@@ -1,8 +1,7 @@
 import { Button } from '@/src/components/Button'
-import { Toast } from '@/src/components/Toast'
 import { useActions } from '@/src/store/actions'
 import { Link, router } from 'expo-router'
-import { Modal, useToast } from 'native-base'
+import { Modal } from 'native-base'
 import { Dot } from 'phosphor-react-native'
 import { SetStateAction } from 'react'
 import { FlatList } from 'react-native'
@@ -27,31 +26,16 @@ export function EditModal({
   modalData,
 }: EditModalProps) {
   const { actions } = useActions()
-  // const { setCurrentAction, loadActions, updateAnswering } = useChecklist()
-  // const { isSyncing } = useData()
-  // const { dispatch } = useNavigation()
-  const toast = useToast()
 
   function handleEditAsk() {
-    // updateAnswering(true)
-    if (modalData.canEdit) {
-      setShowModal(false)
-      router.push({
-        pathname: `/home/answer/${modalData.checklistId}`,
-        params: {
-          checklistPeriodIndex: String(modalData.checklistPeriodIndex),
-          isEditing: 'true',
-        },
-      })
-    } else {
-      toast.show({
-        render: () => (
-          <Toast.Error>
-            Você não pode editar um checklist que está fechado
-          </Toast.Error>
-        ),
-      })
-    }
+    setShowModal(false)
+    router.push({
+      pathname: `/home/answer/${modalData.checklistId}`,
+      params: {
+        checklistPeriodIndex: String(modalData.checklistPeriodIndex),
+        isEditing: 'true',
+      },
+    })
   }
   if (!modalData) {
     return <></>

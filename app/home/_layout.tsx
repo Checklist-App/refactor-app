@@ -52,7 +52,7 @@ export default function HomeLayout() {
       token &&
       !isSyncing &&
       segments.length < 5 &&
-      segments.includes('home')
+      segments.includes('checklist')
     ) {
       syncData(user.login, token).catch((err: Error) => {
         console.log(err)
@@ -62,6 +62,10 @@ export default function HomeLayout() {
       })
     }
   }, [isConnected, needToUpdate, user, token])
+
+  useEffect(() => {
+    setNeedToUpdate(db.checkNeedToUpdate())
+  }, [segments])
 
   useEffect(() => {
     const interval = setInterval(() => {

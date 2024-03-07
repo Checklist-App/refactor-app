@@ -47,7 +47,6 @@ export interface ModalData {
   images: ChecklistPeriodImage[]
   statusNC?: number
   answer: string
-  canEdit: boolean
   option: ChecklistStatus
 }
 
@@ -168,7 +167,6 @@ export default function EditChecklist() {
                 images: item.img,
                 answer: item.task.answer,
                 statusNC: item.statusNC,
-                canEdit: currentChecklist.status === 'open',
                 checklistPeriodIndex: index,
                 // actions: item.actions,
                 checklistPeriodId: item.id,
