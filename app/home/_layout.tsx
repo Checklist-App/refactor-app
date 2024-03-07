@@ -51,7 +51,7 @@ export default function HomeLayout() {
       user &&
       token &&
       !isSyncing &&
-      segments.length < 4 &&
+      segments.length < 5 &&
       segments.includes('home')
     ) {
       syncData(user.login, token).catch((err: Error) => {
