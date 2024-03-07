@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { AnswerHeader } from '@/src/components/AnswerHeader'
 import { Button } from '@/src/components/Button'
 import { ChecklistQuestion } from '@/src/components/ChecklistQuestion'
 import { KeyboardCoverPrevent } from '@/src/components/KeyboradCoverPrevent'
@@ -83,7 +84,6 @@ export default function AnswerPage() {
 
   useEffect(() => {
     if (currentChecklist) {
-      console.log('editou o checklist')
       setAlternativeSelected(
         currentChecklist.checklistPeriods[currentChecklistPeriod].statusId,
       )
@@ -102,8 +102,6 @@ export default function AnswerPage() {
         currentImages?.checklistPeriodId ===
         currentChecklist.checklistPeriods[currentChecklistPeriod].id
       ) {
-        console.log('Novas imagens')
-        console.log(currentImages?.images)
         setCurrentShowImages(currentImages?.images || null)
       }
     }
@@ -160,7 +158,7 @@ export default function AnswerPage() {
           style: 'destructive',
           onPress: () => {
             updateAnswering(false)
-            router.replace('/home/checklist')
+            router.push('/home/checklist')
           },
         },
       ])
@@ -269,54 +267,57 @@ export default function AnswerPage() {
   }
 
   return (
-    <KeyboardCoverPrevent style={{ height: '100%' }}>
-      <Container style={{ height: height * 0.9 }}>
-        <ChecklistQuestion
-          currentChecklistPeriod={
-            currentChecklist.checklistPeriods[currentChecklistPeriod]
-          }
-          alternativeSelected={alternativeSelected}
-          setAlternativeSelected={setAlternativeSelected}
-          observationText={observationText}
-          setObservationText={setObservationText}
-          selectedChild={selectedChild}
-          setSelectedChild={setSelectedChild}
-          images={currentShowImages}
-        />
-
-        <Buttons>
-          <Button.Trigger
-            onPress={handleStop}
-            variant="secondary"
-            style={{ width: '49%' }}
-          >
-            <Button.Text>Sair</Button.Text>
-          </Button.Trigger>
-          <Button.Trigger
-            disabled={checkConfirmDisabled()}
-            variant="green"
-            style={{ width: '49%' }}
-            onPress={handleConfirm}
-            loading={buttonLoading}
-          >
-            <Button.Text>Confirmar</Button.Text>
-            <Button.Icon.CheckCircle />
-          </Button.Trigger>
-        </Buttons>
-
-        {isEditing === 'true' ? (
-          ''
-        ) : (
-          <QuestionPaginator
-            currentQuestionIndex={currentChecklistPeriod}
-            handleNext={handleNext}
-            handlePrev={handlePrev}
-            nextDisabled={checkNextDisabled()}
-            numberOfQuestions={currentChecklist.checklistPeriods.length}
-            prevDisabled={!(currentChecklistPeriod > 0)}
+    <>
+      <AnswerHeader />
+      <KeyboardCoverPrevent style={{ height: '100%' }}>
+        <Container style={{ height: height * 0.9 }}>
+          <ChecklistQuestion
+            currentChecklistPeriod={
+              currentChecklist.checklistPeriods[currentChecklistPeriod]
+            }
+            alternativeSelected={alternativeSelected}
+            setAlternativeSelected={setAlternativeSelected}
+            observationText={observationText}
+            setObservationText={setObservationText}
+            selectedChild={selectedChild}
+            setSelectedChild={setSelectedChild}
+            images={currentShowImages}
           />
-        )}
-      </Container>
-    </KeyboardCoverPrevent>
+
+          <Buttons>
+            <Button.Trigger
+              onPress={handleStop}
+              variant="secondary"
+              style={{ width: '49%' }}
+            >
+              <Button.Text>Sair</Button.Text>
+            </Button.Trigger>
+            <Button.Trigger
+              disabled={checkConfirmDisabled()}
+              variant="green"
+              style={{ width: '49%' }}
+              onPress={handleConfirm}
+              loading={buttonLoading}
+            >
+              <Button.Text>Confirmar</Button.Text>
+              <Button.Icon.CheckCircle />
+            </Button.Trigger>
+          </Buttons>
+
+          {isEditing === 'true' ? (
+            ''
+          ) : (
+            <QuestionPaginator
+              currentQuestionIndex={currentChecklistPeriod}
+              handleNext={handleNext}
+              handlePrev={handlePrev}
+              nextDisabled={checkNextDisabled()}
+              numberOfQuestions={currentChecklist.checklistPeriods.length}
+              prevDisabled={!(currentChecklistPeriod > 0)}
+            />
+          )}
+        </Container>
+      </KeyboardCoverPrevent>
+    </>
   )
 }

@@ -43,17 +43,3 @@ export const ErrorText = styled.Text`
   color: ${({ theme }) => theme.color['zinc-500']};
   padding: 80px 16px;
 `
-
-export const NoPermission = styled.View`
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 24px;
-`
-
-export const NoPermissionText = styled.Text`
-  font-size: 24px;
-  color: ${({ theme }) => theme.color['zinc-600']};
-  font-weight: bold;
-`

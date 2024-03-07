@@ -1,4 +1,4 @@
-import { ListImages } from '@/app/home/(tabs)/checklist/edit-checklist/[checklistId]/CardImage'
+import { ListImages } from '@/app/home/(drawer)/(tabs)/checklist/edit-checklist/[checklistId]/CardImage'
 import {
   ChecklistPeriod,
   ChecklistPeriodImage,

@@ -4,23 +4,15 @@ import { useSyncStatus } from '@/src/store/syncStatus'
 import { DrawerActions } from '@react-navigation/native'
 import { router, useNavigation, useSegments } from 'expo-router'
 import { useToast } from 'native-base'
-import { Jeep, User } from 'phosphor-react-native'
-import { useTheme } from 'styled-components'
 import { Button } from '../Button'
 import { Toast } from '../Toast'
 import { WifiIndicator } from '../WifiIndicator'
-import {
-  ButtonsContainer,
-  HeaderContainer,
-  HeaderText,
-  TextBackground,
-} from './styles'
+import { ButtonsContainer, HeaderContainer } from './styles'
 
 export function Header() {
   const { dispatch } = useNavigation()
   const { syncData } = useSync()
   const { isSyncing } = useSyncStatus()
-  const { color } = useTheme()
   const { user } = useAuth()
   const segments = useSegments()
   const toast = useToast()
@@ -29,23 +21,7 @@ export function Header() {
     if (!router.canGoBack()) return
     router.back()
   }
-  return segments.includes('answer') ? (
-    <HeaderContainer>
-      <TextBackground>
-        <User size={16} color={color['violet-600']} />
-        <HeaderText>{user?.name || 'Usuário'}</HeaderText>
-      </TextBackground>
-      <WifiIndicator reduced />
-      <TextBackground>
-        <Jeep size={16} color={color['violet-600']} />
-        {/* <HeaderText>
-          {currentChecklist
-            ? currentChecklist.equipment.code
-            : 'Sem equipamento'}
-        </HeaderText> */}
-      </TextBackground>
-    </HeaderContainer>
-  ) : (
+  return (
     <HeaderContainer>
       <ButtonsContainer>
         <Button.Trigger

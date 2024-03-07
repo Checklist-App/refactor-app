@@ -37,7 +37,7 @@ export function EditModal({
     if (modalData.canEdit) {
       setShowModal(false)
       router.push({
-        pathname: `/home/checklist/answer/${modalData.checklistId}`,
+        pathname: `/home/answer/${modalData.checklistId}`,
         params: {
           checklistPeriodIndex: String(modalData.checklistPeriodIndex),
           isEditing: 'true',

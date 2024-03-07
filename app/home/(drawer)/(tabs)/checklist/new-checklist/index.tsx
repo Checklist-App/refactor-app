@@ -104,9 +104,7 @@ export default function NewChecklist() {
         ),
       })
       updateAnswering(true)
-      router.replace({
-        pathname: `/home/checklist/answer/${newChecklist.id}`,
-      })
+      router.replace(`/home/answer/${newChecklist.id}`)
     } catch (err) {
       const error: Error = err
       toast.show({

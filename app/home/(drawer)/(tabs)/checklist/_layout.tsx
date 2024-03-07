@@ -4,7 +4,6 @@ export default function ChecklistLayout() {
   return (
     <Stack initialRouteName="index" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
-      <Stack.Screen name="answer/[checklistId]/index" />
       <Stack.Screen name="new-checklist/index" />
       <Stack.Screen name="edit-checklist/[checklistId]/index" />
       <Stack.Screen
