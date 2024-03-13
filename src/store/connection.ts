@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios'
 import { create } from 'zustand'
 import { api } from '../libs/api'
 
@@ -20,7 +21,10 @@ export const useConnection = create<ConnectionStore>((set) => {
             `Conectado no endereço ${process.env.EXPO_PUBLIC_API_URL}`,
           )
         })
-        .catch(() => set({ isConnected: false }))
+        .catch((err: AxiosError) => {
+          console.log(err.request)
+          set({ isConnected: false })
+        })
     },
 
     testConnection: async () => {

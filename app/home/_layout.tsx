@@ -7,6 +7,7 @@ import { useAuth } from '@/src/store/auth'
 import { useChecklist } from '@/src/store/checklist'
 import { useConnection } from '@/src/store/connection'
 import { useEquipments } from '@/src/store/equipments'
+import { useLocations } from '@/src/store/location'
 import { useResponsibles } from '@/src/store/responsibles'
 import { useSyncStatus } from '@/src/store/syncStatus'
 import { usePermissions } from 'expo-media-library'
@@ -23,6 +24,7 @@ export default function HomeLayout() {
   const { allChecklists, loadChecklists } = useChecklist()
   const { actions, loadActions } = useActions()
   const { equipments, loadEquipments } = useEquipments()
+  const { loadLocations } = useLocations()
   const { responsibles, loadResponsibles } = useResponsibles()
   const { user, token } = useAuth()
   const [permissions, requestPermissions] = usePermissions()
@@ -41,9 +43,14 @@ export default function HomeLayout() {
       loadChecklists(user.login)
       loadActions(user.login)
       loadEquipments(user.login)
+      loadLocations(user.login)
       loadResponsibles(user.login)
     }
   }, [allChecklists, actions, equipments, responsibles])
+
+  useEffect(() => {
+    console.log(segments)
+  }, [])
 
   useEffect(() => {
     if (
@@ -52,7 +59,7 @@ export default function HomeLayout() {
       token &&
       !isSyncing &&
       segments.length < 5 &&
-      segments.includes('checklist')
+      segments.includes('(tabs)')
     ) {
       syncData(user.login, token).catch((err: Error) => {
         console.log(err)

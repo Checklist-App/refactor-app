@@ -28,7 +28,7 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
         <TextContentUpper>
           <TextContent>
             <Text screenWidth={width}>
-              {dayjs(checklist.date).format('DD/MM/YYYY HH:mm')}
+              {dayjs(checklist.initialTime).format('DD/MM/YYYY HH:mm')}
             </Text>
             <Dot />
             {checklist.period && (
@@ -46,9 +46,11 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
           </TextContent>
         </TextContentUpper>
         <TextContent>
-          <Text screenWidth={width}>{checklist.equipment.code}</Text>
+          {/* <Text screenWidth={width}>{checklist.equipment.code}</Text> */}
+          <Text>Codigo eq</Text>
           <Dot />
-          <Text screenWidth={width}>{checklist.equipment.description}</Text>
+          <Text>Descricao eq</Text>
+          {/* <Text screenWidth={width}>{checklist.equipment.description}</Text> */}
         </TextContent>
         <SyncedItem
           status={

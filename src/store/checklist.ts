@@ -11,6 +11,8 @@ import { Action } from '../types/Action'
 import { Checklist } from '../types/Checklist'
 import { ChecklistPeriod, ChecklistPeriodImage } from '../types/ChecklistPeriod'
 import { ChecklistSchema } from '../types/ChecklistSchema'
+import { Equipment } from '../types/Equipment'
+import { Location } from '../types/Location'
 import { Period } from '../types/Period'
 
 interface ChecklistsData {
@@ -24,14 +26,16 @@ interface ChecklistsData {
   updateChecklist: (checklist: Checklist) => void
   createChecklist: ({
     period,
-    mileage,
     equipment,
+    location,
     user,
+    model,
   }: {
     period?: Checklist['period']
-    mileage: number
-    equipment: Checklist['equipment']
+    equipment: Equipment | null
+    location: Location | null
     user: string
+    model: number[]
   }) => Checklist
   finalizeChecklist: (checklistId: number) => void
 
@@ -133,30 +137,31 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       set({ allChecklists: newChecklists })
     },
 
-    createChecklist: ({ period, mileage, equipment, user }) => {
+    createChecklist: ({ period, equipment, model, user, location }) => {
       const productionRegisterId = Number(
         new Date().getTime().toFixed().slice(6),
       )
 
       const newChecklist: Checklist = {
         id: productionRegisterId,
-        date: new Date(),
+        equipmentId: equipment?.id || null,
+        locationId: location?.id || null,
+        model,
         finalTime: null,
         initialTime: new Date(),
         period,
-        mileage,
         status: 'open',
-        equipment,
-        signatures: [],
         checklistPeriods: createTasks({
-          familyId: equipment.familyId,
           checklistId: productionRegisterId,
-          branchId: equipment.branchId,
+          model,
+          branchId: equipment ? equipment.branchId : location.branchId,
           user,
         }),
         error: null,
         syncStatus: 'inserted',
       }
+
+      console.log(JSON.stringify(newChecklist, null, 2))
 
       const checklists = get().allChecklists
       if (!checklists) throw new Error('Checklists não carregados')
@@ -166,7 +171,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       }
 
       checklists.forEach((checklist) => {
-        if (checklist.equipment.id === equipment.id) {
+        if (checklist.equipmentId === equipment.id) {
           if (
             checklist.period?.id === period?.id &&
             dayjs(checklist.initialTime).isAfter(
@@ -358,6 +363,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       try {
         console.log('generate')
         const equipments = db.retrieveEquipments(user)
+        const locations = db.retrieveLocations(user)
         const checklistSchemas: ChecklistSchema[] = db.retrieveReceivedData(
           user,
           '/@checklistSchemas',
@@ -368,16 +374,19 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
           const matchEquipment = equipments.find(
             (eq) => eq.id === checklist.equipmentId,
           )
-          const data = {
+
+          const matchLocation = locations.find(
+            (item) => item.id === checklist.locationId,
+          )
+
+          const data: Checklist = {
             id: checklist.id,
-            _id: '',
+            equipmentId: checklist.equipmentId,
+            locationId: checklist.locationId,
             initialTime: checklist.initialTime,
             finalTime: checklist.finalTime,
-            date: checklist.date,
             status: checklist.status,
-            mileage: matchEquipment.mileage,
-            signatures: [],
-            equipment: matchEquipment,
+            model: [],
             period: periods
               .map((period) => ({
                 id: period.id,
@@ -386,19 +395,19 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
               }))
               .find((period) => period.id === checklist.periodId),
             checklistPeriods: findTasks({
-              familyId: matchEquipment.familyId,
-              branchId: matchEquipment.branchId,
+              branchId: matchEquipment
+                ? matchEquipment.branchId
+                : matchLocation.branchId,
               checklistId: checklist.id,
               user,
             }),
             syncStatus: 'synced',
             error: null,
-          } as Checklist
+          }
 
           return data
         })
 
-        console.log('terminou genera')
         if (!checklists || !checklists?.length) {
           console.log('Nenhum checklist')
         }
@@ -433,28 +442,36 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
 
           for await (const checklist of checklists) {
             get().setChecklistLoadingId(checklist.id)
-            const postChcklist = {
-              type: checklist.syncStatus,
-              checkListSchema: {
-                _id: String(checklist.id),
-                id: checklist.id,
-                date: checklist.date,
-                code: checklist.equipment.code,
-                description: checklist.equipment.description,
-                status: checklist.status,
-                equipmentId: checklist.equipment.id,
-                mileage: checklist.mileage,
-                finalMileage: checklist.mileage,
-                initialTime: checklist.initialTime,
-                finalTime: checklist.finalTime,
-                login: user,
-                periodId: checklist.period?.id || 0,
-              },
+            const postChecklist = {
+              equipmentId: checklist.equipmentId,
+              locationId: checklist.locationId,
+              periodId: checklist.period?.id || null,
+              model: checklist.model,
+              initialTime: checklist.initialTime,
+              finalTime: checklist.finalTime,
+              status: checklist.status,
+            }
+
+            const updateChecklist = {
+              id: checklist.id,
+              status: checklist.status,
+              finalTime: checklist.finalTime,
+            }
+
+            function requestMethod() {
+              if (checklist.syncStatus === 'inserted') {
+                return api.post('/checkList', postChecklist, options)
+              } else {
+                return api.put(
+                  '/checkList/putCheckList',
+                  updateChecklist,
+                  options,
+                )
+              }
             }
 
             try {
-              await api
-                .post('/sync/checkListSchema', postChcklist, options)
+              await requestMethod()
                 .then((res) => res.data)
                 .then((data: { id: number }) => {
                   get().updateChecklistSync({
@@ -536,10 +553,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
               get().setChecklistLoadingId(0)
               console.log(errorMessage)
               console.log('Checklist que não subiu: ')
-              console.log(JSON.stringify(postChcklist, null, 2))
-              const erroredChecklist = get().findChecklist(
-                postChcklist.checkListSchema.id,
-              )
+              console.log(JSON.stringify(checklist, null, 2))
+              const erroredChecklist = get().findChecklist(checklist.id)
               get().updateChecklist({
                 ...erroredChecklist,
                 error: errorMessage,

@@ -1,31 +1,25 @@
 import db from '../libs/database'
 import { ChecklistItemType } from '../types/ChecklistItemType'
 import { ChecklistPeriod } from '../types/ChecklistPeriod'
-import { ChecklistProduction } from '../types/ChecklistProduction'
 import { ChecklistStatus } from '../types/ChecklistStatus'
 import { ChecklistStatusAction } from '../types/ChecklistStatusAction'
 import { ControlId } from '../types/ControlId'
 import { Task } from '../types/Task'
 
 export function createTasks({
-  familyId,
   checklistId,
+  model,
   branchId,
   user,
 }: {
-  familyId: number
   checklistId: number
+  model: number[]
   branchId: number
   user: string
 }): ChecklistPeriod[] {
   const checklistItems: ChecklistItemType[] = db.retrieveReceivedData(
     user,
     '/@checklistItems',
-  )
-
-  const checklistProductions: ChecklistProduction[] = db.retrieveReceivedData(
-    user,
-    '/@checklistProductions',
   )
 
   const tasks: Task[] = db.retrieveReceivedData(user, '/@tasks')
@@ -42,13 +36,7 @@ export function createTasks({
   let randomPeriodId = Math.floor(Math.random() * 100000)
 
   return checklistItems
-    .filter(
-      (checklistItem) =>
-        checklistItem.checklistId ===
-        checklistProductions.find(
-          (checklistProduction) => checklistProduction.familyId === familyId,
-        )?.id,
-    )
+    .filter((checklistItem) => model.includes(checklistItem.checklistId))
     .map((checklistItem) => ({
       ...checklistItem,
       task: {

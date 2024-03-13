@@ -130,8 +130,8 @@ export default function EditChecklist() {
 
       <TitleView>
         <Title>
-          {currentChecklist.equipment.code} -{' '}
-          {currentChecklist.equipment.description}
+          {/* {currentChecklist.equipment.code} -{' '}
+          {currentChecklist.equipment.description} */}
         </Title>
         {currentChecklist.error && (
           <Button.Trigger

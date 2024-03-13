@@ -8,7 +8,6 @@ export interface Action {
   startDate: Date
   dueDate: Date
   endDate: Date | null
-  equipmentId: number
   img: {
     name: string
     path: string

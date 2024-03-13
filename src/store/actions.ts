@@ -12,7 +12,6 @@ interface ActionsData {
   createNewAction: ({
     checklistPeriodId,
     checklistId,
-    equipmentId,
     title,
     responsible,
     description,
@@ -20,7 +19,6 @@ interface ActionsData {
   }: {
     checklistPeriodId: number
     checklistId: number
-    equipmentId: number
     title: string
     responsible: string
     description: string
@@ -51,7 +49,6 @@ export const useActions = create<ActionsData>((set, get) => {
         id: Number(new Date().getTime()),
         checklistId: props.checklistId,
         checklistPeriodId: props.checklistPeriodId,
-        equipmentId: props.equipmentId,
         title: props.title,
         description: props.description,
         startDate: new Date(),
@@ -61,13 +58,6 @@ export const useActions = create<ActionsData>((set, get) => {
         img: [],
         syncStatus: 'inserted',
       }
-
-      const actions = get().actions
-      actions.forEach((action) => {
-        if (action.equipmentId === props.equipmentId && !action.endDate) {
-          throw new Error('Já existe uma ação em aberta para esse equipamento')
-        }
-      })
 
       const newActions = [...get().actions, newAction]
       db.storeActions(newActions)
@@ -125,7 +115,6 @@ export const useActions = create<ActionsData>((set, get) => {
             id: action.id,
             checklistId: action.id_registro_producao,
             checklistPeriodId: action.id_item,
-            equipmentId: action.productionRegister.id_equipamento,
             title: action.descricao,
             description: action.descricao_acao,
             startDate: new Date(action.data_inicio),
@@ -180,7 +169,6 @@ export const useActions = create<ActionsData>((set, get) => {
               description: action.description,
               dueDate: action.dueDate,
               endDate: action.endDate,
-              equipmentId: action.equipmentId,
               responsible: action.responsible,
               startDate: action.startDate,
               title: action.title,
