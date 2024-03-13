@@ -161,8 +161,6 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         syncStatus: 'inserted',
       }
 
-      console.log(JSON.stringify(newChecklist, null, 2))
-
       const checklists = get().allChecklists
       if (!checklists) throw new Error('Checklists não carregados')
 
@@ -171,7 +169,10 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       }
 
       checklists.forEach((checklist) => {
-        if (checklist.equipmentId === equipment.id) {
+        if (
+          checklist.equipmentId === equipment?.id ||
+          checklist.locationId === location?.id
+        ) {
           if (
             checklist.period?.id === period?.id &&
             dayjs(checklist.initialTime).isAfter(
@@ -179,7 +180,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
             )
           ) {
             throw new Error(
-              'Já existe um checklist para esse equipamento nesse turno',
+              'Já existe um checklist para esse registro nesse turno',
             )
           } else if (
             dayjs(checklist.initialTime).isAfter(
@@ -187,7 +188,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
             )
           ) {
             throw new Error(
-              'Já existe um checklist para esse equipamento nesse turno',
+              'Já existe um checklist para esse registro nesse turno',
             )
           }
         }

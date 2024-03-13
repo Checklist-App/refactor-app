@@ -141,33 +141,30 @@ export default function NewChecklist() {
               />
               <Form.ErrorMessage field="location" />
             </Form.Field>
-
-            <Form.Field
-              style={
-                !selectedLocation?.hasPeriod &&
-                periods.filter(
-                  (item) => item.branchId === selectedLocation.branchId,
-                ).length > 0 && { display: 'none' }
-              }
-            >
-              <Form.Label>Turno:</Form.Label>
-              <Form.Select name="period">
-                {periods &&
-                  selectedLocation &&
-                  periods
-                    .filter(
-                      (item) => item.branchId === selectedLocation.branchId,
-                    )
-                    .map(({ id, period }) => (
-                      <Form.SelectItem
-                        key={id}
-                        label={period}
-                        value={String(id)}
-                      />
-                    ))}
-              </Form.Select>
-              <Form.ErrorMessage field="period" />
-            </Form.Field>
+            {!selectedLocation?.hasPeriod &&
+              periods.filter(
+                (item) => item.branchId === selectedLocation.branchId,
+              ).length > 0 && (
+                <Form.Field>
+                  <Form.Label>Turno:</Form.Label>
+                  <Form.Select name="period">
+                    {periods &&
+                      selectedLocation &&
+                      periods
+                        .filter(
+                          (item) => item.branchId === selectedLocation.branchId,
+                        )
+                        .map(({ id, period }) => (
+                          <Form.SelectItem
+                            key={id}
+                            label={period}
+                            value={String(id)}
+                          />
+                        ))}
+                  </Form.Select>
+                  <Form.ErrorMessage field="period" />
+                </Form.Field>
+              )}
 
             <Form.Field>
               <Form.Label>Hora inicial:</Form.Label>

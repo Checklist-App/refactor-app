@@ -1,3 +1,5 @@
+import { useEquipments } from '@/src/store/equipments'
+import { useLocations } from '@/src/store/location'
 import { Checklist } from '@/src/types/Checklist'
 import dayjs from 'dayjs'
 import { Link } from 'expo-router'
@@ -22,6 +24,9 @@ const { width } = Dimensions.get('screen')
 export function ChecklistItem({ checklist }: { checklist: Checklist }) {
   const theme = useTheme()
   const { checklistLoadingId } = useChecklist()
+  const { equipments } = useEquipments()
+  const { locations } = useLocations()
+
   return (
     <ChecklistItemView>
       <Container>
@@ -45,13 +50,28 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
             <TextBold screenWidth={width}>{checklist.id}</TextBold>
           </TextContent>
         </TextContentUpper>
-        <TextContent>
-          {/* <Text screenWidth={width}>{checklist.equipment.code}</Text> */}
-          <Text>Codigo eq</Text>
-          <Dot />
-          <Text>Descricao eq</Text>
-          {/* <Text screenWidth={width}>{checklist.equipment.description}</Text> */}
-        </TextContent>
+        {checklist.equipmentId && equipments ? (
+          <TextContent>
+            <Text screenWidth={width}>
+              {equipments.find((eq) => eq.id === checklist.equipmentId).code}
+            </Text>
+            <Dot />
+            <Text screenWidth={width}>
+              {
+                equipments.find((eq) => eq.id === checklist.equipmentId)
+                  .description
+              }
+            </Text>
+          </TextContent>
+        ) : checklist.locationId && locations ? (
+          <TextContent>
+            <Text screenWidth={width}>
+              {locations.find((eq) => eq.id === checklist.equipmentId).location}
+            </Text>
+          </TextContent>
+        ) : (
+          <></>
+        )}
         <SyncedItem
           status={
             checklist.error
