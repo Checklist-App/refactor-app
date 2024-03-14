@@ -35,6 +35,18 @@ export function createTasks({
 
   let randomPeriodId = Math.floor(Math.random() * 100000)
 
+  console.log(JSON.stringify(checklistItems, null, 2))
+  console.log(JSON.stringify(model, null, 2))
+  console.log(
+    JSON.stringify(
+      checklistItems.filter((checklistItem) =>
+        model.includes(checklistItem.checklistId),
+      ),
+      null,
+      2,
+    ),
+  )
+
   return checklistItems
     .filter((checklistItem) => model.includes(checklistItem.checklistId))
     .map((checklistItem) => ({
