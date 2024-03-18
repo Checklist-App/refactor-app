@@ -165,7 +165,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       if (!checklists) throw new Error('Checklists não carregados')
 
       if (!newChecklist.checklistPeriods.length) {
-        throw new Error('Não há perguntas vinculadas para esse equipamento')
+        throw new Error('Não há perguntas vinculadas para esse registro')
       }
 
       checklists.forEach((checklist) => {

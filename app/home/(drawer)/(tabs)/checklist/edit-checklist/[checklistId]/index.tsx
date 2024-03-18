@@ -2,6 +2,8 @@ import { Button } from '@/src/components/Button'
 import { Loading } from '@/src/components/Loading'
 import { Toast } from '@/src/components/Toast'
 import { useChecklist } from '@/src/store/checklist'
+import { useEquipments } from '@/src/store/equipments'
+import { useLocations } from '@/src/store/location'
 import { Checklist } from '@/src/types/Checklist'
 import { ChecklistPeriodImage } from '@/src/types/ChecklistPeriod'
 import { ChecklistStatus } from '@/src/types/ChecklistStatus'
@@ -57,6 +59,8 @@ export default function EditChecklist() {
   const [currentChecklist, setCurrentChecklist] = useState<Checklist | null>(
     null,
   )
+  const { equipments } = useEquipments()
+  const { locations } = useLocations()
   const [canCloseChecklist, setCanCloseChecklist] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [modalData, setModalData] = useState<ModalData | null>(null)
@@ -130,8 +134,16 @@ export default function EditChecklist() {
 
       <TitleView>
         <Title>
-          {/* {currentChecklist.equipment.code} -{' '}
-          {currentChecklist.equipment.description} */}
+          {currentChecklist.equipmentId && equipments
+            ? equipments.find((eq) => eq.id === currentChecklist.equipmentId)
+                ?.code +
+              ' - ' +
+              equipments.find((eq) => eq.id === currentChecklist.equipmentId)
+                ?.description
+            : currentChecklist.locationId && locations
+              ? locations.find((loc) => loc.id === currentChecklist.locationId)
+                  ?.location
+              : ''}
         </Title>
         {currentChecklist.error && (
           <Button.Trigger
