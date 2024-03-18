@@ -40,7 +40,6 @@ export interface ModalData {
   task: {
     children: ChecklistStatusAction[]
     id: number
-    familyId: number
     description: string
   }
   checklistPeriodIndex: number
