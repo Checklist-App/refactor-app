@@ -1,3 +1,5 @@
+import { useEquipments } from '@/src/store/equipments'
+import { useLocations } from '@/src/store/location'
 import { Checklist } from '@/src/types/Checklist'
 import dayjs from 'dayjs'
 import { Link } from 'expo-router'
@@ -22,13 +24,16 @@ const { width } = Dimensions.get('screen')
 export function ChecklistItem({ checklist }: { checklist: Checklist }) {
   const theme = useTheme()
   const { checklistLoadingId } = useChecklist()
+  const { equipments } = useEquipments()
+  const { locations } = useLocations()
+
   return (
     <ChecklistItemView>
       <Container>
         <TextContentUpper>
           <TextContent>
             <Text screenWidth={width}>
-              {dayjs(checklist.date).format('DD/MM/YYYY HH:mm')}
+              {dayjs(checklist.initialTime).format('DD/MM/YYYY HH:mm')}
             </Text>
             <Dot />
             {checklist.period && (
@@ -45,11 +50,31 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
             <TextBold screenWidth={width}>{checklist.id}</TextBold>
           </TextContent>
         </TextContentUpper>
-        <TextContent>
-          <Text screenWidth={width}>{checklist.equipment.code}</Text>
-          <Dot />
-          <Text screenWidth={width}>{checklist.equipment.description}</Text>
-        </TextContent>
+        {checklist.equipmentId && equipments ? (
+          <TextContent>
+            <Text screenWidth={width}>
+              {equipments.find((eq) => eq.id === checklist.equipmentId).code}
+            </Text>
+            <Dot />
+            <Text screenWidth={width}>
+              {
+                equipments.find((eq) => eq.id === checklist.equipmentId)
+                  .description
+              }
+            </Text>
+          </TextContent>
+        ) : checklist.locationId && locations ? (
+          <TextContent>
+            <Text screenWidth={width}>
+              {
+                locations.find((loc) => loc.id === checklist.locationId)
+                  ?.location
+              }
+            </Text>
+          </TextContent>
+        ) : (
+          <></>
+        )}
         <SyncedItem
           status={
             checklist.error

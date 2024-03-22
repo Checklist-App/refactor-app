@@ -1,3 +1,4 @@
+import { Button } from '@/src/components/Button'
 import styled from 'styled-components/native'
 
 export const Container = styled.View`
@@ -5,6 +6,37 @@ export const Container = styled.View`
   flex: 1;
   background-color: ${({ theme }) => theme.color.white};
   padding: 24px;
+`
+
+export const OptionsContainer = styled.View`
+  gap: 16px;
+  width: 100%;
+  min-height: 100px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: 32px;
+`
+
+export const Option = styled(Button.Trigger)`
+  border-radius: 8px;
+  border: 4px solid ${({ theme }) => theme.color['violet-600']};
+  align-items: center;
+  padding: 4px;
+  min-height: 110px;
+  gap: 8px;
+  flex: 1;
+  flex-shrink: 0;
+  flex-direction: column;
+  background-color: transparent;
+`
+
+export const TextOption = styled.Text`
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.color['violet-600']};
+  font-size: 20px;
+  font-weight: bold;
+  justify-content: center;
+  text-align: center;
 `
 
 export const Header = styled.View`

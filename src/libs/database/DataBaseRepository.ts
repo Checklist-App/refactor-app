@@ -1,6 +1,8 @@
 import { Action } from '@/src/types/Action'
 import { Checklist } from '@/src/types/Checklist'
+import { ChecklistProduction } from '@/src/types/ChecklistProduction'
 import { Equipment } from '@/src/types/Equipment'
+import { Location } from '@/src/types/Location'
 import { Responsible } from '@/src/types/Responsible'
 import { User } from '@/src/types/User'
 import IDataBaseRepository from './IDataBaseRepository'
@@ -40,11 +42,31 @@ export default class DataBaseRepository implements IDataBaseRepository {
     }
   }
 
+  retrieveLocations(user: string) {
+    const storedLocations = this.mmkv.getString(`${user}/@locations`)
+    if (storedLocations) {
+      const locations: Location[] = JSON.parse(storedLocations)
+      return locations
+    } else {
+      return []
+    }
+  }
+
   retrieveResponsibles(user: string) {
     const storedResponsibles = this.mmkv.getString(`${user}/@responsibles`)
     if (storedResponsibles) {
       const responsibles: Responsible[] = JSON.parse(storedResponsibles)
       return responsibles
+    } else {
+      return []
+    }
+  }
+
+  retrieveModels(user: string) {
+    const storedModels = this.mmkv.getString(`${user}/@checklistProductions`)
+    if (storedModels) {
+      const models: ChecklistProduction[] = JSON.parse(storedModels)
+      return models
     } else {
       return []
     }

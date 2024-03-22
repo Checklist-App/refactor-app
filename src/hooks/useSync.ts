@@ -8,6 +8,7 @@ import {
   fetchChecklists,
   fetchControlIds,
   fetchEquipments,
+  fetchLocations,
   fetchPeriods,
   fetchResponsibles,
   fetchTasks,
@@ -19,6 +20,7 @@ import { useActions } from '../store/actions'
 import { useChecklist } from '../store/checklist'
 import { useConnection } from '../store/connection'
 import { useEquipments } from '../store/equipments'
+import { useLocations } from '../store/location'
 import { useResponsibles } from '../store/responsibles'
 import { useSyncStatus } from '../store/syncStatus'
 
@@ -31,6 +33,7 @@ export function useSync(): SyncData {
   const { syncChecklists, loadChecklists } = useChecklist()
   const { syncActions, loadActions } = useActions()
   const { loadEquipments } = useEquipments()
+  const { loadLocations } = useLocations()
   const { loadResponsibles } = useResponsibles()
   const [needToClearImages, setNeedToClearImages] = useState(true)
   const { increaseDoneRequests, updateSyncing } = useSyncStatus()
@@ -55,9 +58,8 @@ export function useSync(): SyncData {
         fetchControlIds(login, token).then(() => increaseDoneRequests()),
         fetchActions(login, token).then(() => increaseDoneRequests()),
         fetchResponsibles(login, token).then(() => increaseDoneRequests()),
-      ]).catch(() => {
-        throw new Error('Erro ao buscar dados')
-      })
+        fetchLocations(login, token).then(() => increaseDoneRequests()),
+      ])
     }
   }
 
@@ -94,6 +96,7 @@ export function useSync(): SyncData {
           loadChecklists(login)
           loadActions(login)
           loadEquipments(login)
+          loadLocations(login)
           loadResponsibles(login)
         })
     },

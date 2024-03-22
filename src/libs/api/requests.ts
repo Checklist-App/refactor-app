@@ -38,7 +38,7 @@ interface ChecklistStatusActionResponse {
 
 export async function fetchChecklists(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
-    const route = '/checkList/info'
+    const route = '/checkList/checklists'
 
     api
       .get(route, {
@@ -316,4 +316,15 @@ export async function fetchResponsibles(login: string, token: string) {
     })
     .then((res) => res.data)
     .then((data) => db.storeReceivedData(login + '/@responsibles', data))
+}
+
+export async function fetchLocations(login: string, token: string) {
+  return await api
+    .get('/locations', {
+      headers: {
+        Authorization: `bearer ${token}`,
+      },
+    })
+    .then((res) => res.data)
+    .then((data) => db.storeReceivedData(login + '/@locations', data))
 }

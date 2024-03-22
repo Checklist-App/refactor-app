@@ -14,7 +14,6 @@ export function findTasks({
   branchId,
   user,
 }: {
-  familyId: number
   checklistId: number
   branchId: number
   user: string

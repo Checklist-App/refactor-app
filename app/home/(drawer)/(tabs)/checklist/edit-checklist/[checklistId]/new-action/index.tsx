@@ -14,7 +14,6 @@ import { z } from 'zod'
 // import { useResponsibles } from '@/src/store/responsibles'
 import { useActions } from '@/src/store/actions'
 import { useResponsibles } from '@/src/store/responsibles'
-import { Checklist } from '@/src/types/Checklist'
 import { ChecklistPeriod } from '@/src/types/ChecklistPeriod'
 import {
   Buttons,
@@ -44,9 +43,9 @@ export default function NewAction() {
   // const { responsibles, fetchResponsibles } = useResponsibles()
   const { checklistId, checklistPeriodId } = useLocalSearchParams()
   const toast = useToast()
-  const [currentChecklist, setCurrentChecklist] = useState<Checklist | null>(
-    null,
-  )
+  // const [currentChecklist, setCurrentChecklist] = useState<Checklist | null>(
+  //   null,
+  // )
   const [currentPeriod, setCurrentPeriod] = useState<ChecklistPeriod | null>(
     null,
   )
@@ -73,7 +72,6 @@ export default function NewAction() {
       createNewAction({
         checklistId: Number(checklistId),
         checklistPeriodId: currentPeriod.id,
-        equipmentId: currentChecklist.equipment.id,
         description: '',
         dueDate: new Date(data.dueDate),
         responsible: data.responsible,
@@ -108,7 +106,7 @@ export default function NewAction() {
       (item) => item.id === Number(checklistId),
     )
     if (checklist) {
-      setCurrentChecklist(checklist)
+      // setCurrentChecklist(checklist)
       const period = checklist.checklistPeriods.find(
         (item) => item.id === Number(checklistPeriodId),
       )

@@ -21,17 +21,6 @@ import { useEffect, useState } from 'react'
 import { Alert, BackHandler, Dimensions } from 'react-native'
 import { Buttons, Container } from './styles'
 
-interface ControlsIdAndType {
-  id: number
-  description: 'status' | 'select' | 'checkbox'
-}
-
-export const controlsIdsAndType: ControlsIdAndType[] = [
-  { id: 1, description: 'status' },
-  { id: 2, description: 'select' },
-  { id: 3, description: 'checkbox' },
-] // Temporário (ou não)
-
 const { height } = Dimensions.get('window')
 
 export default function AnswerPage() {

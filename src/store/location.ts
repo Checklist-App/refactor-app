@@ -1,0 +1,20 @@
+import { create } from 'zustand'
+import db from '../libs/database'
+import { Location } from '../types/Location'
+
+interface LocationsData {
+  locations: Location[] | null
+
+  loadLocations: (user: string) => void
+}
+
+export const useLocations = create<LocationsData>((set) => {
+  return {
+    locations: null,
+
+    loadLocations: (user) => {
+      const locations = db.retrieveLocations(user)
+      set({ locations })
+    },
+  }
+})

@@ -25,7 +25,6 @@ export interface ChecklistPeriod {
   task: {
     children: ChildType[]
     id: number
-    familyId: number
     description: string
     answer: string
     type: string

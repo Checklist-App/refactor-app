@@ -60,7 +60,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
         />
       </View>
       <Footer>
-        <FooterTextLight>2.1.1</FooterTextLight>
+        <FooterTextLight>2.2.0</FooterTextLight>
         <FooterText>Desenvolvido por SmartNew System</FooterText>
         <FooterText>2023 © Todos os direitos reservados</FooterText>
       </Footer>
