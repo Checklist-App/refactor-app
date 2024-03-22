@@ -141,7 +141,7 @@ export default function NewChecklist() {
               />
               <Form.ErrorMessage field="location" />
             </Form.Field>
-            {!selectedLocation?.hasPeriod &&
+            {selectedLocation?.hasPeriod &&
               periods.filter(
                 (item) => item.branchId === selectedLocation.branchId,
               ).length > 0 && (
