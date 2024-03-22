@@ -103,13 +103,22 @@ export default function NewChecklist() {
     }
   }, [equipmentValue])
 
-  if (!equipments || !equipments?.length) {
+  if (!equipments) {
     return (
       <ContainerLoading>
         <ActivityIndicator size={80} color={color['violet-500']} />
         <LoadingText>
           Carregando equipamentos, isso pode demorar um pouco...
         </LoadingText>
+      </ContainerLoading>
+    )
+  }
+
+  if (!equipments?.length) {
+    return (
+      <ContainerLoading>
+        <ActivityIndicator size={80} color={color['violet-500']} />
+        <LoadingText>Não há equipamentos vinculados a essa filial.</LoadingText>
       </ContainerLoading>
     )
   }
