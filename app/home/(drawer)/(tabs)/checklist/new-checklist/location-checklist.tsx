@@ -102,13 +102,21 @@ export default function NewChecklist() {
     }
   }, [locationValue])
 
-  if (!locations || !locations?.length) {
+  if (!locations) {
     return (
       <ContainerLoading>
         <ActivityIndicator size={80} color={color['violet-500']} />
         <LoadingText>
-          Carregando localizações, isso pode demorar um pouco...
+          Carregando diversos, isso pode demorar um pouco...
         </LoadingText>
+      </ContainerLoading>
+    )
+  }
+
+  if (!locations.length) {
+    return (
+      <ContainerLoading>
+        <LoadingText>Não há inspeções vinculadas a essa filial.</LoadingText>
       </ContainerLoading>
     )
   }
@@ -129,7 +137,7 @@ export default function NewChecklist() {
         <FormProvider {...newCheckListForm}>
           <FormContainer>
             <Form.Field>
-              <Form.Label>Localização:</Form.Label>
+              <Form.Label>Inspeção:</Form.Label>
               <Form.SelectFlash
                 name="location"
                 options={locations.map((location) => {

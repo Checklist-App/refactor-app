@@ -1,5 +1,5 @@
 import { Link } from 'expo-router'
-import { MapPin, Truck } from 'phosphor-react-native'
+import { MagnifyingGlass, Truck } from 'phosphor-react-native'
 import {
   Container,
   Header,
@@ -24,8 +24,8 @@ export default function NewChecklist() {
         </Link>
         <Link href="/home/checklist/new-checklist/location-checklist" asChild>
           <Option>
-            <TextOption numberOfLines={2}>Localização</TextOption>
-            <MapPin color="#7c3bed" size={40} weight="bold" />
+            <TextOption numberOfLines={2}>Diversos</TextOption>
+            <MagnifyingGlass color="#7c3bed" size={40} weight="bold" />
           </Option>
         </Link>
       </OptionsContainer>
