@@ -144,7 +144,7 @@ export default function NewChecklist() {
               <Form.ErrorMessage field="equipment" />
             </Form.Field>
 
-            {!selectedEquipment?.hasPeriod &&
+            {selectedEquipment?.hasPeriod &&
               periods.filter(
                 (item) => item.branchId === selectedEquipment.branchId,
               ).length > 0 && (
