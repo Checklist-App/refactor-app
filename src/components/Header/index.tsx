@@ -21,18 +21,31 @@ export function Header() {
     if (!router.canGoBack()) return
     router.back()
   }
+
+  function handleSync() {
+    syncData(user.login, user.token)
+      .then(() => router.replace('/home'))
+      .catch((err: Error) => {
+        console.log(err)
+        toast.show({
+          render: () => <Toast.Error>{err.message}</Toast.Error>,
+        })
+      })
+  }
+
   return (
     <HeaderContainer>
       <ButtonsContainer>
-        <Button.Trigger
-          onPress={handleGoBack}
-          onlyIcon
-          variant="transparent"
-          size="sm"
-          style={segments.length < 4 && { display: 'none' }}
-        >
-          <Button.Icon.CaretLeft />
-        </Button.Trigger>
+        {segments.length < 4 && (
+          <Button.Trigger
+            onPress={handleGoBack}
+            onlyIcon
+            variant="transparent"
+            size="sm"
+          >
+            <Button.Icon.CaretLeft />
+          </Button.Trigger>
+        )}
         <WifiIndicator />
       </ButtonsContainer>
       <ButtonsContainer>
@@ -41,14 +54,7 @@ export function Header() {
           rounded
           onlyIcon
           size="sm"
-          onPress={() =>
-            syncData(user.login, user.token).catch((err: Error) => {
-              console.log(err)
-              toast.show({
-                render: () => <Toast.Error>{err.message}</Toast.Error>,
-              })
-            })
-          }
+          onPress={handleSync}
           loading={isSyncing}
           disabled={isSyncing}
         >

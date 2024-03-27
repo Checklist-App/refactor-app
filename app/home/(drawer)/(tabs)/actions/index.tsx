@@ -15,7 +15,7 @@ export default function Actions() {
         extraData={actions}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item, index }) => (
-          <ActionCard key={item.id + '-' + index} action={item} />
+          <ActionCard key={item.responsible + index} action={item} />
         )}
         ListEmptyComponent={() => (
           <EmptyContainer>

@@ -13,7 +13,6 @@ export default function ChecklistLayout() {
         options={{ presentation: 'modal' }}
       />
       {/* <Stack.Screen name="signature/index" /> */}
-      {/* <Stack.Screen name="new-checklist/qr-code-scanner/index" /> */}
     </Stack>
   )
 }

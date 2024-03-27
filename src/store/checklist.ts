@@ -37,6 +37,7 @@ interface ChecklistsData {
     user: string
     model: number[]
   }) => Checklist
+  deleteChecklist: (checklistId: number) => void
   finalizeChecklist: (checklistId: number) => void
 
   findChecklistPeriod: (
@@ -202,6 +203,14 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       return newChecklist
     },
 
+    deleteChecklist: (checklistId) => {
+      const newChecklists = get().allChecklists.filter(
+        (item) => item.id !== checklistId,
+      )
+      set({ allChecklists: newChecklists })
+      db.storeChecklists(newChecklists)
+    },
+
     finalizeChecklist: (checklistId) => {
       const checklist = get().findChecklist(checklistId)
 
@@ -316,6 +325,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
           checklist.checklistPeriods.forEach((period) => {
             if (period.id === oldId) {
               period.id = newId
+              period.productionRegisterId = productionRegisterId
               period.syncStatus = syncStatus
             }
             newPeriods.push(period)
@@ -339,12 +349,27 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
     loadImages: async (checklists) => {
       console.log('load images')
       const newChecklists: Checklist[] = []
+      const storedChecklists = db.retrieveChecklists(
+        db.retrieveLastUser().login,
+      )
       for await (const checklist of checklists) {
         const newPeriods: ChecklistPeriod[] = []
+        const matchChecklist = storedChecklists.find(
+          (item) => item.id === checklist.id,
+        )
         for await (const period of checklist.checklistPeriods) {
           const newImages: { name: string; url: string; path: string }[] = []
+          const matchPeriod = matchChecklist?.checklistPeriods.find(
+            (item) => item.id === period.id,
+          )
           for await (const img of period.img) {
-            if (img.url) {
+            const matchImg = matchPeriod?.img.find(
+              (item) => item.name === img.name,
+            )
+            if (matchImg?.path) {
+              console.log('Imagem ja baixada')
+            }
+            if (img.url && !matchImg?.path) {
               const newImgPath = await downloadImage(img.url)
               newImages.push({ ...img, path: newImgPath })
             } else {

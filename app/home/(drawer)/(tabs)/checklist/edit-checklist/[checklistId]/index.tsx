@@ -172,6 +172,7 @@ export default function EditChecklist() {
               const option = item.options.find(
                 (opt) => opt.id === item.statusId,
               )
+              console.log(item.productionRegisterId)
               setModalData({
                 checklistId: item.productionRegisterId,
                 task: item.task,

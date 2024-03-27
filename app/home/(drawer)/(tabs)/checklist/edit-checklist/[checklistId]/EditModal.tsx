@@ -29,6 +29,7 @@ export function EditModal({
 
   function handleEditAsk() {
     setShowModal(false)
+    console.log(modalData.checklistId)
     router.push({
       pathname: `/home/answer/${modalData.checklistId}`,
       params: {

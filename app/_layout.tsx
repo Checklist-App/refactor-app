@@ -69,6 +69,10 @@ function RootLayoutNav() {
           <Stack.Screen name="home" options={{ headerShown: false }} />
           <Stack.Screen name="login/index" options={{ headerShown: false }} />
           <Stack.Screen name="camera/index" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="qrcode-scanner/index"
+            options={{ headerShown: false }}
+          />
         </Stack>
       </NativeBaseProvider>
     </ThemeProvider>

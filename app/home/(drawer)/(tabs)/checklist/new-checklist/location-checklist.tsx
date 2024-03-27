@@ -10,7 +10,7 @@ import { useSyncStatus } from '@/src/store/syncStatus'
 import { Location } from '@/src/types/Location'
 import { Period } from '@/src/types/Period'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { router } from 'expo-router'
+import { Link, router } from 'expo-router'
 import { useToast } from 'native-base'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -45,12 +45,14 @@ export default function NewChecklist() {
     handleSubmit,
     formState: { isSubmitting },
     watch,
+    setValue,
   } = newCheckListForm
   const { user } = useAuth()
   const { color } = useTheme()
   const { createChecklist, updateAnswering } = useChecklist()
   const { isSyncing } = useSyncStatus()
-  const { locations } = useLocations()
+  const { locations, updateLocation, locationId, loadLocations } =
+    useLocations()
   const toast = useToast()
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
     null,
@@ -58,6 +60,26 @@ export default function NewChecklist() {
 
   const periods: Period[] = db.retrieveReceivedData(user.login, '/@periods')
   const models = db.retrieveModels(user.login)
+
+  const locationValue = watch('location')
+
+  useEffect(() => {
+    updateLocation(null)
+  }, [])
+
+  useEffect(() => {
+    if (locationValue) {
+      setSelectedLocation(
+        locations.find((location) => location.id === Number(locationValue)),
+      )
+    }
+  }, [locationValue])
+
+  useEffect(() => {
+    if (locationId) {
+      setValue('location', String(locationId))
+    }
+  }, [locationId])
 
   async function handleNewChecklist(data: NewChecklistData) {
     if (!user) {
@@ -92,17 +114,8 @@ export default function NewChecklist() {
     }
   }
 
-  const locationValue = watch('location')
-
-  useEffect(() => {
-    if (locationValue) {
-      setSelectedLocation(
-        locations.find((location) => location.id === Number(locationValue)),
-      )
-    }
-  }, [locationValue])
-
   if (!locations) {
+    loadLocations(user.login)
     return (
       <ContainerLoading>
         <ActivityIndicator size={80} color={color['violet-500']} />
@@ -127,11 +140,11 @@ export default function NewChecklist() {
         <Header>
           <Title>Novo Checklist</Title>
 
-          {/* <Link asChild href="/qrcode-s  const models = db.retrieveModels(user.login)canner">
+          <Link asChild href="/qrcode-scanner?mode=location">
             <Button.Trigger rounded onlyIcon>
               <Button.Icon.QrCode />
             </Button.Trigger>
-          </Link> */}
+          </Link>
         </Header>
 
         <FormProvider {...newCheckListForm}>

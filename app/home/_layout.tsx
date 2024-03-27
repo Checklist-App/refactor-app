@@ -31,7 +31,7 @@ export default function HomeLayout() {
   const segments = useSegments()
   const toast = useToast()
 
-  const [needToUpdate, setNeedToUpdate] = useState(true)
+  const [counter, setCounter] = useState(0)
 
   useEffect(() => {
     if (
@@ -39,44 +39,36 @@ export default function HomeLayout() {
       !syncCount &&
       user
     ) {
-      console.log('load')
       loadChecklists(user.login)
       loadActions(user.login)
       loadEquipments(user.login)
       loadLocations(user.login)
       loadResponsibles(user.login)
     }
-  }, [allChecklists, actions, equipments, responsibles])
-
-  useEffect(() => {
-    console.log(segments)
-  }, [])
+  }, [allChecklists, actions, equipments, responsibles, user])
 
   useEffect(() => {
     if (
-      (needToUpdate || syncCount === 0) &&
       user &&
       token &&
       !isSyncing &&
       segments.length < 5 &&
       segments.includes('(tabs)')
     ) {
-      syncData(user.login, token).catch((err: Error) => {
-        console.log(err)
-        toast.show({
-          render: () => <Toast.Error>{err.message}</Toast.Error>,
+      if (db.checkNeedToUpdate() || syncCount === 0) {
+        syncData(user.login, token).catch((err: Error) => {
+          console.log(err)
+          toast.show({
+            render: () => <Toast.Error>{err.message}</Toast.Error>,
+          })
         })
-      })
+      }
     }
-  }, [isConnected, needToUpdate, user, token])
-
-  useEffect(() => {
-    setNeedToUpdate(db.checkNeedToUpdate())
-  }, [segments])
+  }, [isConnected, counter, user, token])
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setNeedToUpdate(db.checkNeedToUpdate())
+      setCounter((prev) => prev + 1)
     }, 30000)
     return () => clearInterval(interval)
   }, [])
