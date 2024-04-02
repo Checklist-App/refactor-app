@@ -22,6 +22,7 @@ export const useConnection = create<ConnectionStore>((set) => {
           )
         })
         .catch((err: AxiosError) => {
+          console.log('Erro ao estabilizar conexão')
           console.log(err.request)
           set({ isConnected: false })
         })

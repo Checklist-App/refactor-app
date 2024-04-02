@@ -52,7 +52,7 @@ export default function Page() {
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item, index }) => (
           <ChecklistItem
-            key={item.id + Math.random() * 100000 + '-' + index}
+            key={Math.random() * 100000 + '-' + index}
             checklist={item}
           />
         )}

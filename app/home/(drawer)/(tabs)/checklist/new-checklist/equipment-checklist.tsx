@@ -10,7 +10,7 @@ import { useSyncStatus } from '@/src/store/syncStatus'
 import { Equipment } from '@/src/types/Equipment'
 import { Period } from '@/src/types/Period'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { router } from 'expo-router'
+import { Link, router } from 'expo-router'
 import { useToast } from 'native-base'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -46,19 +46,39 @@ export default function NewChecklist() {
     handleSubmit,
     formState: { isSubmitting },
     watch,
+    setValue,
   } = newCheckListForm
   const { user } = useAuth()
   const { color } = useTheme()
   const { createChecklist, updateAnswering } = useChecklist()
-  const { equipments } = useEquipments()
+  const { equipments, loadEquipments, equipmentId, updateEquipmentId } =
+    useEquipments()
   const { isSyncing } = useSyncStatus()
   const toast = useToast()
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(
     null,
   )
-
   const periods: Period[] = db.retrieveReceivedData(user.login, '/@periods')
   const models = db.retrieveModels(user.login)
+  const equipmentValue = watch('equipment')
+
+  useEffect(() => {
+    updateEquipmentId(null)
+  }, [])
+
+  useEffect(() => {
+    if (equipmentValue) {
+      setSelectedEquipment(
+        equipments.find((equipment) => equipment.id === Number(equipmentValue)),
+      )
+    }
+  }, [equipmentValue])
+
+  useEffect(() => {
+    if (equipmentId) {
+      setValue('equipment', String(equipmentId))
+    }
+  }, [equipmentId])
 
   async function handleNewChecklist(data: NewChecklistData) {
     if (!user) {
@@ -93,17 +113,8 @@ export default function NewChecklist() {
     }
   }
 
-  const equipmentValue = watch('equipment')
-
-  useEffect(() => {
-    if (equipmentValue) {
-      setSelectedEquipment(
-        equipments.find((equipment) => equipment.id === Number(equipmentValue)),
-      )
-    }
-  }, [equipmentValue])
-
-  if (!equipments || !equipments?.length) {
+  if (!equipments) {
+    loadEquipments(user.login)
     return (
       <ContainerLoading>
         <ActivityIndicator size={80} color={color['violet-500']} />
@@ -114,17 +125,26 @@ export default function NewChecklist() {
     )
   }
 
+  if (!equipments?.length) {
+    return (
+      <ContainerLoading>
+        <ActivityIndicator size={80} color={color['violet-500']} />
+        <LoadingText>Não há equipamentos vinculados a essa filial.</LoadingText>
+      </ContainerLoading>
+    )
+  }
+
   return (
     <KeyboardCoverPrevent>
       <Container>
         <Header>
           <Title>Novo Checklist</Title>
 
-          {/* <Link asChild href="/qrcode-scanner">
+          <Link asChild href="/qrcode-scanner?mode=equipment">
             <Button.Trigger rounded onlyIcon>
               <Button.Icon.QrCode />
             </Button.Trigger>
-          </Link> */}
+          </Link>
         </Header>
 
         <FormProvider {...newCheckListForm}>

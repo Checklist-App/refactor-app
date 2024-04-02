@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios'
 import { create } from 'zustand'
 import { api } from '../libs/api'
 import db from '../libs/database'
@@ -47,7 +48,6 @@ export const useActions = create<ActionsData>((set, get) => {
     createNewAction: ({ ...props }) => {
       const newAction: Action = {
         id: Number(new Date().getTime()),
-        checklistId: props.checklistId,
         checklistPeriodId: props.checklistPeriodId,
         title: props.title,
         description: props.description,
@@ -113,7 +113,6 @@ export const useActions = create<ActionsData>((set, get) => {
         for await (const action of receivedActions) {
           actions.push({
             id: action.id,
-            checklistId: action.id_registro_producao,
             checklistPeriodId: action.id_item,
             title: action.descricao,
             description: action.descricao_acao,
@@ -164,7 +163,6 @@ export const useActions = create<ActionsData>((set, get) => {
           for await (const action of actions) {
             const updatedAction = { ...action }
             const postAction = {
-              checklistId: action.checklistId,
               checklistPeriodId: action.checklistPeriodId,
               description: action.description,
               dueDate: action.dueDate,
@@ -192,7 +190,12 @@ export const useActions = create<ActionsData>((set, get) => {
                   }
                 })
                 .catch((err) => {
-                  console.log(err)
+                  if (err instanceof AxiosError) {
+                    console.log(err.response?.data)
+                  } else {
+                    console.log(err)
+                  }
+                  console.log(postAction)
                   throw new Error(`Erro ao enviar ação de id ${action.id}`)
                 })
             } else {
