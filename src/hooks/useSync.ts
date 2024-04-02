@@ -65,8 +65,18 @@ export function useSync(): SyncData {
 
   async function syncData(login: string, token: string) {
     console.log('sync data')
-    await syncChecklists(login, token).then(() => increaseDoneRequests())
-    await syncActions(login, token).then(() => increaseDoneRequests())
+    await syncChecklists(login, token)
+      .then(() => increaseDoneRequests())
+      .catch((err) => {
+        console.log('Erro ao sincronizar checklists')
+        console.log(err)
+      })
+    await syncActions(login, token)
+      .then(() => increaseDoneRequests())
+      .catch((err) => {
+        console.log('Erro ao sincronizar ações')
+        console.log(err)
+      })
   }
 
   async function clearImagesIfNeeded() {

@@ -20,11 +20,15 @@ export default function QrCodeScanner() {
     console.log(locations.map((item) => item.id))
     if (mode === 'equipment') {
       const foundEquipment = equipments.find((eq) => eq.id === Number(data))
-      if (!foundEquipment) return
+      if (!foundEquipment) {
+        return alert('Nenhum equipamento encontrado')
+      }
       updateEquipmentId(Number(data))
     } else if (mode === 'location') {
       const foundLocation = locations.find((item) => item.id === Number(data))
-      if (!foundLocation) return
+      if (!foundLocation) {
+        return alert('Nenhuma inspeção encontrada')
+      }
       updateLocation(Number(data))
     } else {
       return

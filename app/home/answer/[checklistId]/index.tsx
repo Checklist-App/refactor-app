@@ -48,6 +48,17 @@ export default function AnswerPage() {
     ChecklistPeriodImage[]
   >([])
 
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     console.log({
+  //       checklistId,
+  //       currentChecklist,
+  //       allChecklists,
+  //     })
+  //   }, 6000)
+  //   return () => clearInterval(interval)
+  // }, [])
+
   useEffect(() => {
     if (allChecklists && checklistId) {
       const found = allChecklists.find(

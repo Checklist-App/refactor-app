@@ -8,14 +8,12 @@ import { Toast } from '@/src/components/Toast'
 import { useActions } from '@/src/store/actions'
 import { useCamera } from '@/src/store/camera'
 import { useChecklist } from '@/src/store/checklist'
-import { useEquipments } from '@/src/store/equipments'
 import { useResponsibles } from '@/src/store/responsibles'
 import { Action } from '@/src/types/Action'
 import {
   ChecklistPeriod,
   ChecklistPeriodImage,
 } from '@/src/types/ChecklistPeriod'
-import { Equipment } from '@/src/types/Equipment'
 import { zodResolver } from '@hookform/resolvers/zod'
 import dayjs from 'dayjs'
 import { Link, router, useLocalSearchParams } from 'expo-router'
@@ -23,7 +21,7 @@ import { ScrollView, useToast } from 'native-base'
 import { XCircle } from 'phosphor-react-native'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { Alert, BackHandler, Dimensions } from 'react-native'
+import { Alert, BackHandler } from 'react-native'
 import { z } from 'zod'
 import { ListImages } from '../../checklist/edit-checklist/[checklistId]/CardImage'
 import {
@@ -45,7 +43,6 @@ import {
   StatusText,
   SubTitleRow,
   Title,
-  TitleText,
 } from './styles'
 
 const editActionSchema = z.object({
@@ -64,14 +61,14 @@ export default function ActionScreen() {
   const { allChecklists } = useChecklist()
   const { actions, updateAction } = useActions()
   const { currentImages } = useCamera()
-  const { equipments } = useEquipments()
+  // const { equipments } = useEquipments()
   const { responsibles } = useResponsibles()
   const { actionId } = useLocalSearchParams()
   const toast = useToast()
   const [currentAction, setCurrentAction] = useState<Action | null>(null)
-  const [currentEquipment, setCurrentEquipment] = useState<Equipment | null>(
-    null,
-  )
+  // const [currentEquipment, setCurrentEquipment] = useState<Equipment | null>(
+  //   null,
+  // )
   const [currentPeriod, setCurrentPeriod] = useState<ChecklistPeriod | null>(
     null,
   )
@@ -79,8 +76,8 @@ export default function ActionScreen() {
   const [isAnswering, setIsAnswering] = useState(false)
   const [images, setImages] = useState<ChecklistPeriodImage[]>([])
 
-  const deviceWidth = Dimensions.get('window').width
-  const isSmallDevice = deviceWidth < 400
+  // const deviceWidth = Dimensions.get('window').width
+  // const isSmallDevice = deviceWidth < 400
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () =>
@@ -119,14 +116,14 @@ export default function ActionScreen() {
         }
       }
 
-      const equipment = equipments?.find(
-        (item) => item.id === currentAction.equipmentId,
-      )
-      if (equipment) {
-        setCurrentEquipment(equipment)
-      }
+      // const equipment = equipments?.find(
+      //   (item) => item.id === currentAction.equipmentId,
+      // )
+      // if (equipment) {
+      //   setCurrentEquipment(equipment)
+      // }
     }
-  }, [currentAction, allChecklists, equipments])
+  }, [currentAction, allChecklists])
 
   useEffect(() => {
     if (currentImages && currentAction) {
@@ -190,7 +187,7 @@ export default function ActionScreen() {
     }
   }
 
-  if (!currentAction || !currentEquipment || !currentPeriod) {
+  if (!currentAction || !currentPeriod) {
     return (
       <Container>
         <Loading />
@@ -206,9 +203,9 @@ export default function ActionScreen() {
             <IconContainer>
               <XCircle color="white" />
             </IconContainer>
-            <TitleText isSmallDevice={isSmallDevice}>
+            {/* <TitleText isSmallDevice={isSmallDevice}>
               {currentEquipment.code} - {currentEquipment.description}
-            </TitleText>
+            </TitleText> */}
           </Title>
           <Button.Trigger
             rounded

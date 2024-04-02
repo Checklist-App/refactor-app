@@ -49,6 +49,7 @@ export default function HomeLayout() {
 
   useEffect(() => {
     if (
+      isConnected &&
       user &&
       token &&
       !isSyncing &&

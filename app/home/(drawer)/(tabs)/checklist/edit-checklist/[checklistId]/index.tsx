@@ -64,6 +64,16 @@ export default function EditChecklist() {
   const [showModal, setShowModal] = useState(false)
   const [modalData, setModalData] = useState<ModalData | null>(null)
 
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     console.log({
+  //       checklistId,
+  //       currentChecklist,
+  //     })
+  //   }, 6000)
+  //   return () => clearInterval(interval)
+  // }, [])
+
   useEffect(() => {
     if (allChecklists) {
       const found = allChecklists.find(

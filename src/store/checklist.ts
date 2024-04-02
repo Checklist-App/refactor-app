@@ -288,7 +288,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
 
     updateChecklistSync: ({ newId, oldId, syncStatus }) => {
       const checklists = get().allChecklists
-      const storedActions = db.retrieveActions(db.retrieveLastUser().login)
+      // const storedActions = db.retrieveActions(db.retrieveLastUser().login)
 
       const newChecklists: Checklist[] = []
       const newActions: Action[] = []
@@ -301,12 +301,12 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         newChecklists.push(checklist)
       })
 
-      storedActions.forEach((action) => {
-        if (action.checklistId === oldId) {
-          action.checklistId = newId
-        }
-        newActions.push(action)
-      })
+      // storedActions.forEach((action) => {
+      //   if (action.checklistId === oldId) {
+      //     action.checklistId = newId
+      //   }
+      //   newActions.push(action)
+      // })
 
       db.storeChecklists(newChecklists)
       db.storeActions(newActions)
@@ -315,7 +315,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
 
     updatePeriodSync: ({ newId, oldId, productionRegisterId, syncStatus }) => {
       const checklists = get().allChecklists
-      const storedActions = db.retrieveActions(db.retrieveLastUser().login)
+      // const storedActions = db.retrieveActions(db.retrieveLastUser().login)
 
       const newChecklists: Checklist[] = []
       const newActions: Action[] = []
@@ -334,12 +334,12 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         newChecklists.push(checklist)
       })
 
-      storedActions.forEach((action) => {
-        if (action.checklistPeriodId === oldId) {
-          action.checklistId = newId
-        }
-        newActions.push(action)
-      })
+      // storedActions.forEach((action) => {
+      //   if (action.checklistPeriodId === oldId) {
+      //     action.checklistId = newId
+      //   }
+      //   newActions.push(action)
+      // })
 
       db.storeChecklists(newChecklists)
       db.storeActions(newActions)
@@ -348,41 +348,46 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
 
     loadImages: async (checklists) => {
       console.log('load images')
-      const newChecklists: Checklist[] = []
-      const storedChecklists = db.retrieveChecklists(
-        db.retrieveLastUser().login,
-      )
-      for await (const checklist of checklists) {
-        const newPeriods: ChecklistPeriod[] = []
-        const matchChecklist = storedChecklists.find(
-          (item) => item.id === checklist.id,
+      try {
+        const newChecklists: Checklist[] = []
+        const storedChecklists = db.retrieveChecklists(
+          db.retrieveLastUser().login,
         )
-        for await (const period of checklist.checklistPeriods) {
-          const newImages: { name: string; url: string; path: string }[] = []
-          const matchPeriod = matchChecklist?.checklistPeriods.find(
-            (item) => item.id === period.id,
+        for await (const checklist of checklists) {
+          const newPeriods: ChecklistPeriod[] = []
+          const matchChecklist = storedChecklists.find(
+            (item) => item.id === checklist.id,
           )
-          for await (const img of period.img) {
-            const matchImg = matchPeriod?.img.find(
-              (item) => item.name === img.name,
+          for await (const period of checklist.checklistPeriods) {
+            const newImages: { name: string; url: string; path: string }[] = []
+            const matchPeriod = matchChecklist?.checklistPeriods.find(
+              (item) => item.id === period.id,
             )
-            if (matchImg?.path) {
-              console.log('Imagem ja baixada')
+            for await (const img of period.img) {
+              const matchImg = matchPeriod?.img.find(
+                (item) => item.name === img.name,
+              )
+              if (matchImg?.path) {
+                console.log('Imagem ja baixada')
+              }
+              if (img.url && !matchImg?.path) {
+                const newImgPath = await downloadImage(img.url)
+                newImages.push({ ...img, path: newImgPath })
+              } else {
+                newImages.push(img)
+              }
             }
-            if (img.url && !matchImg?.path) {
-              const newImgPath = await downloadImage(img.url)
-              newImages.push({ ...img, path: newImgPath })
-            } else {
-              newImages.push(img)
-            }
+            newPeriods.push({ ...period, img: newImages })
           }
-          newPeriods.push({ ...period, img: newImages })
+          newChecklists.push({ ...checklist, checklistPeriods: newPeriods })
         }
-        newChecklists.push({ ...checklist, checklistPeriods: newPeriods })
-      }
-      console.log('terminou load images')
+        console.log('terminou load images')
 
-      db.storeChecklists(newChecklists)
+        db.storeChecklists(newChecklists)
+      } catch (err) {
+        console.log('Erro ao carregar imagens')
+        throw err
+      }
     },
 
     generateChecklists: (user) => {
@@ -448,6 +453,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
     },
 
     syncChecklists: async (user, token) => {
+      console.log('Sync checklists')
       try {
         const storedChecklists = db.retrieveChecklists(user)
         if (!storedChecklists) {
@@ -496,104 +502,117 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
               }
             }
 
-            try {
-              await requestMethod()
-                .then((res) => res.data)
-                .then((data: { id: number }) => {
-                  get().updateChecklistSync({
-                    oldId: checklist.id,
-                    newId: data.id,
-                    syncStatus: 'synced',
-                  })
-
-                  return data.id
-                })
-                .then(async (newId) => {
-                  for await (const checklistPeriod of checklist.checklistPeriods) {
-                    if (checklistPeriod.syncStatus !== 'synced') {
-                      console.log(
-                        `Enviando checklistPeriod de id ${checklistPeriod.id}...`,
-                      )
-                      await api
-                        .post(
-                          '/sync/checkListPeriod',
-                          {
-                            type: checklistPeriod.syncStatus,
-                            checkListPeriod: {
-                              _id: String(checklistPeriod.id),
-                              id: checklistPeriod.id,
-                              branchId: checklistPeriod.branchId,
-                              productionRegisterId: newId || checklist.id,
-                              checkListItemId: checklistPeriod.checklistItemId,
-                              statusItem: checklistPeriod.statusId || 0,
-                              statusNC: checklistPeriod.statusNC || 0,
-                              logDate: new Date().toISOString(),
-                              observation: '',
-                              img: checklistPeriod.img,
-                              actions: [],
-                            },
-                          },
-                          options,
-                        )
-                        .then((res) => res.data)
-                        .then(async (insertedPeriod: { id: number }) => {
-                          get().updatePeriodSync({
-                            newId: insertedPeriod.id,
-                            oldId: checklistPeriod.id,
-                            productionRegisterId: newId,
-                            syncStatus: 'synced',
-                          })
-                          try {
-                            for (const img of checklistPeriod.img) {
-                              if (img.url === '') {
-                                await uploadSingleImage({
-                                  img,
-                                  route: 'image/upload',
-                                  id: insertedPeriod.id,
-                                  token,
-                                })
-                              }
-                            }
-                          } catch (err) {
-                            console.log(err)
-                            throw new Error('Erro ao enviar imagens ')
-                          }
+            await requestMethod()
+              .then((res) => res.data)
+              .then(async ({ id: newId }: { id: number }) => {
+                console.log('Checklist enviado')
+                for await (const checklistPeriod of checklist.checklistPeriods) {
+                  if (checklistPeriod.syncStatus !== 'synced') {
+                    console.log(
+                      `Enviando checklistPeriod de id ${checklistPeriod.id}...`,
+                    )
+                    const period = {
+                      type: checklistPeriod.syncStatus,
+                      checkListPeriod: {
+                        _id: String(checklistPeriod.id),
+                        id: checklistPeriod.id,
+                        branchId: checklistPeriod.branchId,
+                        productionRegisterId: newId || checklist.id,
+                        checkListItemId: checklistPeriod.checklistItemId,
+                        statusItem: checklistPeriod.statusId || 0,
+                        statusNC: checklistPeriod.statusNC,
+                        logDate: new Date().toISOString(),
+                        observation: '',
+                      },
+                    }
+                    await api
+                      .post('/sync/checkListPeriod', period, options)
+                      .then((res) => res.data)
+                      .then(async (insertedPeriod: { id: number }) => {
+                        get().updatePeriodSync({
+                          newId: insertedPeriod.id,
+                          oldId: checklistPeriod.id,
+                          productionRegisterId: newId,
+                          syncStatus: 'synced',
                         })
-                        .catch((err) => {
-                          console.log(err)
+                        try {
+                          for (const img of checklistPeriod.img) {
+                            if (img.url === '') {
+                              await uploadSingleImage({
+                                img,
+                                route: 'image/upload',
+                                id: insertedPeriod.id,
+                                token,
+                              })
+                            }
+                          }
+                        } catch (err) {
+                          console.log(
+                            'Erro ao enviar imagem para rota /image/upload',
+                          )
+                          if (err instanceof AxiosError) {
+                            throw err
+                          } else {
+                            throw new Error('Erro ao enviar imagens')
+                          }
+                        }
+                      })
+                      .catch((err) => {
+                        console.log('Erro ao subir esse checklist:')
+                        console.log(period)
+                        if (err instanceof AxiosError) {
+                          throw err
+                        } else {
                           throw new Error(
                             'Erro ao enviar checklistPeriod para rota',
                           )
-                        })
-                    }
+                        }
+                      })
                   }
-                })
-                .then(() => {
-                  get().setChecklistLoadingId(0)
-                })
-            } catch (err) {
-              const error: AxiosError = err
-              const errorMessage = error.response?.data
-                ? JSON.stringify(error.response.data)
-                : JSON.stringify(err)
-              get().setChecklistLoadingId(0)
-              console.log(errorMessage)
-              console.log('Checklist que não subiu: ')
-              console.log(JSON.stringify(checklist, null, 2))
-              const erroredChecklist = get().findChecklist(checklist.id)
-              get().updateChecklist({
-                ...erroredChecklist,
-                error: errorMessage,
-              })
-              throw new Error('Teve erro no checklist ' + checklist.id)
-            }
-          }
+                }
 
-          console.log('terminou de enviar')
+                return newId
+              })
+              .then((newId) => {
+                get().updateChecklistSync({
+                  oldId: checklist.id,
+                  newId,
+                  syncStatus: 'synced',
+                })
+              })
+
+              .then(() => {
+                get().setChecklistLoadingId(0)
+              })
+              .catch((err) => {
+                console.log(err)
+                const erroredChecklist = get().findChecklist(checklist.id)
+                if (err instanceof AxiosError) {
+                  console.log(err.response?.data)
+                  get().updateChecklist({
+                    ...erroredChecklist,
+                    error: err.response.data?.message,
+                  })
+                } else {
+                  get().updateChecklist({
+                    ...erroredChecklist,
+                    error: 'unknown',
+                  })
+                }
+                get().setChecklistLoadingId(0)
+                console.log('Checklist que não subiu: ')
+                console.log(checklist)
+
+                throw new Error('Teve erro no checklist ' + checklist.id)
+              })
+          }
         } else {
+          console.log('Sem checklists')
           return get().loadImages(get().generateChecklists(user))
         }
       } catch (err) {
+        console.log('Erro na sincronização dos checklists')
+        get().setChecklistLoadingId(0)
         console.log(err)
       }
     },

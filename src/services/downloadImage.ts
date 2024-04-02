@@ -10,7 +10,10 @@ export async function downloadImage(imageUrl: string) {
       .then((res) => res.uri)
       .then((uri) => saveFile(uri))
       .then(() => resolve(fileUri))
-      .catch((err) => reject(err))
+      .catch((err) => {
+        console.log(`Erro ao baixar imagem de ${imageUrl} para ${fileUri}`)
+        reject(err)
+      })
   })
 }
 
