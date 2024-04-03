@@ -1,6 +1,7 @@
 import { Button } from '@/src/components/Button'
 import { Loading } from '@/src/components/Loading'
 import { Toast } from '@/src/components/Toast'
+import db from '@/src/libs/database'
 import { useChecklist } from '@/src/store/checklist'
 import { useEquipments } from '@/src/store/equipments'
 import { useLocations } from '@/src/store/location'
@@ -52,7 +53,7 @@ export interface ModalData {
 }
 
 export default function EditChecklist() {
-  const { allChecklists } = useChecklist()
+  const { allChecklists, loadChecklists } = useChecklist()
   const { checklistId } = useLocalSearchParams()
   const toast = useToast()
   const [currentChecklist, setCurrentChecklist] = useState<Checklist | null>(
@@ -64,13 +65,18 @@ export default function EditChecklist() {
   const [showModal, setShowModal] = useState(false)
   const [modalData, setModalData] = useState<ModalData | null>(null)
 
+  useEffect(() => {
+    loadChecklists(db.retrieveLastUser().login)
+  }, [])
+
   // useEffect(() => {
   //   const interval = setInterval(() => {
   //     console.log({
   //       checklistId,
-  //       currentChecklist,
+  //       periods: currentChecklist?.checklistPeriods,
+  //       // currentChecklist,
   //     })
-  //   }, 6000)
+  //   }, 15000)
   //   return () => clearInterval(interval)
   // }, [])
 

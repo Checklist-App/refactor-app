@@ -259,6 +259,7 @@ export default function AnswerPage() {
   }
 
   if (!currentChecklist) {
+    // console.log(checklistId)
     return (
       <Container>
         <Loading />

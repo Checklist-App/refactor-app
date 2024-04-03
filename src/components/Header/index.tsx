@@ -5,7 +5,6 @@ import { useSyncStatus } from '@/src/store/syncStatus'
 import { DrawerActions } from '@react-navigation/native'
 import { router, useNavigation, useSegments } from 'expo-router'
 import { useToast } from 'native-base'
-import { useEffect } from 'react'
 import { Button } from '../Button'
 import { Toast } from '../Toast'
 import { WifiIndicator } from '../WifiIndicator'
@@ -24,10 +23,6 @@ export function Header() {
     if (!router.canGoBack()) return
     router.back()
   }
-
-  useEffect(() => {
-    console.log(segments)
-  }, [segments])
 
   async function handleSync() {
     if (!isConnected) {
