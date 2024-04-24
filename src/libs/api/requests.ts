@@ -270,6 +270,8 @@ export async function fetchActions(login: string, token: string) {
       })
       .then((response) => response.data)
       .then((data: object) => {
+        console.log(`REQUEST ACTIONS: ${JSON.stringify(data, null, 2)}`)
+
         db.storeReceivedData(login + '/@actions', data)
         resolve()
       })

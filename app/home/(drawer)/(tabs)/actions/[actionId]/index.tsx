@@ -93,6 +93,8 @@ export default function ActionScreen() {
       setCurrentAction(action)
     }
   }, [actions, actionId])
+  // console.log('ACTION', currentAction)
+  // console.log('CHECKLISTS', allChecklists)
 
   useEffect(() => {
     if (currentAction) {
@@ -104,17 +106,22 @@ export default function ActionScreen() {
         setValue('endDate', new Date(currentAction.endDate))
       }
 
-      const checklist = allChecklists.find(
-        (item) => item.id === currentAction.checklistId,
-      )
-      if (checklist) {
-        const period = checklist.checklistPeriods.find(
-          (item) => item.id === currentAction.checklistPeriodId,
-        )
-        if (period) {
-          setCurrentPeriod(period)
-        }
-      }
+      const period = allChecklists
+        .map(({ checklistPeriods }) => checklistPeriods)
+        .flat()
+        .find((item) => item.id === currentAction.checklistPeriodId)
+      setCurrentPeriod(period)
+
+      // console.log(checklist)
+
+      // if (checklist) {
+      //   const period = checklist.checklistPeriods.find(
+      //     (item) => item.id === currentAction.checklistPeriodId,
+      //   )
+      //   if (period) {
+      //     setCurrentPeriod(period)
+      //   }
+      // }
 
       // const equipment = equipments?.find(
       //   (item) => item.id === currentAction.equipmentId,
@@ -186,6 +193,8 @@ export default function ActionScreen() {
       return true
     }
   }
+
+  console.log(`ACTION: ${currentAction} PERIOD: ${currentPeriod}`)
 
   if (!currentAction || !currentPeriod) {
     return (

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Smartlist",
-    "slug": "checklist-app",
+    "slug": "checklist",
     "version": "2.4.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -52,7 +52,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "0f24ff88-44f1-4885-a8aa-4431fbb56f8b"
+        "projectId": "0c372d90-e2e0-411f-8371-3a4f510a2693"
       }
     },
     "experiments": {

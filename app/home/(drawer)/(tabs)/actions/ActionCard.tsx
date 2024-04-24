@@ -16,6 +16,9 @@ import {
 } from './styles'
 
 export function ActionCard({ action }: { action: Action }) {
+  console.log(action.startDate, action.endDate, action.dueDate)
+  console.log(dayjs(action.endDate).isBefore(action.dueDate))
+
   return (
     <ActionCardView>
       <Link asChild href={`/home/actions/${action.id}`}>
@@ -27,11 +30,11 @@ export function ActionCard({ action }: { action: Action }) {
         <ActionCardBody>
           <StatusContainer>
             <StatusText>
-              {action.endDate
-                ? dayjs(action.endDate).isBefore(action.dueDate)
-                  ? 'CONCLUÍDO'
-                  : 'VENCIDO'
-                : 'ABERTO'}
+              {dayjs(action.dueDate).isAfter(action.startDate)
+                ? 'CONCLUÍDO'
+                : dayjs(action.endDate).isBefore(dayjs())
+                  ? 'VENCIDO'
+                  : 'ABERTO'}
             </StatusText>
           </StatusContainer>
           <ActionCardTitle>{action.title}</ActionCardTitle>

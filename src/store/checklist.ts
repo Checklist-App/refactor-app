@@ -176,16 +176,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         ) {
           if (
             checklist.period?.id === period?.id &&
-            dayjs(checklist.initialTime).isAfter(
-              dayjs(new Date()).subtract(1, 'day'),
-            )
-          ) {
-            throw new Error(
-              'Já existe um checklist para esse registro nesse turno',
-            )
-          } else if (
-            dayjs(checklist.initialTime).isAfter(
-              dayjs(new Date()).subtract(1, 'day'),
+            dayjs(dayjs(checklist.initialTime).format('YYYY-MM-DD')).isSame(
+              dayjs().format('YYYY-MM-DD'),
             )
           ) {
             throw new Error(

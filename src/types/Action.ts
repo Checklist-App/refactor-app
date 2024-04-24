@@ -4,6 +4,7 @@ export interface Action {
   responsible: string
   description: string
   checklistPeriodId: number
+  checklistId: number
   startDate: Date
   dueDate: Date
   endDate: Date | null
@@ -19,6 +20,7 @@ export interface ReceivedAction {
   id: number
   id_grupo: number
   id_item: number
+  id_checklist: number
   descricao: string
   responsavel: string
   data_inicio: string

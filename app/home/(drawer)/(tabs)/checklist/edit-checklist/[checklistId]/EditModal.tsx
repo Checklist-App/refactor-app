@@ -26,6 +26,7 @@ export function EditModal({
   modalData,
 }: EditModalProps) {
   const { actions } = useActions()
+  console.log(actions)
 
   function handleEditAsk() {
     setShowModal(false)
@@ -69,7 +70,12 @@ export function EditModal({
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: 8 }}
-            renderItem={({ item }) => <CardImage src={item?.path} size={100} />}
+            renderItem={({ item }) => (
+              <CardImage
+                src={item?.url.length > 0 ? item?.url : item?.path}
+                size={100}
+              />
+            )}
           />
           <ModalButtons>
             {modalData.option?.action ? (

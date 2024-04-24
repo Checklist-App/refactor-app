@@ -1,3 +1,4 @@
+import { MotiView } from 'moti'
 import styled from 'styled-components/native'
 
 export const Container = styled.View`
@@ -13,7 +14,7 @@ export const IndicatorContainer = styled.View`
   overflow: hidden;
 `
 
-export const IndicatorThumb = styled.View<{ width: string }>`
+export const IndicatorThumb = styled(MotiView)<{ width: string }>`
   background-color: ${({ theme }) => theme.color['violet-500']};
   height: 8px;
   width: ${({ width }) => width};

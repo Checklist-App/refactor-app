@@ -120,7 +120,7 @@ export default function EditChecklist() {
           } catch (err) {
             toast.show({
               render: () => (
-                <Toast.Error>Não foi possivel salvar o checklist</Toast.Error>
+                <Toast.Error>Não foi possível salvar o checklist</Toast.Error>
               ),
             })
             console.log(err)
@@ -230,13 +230,17 @@ export default function EditChecklist() {
                 <ListImages images={item.img} size={64} />
               ) : (
                 <CardImages>
-                  {item.img.map((img, index) => (
-                    <CardImage
-                      src={img.path}
-                      size={64}
-                      key={img.name + '-' + index}
-                    />
-                  ))}
+                  {item.img.map((img, index) => {
+                    const src = img.url.length > 0 ? img.url : img.path
+
+                    return (
+                      <CardImage
+                        src={src}
+                        size={64}
+                        key={img.name + '-' + index}
+                      />
+                    )
+                  })}
                 </CardImages>
               )
             ) : (

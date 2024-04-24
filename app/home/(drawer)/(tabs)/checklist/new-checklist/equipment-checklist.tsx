@@ -212,7 +212,7 @@ export default function NewChecklist() {
                       />
                     ))}
               </Form.Select>
-              <Form.ErrorMessage field="period" />
+              <Form.ErrorMessage field="model" />
             </Form.Field>
 
             <ButtonsContent>

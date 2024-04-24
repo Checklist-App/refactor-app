@@ -49,6 +49,7 @@ export const useActions = create<ActionsData>((set, get) => {
       const newAction: Action = {
         id: Number(new Date().getTime()),
         checklistPeriodId: props.checklistPeriodId,
+        checklistId: props.checklistId,
         title: props.title,
         description: props.description,
         startDate: new Date(),
@@ -114,6 +115,7 @@ export const useActions = create<ActionsData>((set, get) => {
           actions.push({
             id: action.id,
             checklistPeriodId: action.id_item,
+            checklistId: action.id_checklist,
             title: action.descricao,
             description: action.descricao_acao,
             startDate: new Date(action.data_inicio),
@@ -132,7 +134,7 @@ export const useActions = create<ActionsData>((set, get) => {
         }
         db.storeActions(actions)
         if (!actions.length) {
-          console.log('Nenuma ação')
+          console.log('Nenhuma ação')
         }
       } catch (err) {
         console.log('Erro ao gerar ações')
@@ -165,6 +167,7 @@ export const useActions = create<ActionsData>((set, get) => {
             const postAction = {
               checklistPeriodId: action.checklistPeriodId,
               description: action.description,
+              checklistId: action.checklistId,
               dueDate: action.dueDate,
               endDate: action.endDate,
               responsible: action.responsible,

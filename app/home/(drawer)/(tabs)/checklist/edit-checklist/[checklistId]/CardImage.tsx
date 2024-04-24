@@ -57,7 +57,11 @@ export function ListImages({ images, size }: ListImageProps) {
   return (
     <CardImages>
       {images.slice(0, 3).map((img, index) => (
-        <CardImage size={size} src={img.path} key={img.name + '-' + index} />
+        <CardImage
+          size={size}
+          src={img?.url.length > 0 ? img?.url : img?.path}
+          key={img.name + '-' + index}
+        />
       ))}
       {images.length > 3 && (
         <MoreImages

@@ -30,7 +30,7 @@ export function QuestionPaginator({
       </Button.Trigger>
       <IndicatorContainer>
         <IndicatorThumb
-          width={`${(currentQuestionIndex * 100) / numberOfQuestions}%`}
+          width={`${((currentQuestionIndex + 1) * 100) / numberOfQuestions}%`}
         />
       </IndicatorContainer>
       <PaginationText>

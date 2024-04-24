@@ -246,7 +246,7 @@ export default function CameraPage() {
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <Image
             source={{
-              uri: modalImage?.image?.uri,
+              uri: modalImage?.image?.path,
             }}
             style={{
               width: '100%',
