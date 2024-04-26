@@ -26,6 +26,7 @@ import { useSyncStatus } from '../store/syncStatus'
 
 interface SyncData {
   syncData: (login: string, token: string) => Promise<void>
+  requestData: (login: string, token: string) => Promise<void>
 }
 
 export function useSync(): SyncData {
@@ -41,7 +42,7 @@ export function useSync(): SyncData {
   async function requestData(login: string, token: string) {
     if (isConnected) {
       console.log('request data')
-      return await Promise.all([
+      await Promise.all([
         fetchChecklists(login, token).then(() => increaseDoneRequests()),
         fetchEquipments(login, token).then(() => increaseDoneRequests()),
         fetchTasks(login, token).then(() => increaseDoneRequests()),
@@ -110,5 +111,6 @@ export function useSync(): SyncData {
           loadResponsibles(login)
         })
     },
+    requestData,
   }
 }

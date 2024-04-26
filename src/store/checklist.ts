@@ -460,7 +460,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         if (checklists.length) {
           const options = {
             headers: {
-              Authorization: `bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
           }
 

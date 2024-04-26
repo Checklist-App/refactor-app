@@ -16,9 +16,6 @@ import {
 } from './styles'
 
 export function ActionCard({ action }: { action: Action }) {
-  console.log(action.startDate, action.endDate, action.dueDate)
-  console.log(dayjs(action.endDate).isBefore(action.dueDate))
-
   return (
     <ActionCardView>
       <Link asChild href={`/home/actions/${action.id}`}>

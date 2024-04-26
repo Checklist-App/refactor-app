@@ -51,29 +51,24 @@ export const useAuth = create<AuthStore>((set, get) => {
         token,
         user,
       })
+
       db.storeToken(token)
       db.storeUser(user)
-      api.interceptors.request.use(
-        (config) => {
-          config.headers.Authorization = `Bearer ${token}`
-          return config
-        },
-        (error) => {
-          return Promise.reject(error)
-        },
-      )
     },
 
     login: async (data) => {
       await api
         .post('/public/login', data)
         .then((res) => res.data)
-        .then((response: LoginResponse) => {
-          get().storeAuth(response.token, {
+        .then(async (response: LoginResponse) => {
+          const user = {
             ...response.user,
             password: data.pass,
             token: response.token,
-          })
+          }
+          api.defaults.headers.common.Authorization = `Bearer ${user.token}`
+
+          get().storeAuth(response.token, user)
         })
         .catch(() => {
           throw new Error('Credenciais inválidas')
@@ -105,6 +100,7 @@ export const useAuth = create<AuthStore>((set, get) => {
     logout: () => {
       set({ user: null, token: null })
       db.deleteKey('activeToken')
+      api.defaults.headers.common.Authorization = ''
     },
   }
 })

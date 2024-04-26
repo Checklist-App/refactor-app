@@ -48,6 +48,8 @@ export async function fetchChecklists(login: string, token: string) {
       })
       .then((response) => response.data)
       .then((data: ReceivedChecklist[]) => {
+        console.log(`CHECKLIST RESPONSE: ${JSON.stringify(data, null, 2)}`)
+
         db.storeReceivedData(login + '/@checklistSchemas', data)
         resolve()
       })
@@ -67,7 +69,7 @@ export async function fetchPeriods(login: string, token: string) {
     api
       .get(route, {
         headers: {
-          Authorization: `bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => response.data)
@@ -91,7 +93,7 @@ export async function fetchTasks(login: string, token: string) {
     api
       .get(route, {
         headers: {
-          Authorization: `bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => response.data)
@@ -115,7 +117,7 @@ export async function fetchChecklistItems(login: string, token: string) {
     api
       .get(route, {
         headers: {
-          Authorization: `bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => response.data)
@@ -139,7 +141,7 @@ export async function fetchCheckListPeriods(login: string, token: string) {
     api
       .get(route, {
         headers: {
-          Authorization: `bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => response.data)
@@ -163,7 +165,7 @@ export async function fetchChecklistProductions(login: string, token: string) {
     api
       .get(route, {
         headers: {
-          Authorization: `bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => response.data)
@@ -187,7 +189,7 @@ export async function fetchChecklistStatuses(login: string, token: string) {
     api
       .get(route, {
         headers: {
-          Authorization: `bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => response.data)
@@ -214,7 +216,7 @@ export async function fetchChecklistStatusActions(
     api
       .get(route, {
         headers: {
-          Authorization: `bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => response.data)
@@ -241,7 +243,7 @@ export async function fetchControlIds(login: string, token: string) {
     api
       .get(route, {
         headers: {
-          Authorization: `bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => response.data)
@@ -265,12 +267,12 @@ export async function fetchActions(login: string, token: string) {
     api
       .get(route, {
         headers: {
-          Authorization: `bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => response.data)
       .then((data: object) => {
-        console.log(`REQUEST ACTIONS: ${JSON.stringify(data, null, 2)}`)
+        // console.log(`REQUEST ACTIONS: ${JSON.stringify(data, null, 2)}`)
 
         db.storeReceivedData(login + '/@actions', data)
         resolve()
@@ -291,7 +293,7 @@ export async function fetchEquipments(login: string, token: string) {
     api
       .get(route, {
         headers: {
-          Authorization: `bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => response.data)
@@ -313,7 +315,7 @@ export async function fetchResponsibles(login: string, token: string) {
   return await api
     .get('/responsibles', {
       headers: {
-        Authorization: `bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     })
     .then((res) => res.data)
@@ -324,7 +326,7 @@ export async function fetchLocations(login: string, token: string) {
   return await api
     .get('/locations', {
       headers: {
-        Authorization: `bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     })
     .then((res) => res.data)

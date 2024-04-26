@@ -1,6 +1,7 @@
 import { Button } from '@/src/components/Button'
 import { Form } from '@/src/components/Form'
 import { Toast } from '@/src/components/Toast'
+import db from '@/src/libs/database'
 import { useAuth } from '@/src/store/auth'
 import { useConnection } from '@/src/store/connection'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -50,16 +51,24 @@ export default function Login() {
 
   async function handleFormLogin(data: LoginData) {
     if (isConnected) {
-      login(data)
-        .then(() => router.replace('/home'))
+      await login(data)
+        .then(() => {
+          router.replace('/home')
+          db.setNeedToUpdate(true)
+        })
         .catch((err: Error) => {
           toast.show({
             render: () => <Toast.Error>{err.message}</Toast.Error>,
           })
         })
+
+      // if (response) requestData(response.login, response.token)
     } else {
       offlineLogin(data)
-        .then(() => router.replace('/home'))
+        .then(() => {
+          router.replace('/home')
+          db.setNeedToUpdate(true)
+        })
         .catch((err: Error) => {
           toast.show({
             render: () => <Toast.Error>{err.message}</Toast.Error>,

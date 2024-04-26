@@ -194,7 +194,7 @@ export default function ActionScreen() {
     }
   }
 
-  console.log(`ACTION: ${currentAction} PERIOD: ${currentPeriod}`)
+  console.log(`ACTION: ${JSON.stringify(currentAction, null, 2)}`)
 
   if (!currentAction || !currentPeriod) {
     return (

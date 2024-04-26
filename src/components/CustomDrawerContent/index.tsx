@@ -22,7 +22,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
 
   function handleLogout() {
     logout()
-    router.replace('/')
+    router.replace('login')
   }
 
   return (

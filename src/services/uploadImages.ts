@@ -26,7 +26,7 @@ export async function uploadSingleImage({
           fieldName: 'file',
           httpMethod: 'POST',
           headers: {
-            Authorization: 'bearer ' + token,
+            Authorization: 'Bearer ' + token,
           },
           uploadType: FileSystem.FileSystemUploadType.MULTIPART,
         },

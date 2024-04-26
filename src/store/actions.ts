@@ -158,7 +158,7 @@ export const useActions = create<ActionsData>((set, get) => {
         if (actions.length) {
           const options = {
             headers: {
-              Authorization: `bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             },
           }
 
