@@ -38,7 +38,7 @@ export default function Page() {
   return (
     <Container>
       <HomeHeader>
-        <Title>Home</Title>
+        <Title>Checklists Criados</Title>
         <Link href="/home/checklist/new-checklist" asChild>
           {/* <Link href="/home/answer/2784696" asChild> */}
           <Button.Trigger rounded onlyIcon size="lg" disabled={isSyncing}>

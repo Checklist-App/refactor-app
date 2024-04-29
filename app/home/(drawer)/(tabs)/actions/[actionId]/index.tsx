@@ -8,6 +8,8 @@ import { Toast } from '@/src/components/Toast'
 import { useActions } from '@/src/store/actions'
 import { useCamera } from '@/src/store/camera'
 import { useChecklist } from '@/src/store/checklist'
+import { useEquipments } from '@/src/store/equipments'
+import { useLocations } from '@/src/store/location'
 import { useResponsibles } from '@/src/store/responsibles'
 import { Action } from '@/src/types/Action'
 import {
@@ -21,9 +23,10 @@ import { ScrollView, useToast } from 'native-base'
 import { XCircle } from 'phosphor-react-native'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
-import { Alert, BackHandler } from 'react-native'
+import { Alert, BackHandler, Dimensions } from 'react-native'
 import { z } from 'zod'
 import { ListImages } from '../../checklist/edit-checklist/[checklistId]/CardImage'
+import { IconContainer } from '../styles'
 import {
   Buttons,
   Container,
@@ -31,18 +34,20 @@ import {
   FormInput,
   FormInputs,
   HeaderUpper,
-  IconContainer,
   InfoCard,
   InfoCardBody,
   InfoCardLabel,
+  InfoCardLabelTask,
   InfoCardRow,
   InfoCardText,
   InfoCardValue,
+  InfoCardValueTask,
   InfoField,
   StatusContainer,
   StatusText,
   SubTitleRow,
   Title,
+  TitleText,
 } from './styles'
 
 const editActionSchema = z.object({
@@ -59,16 +64,15 @@ export default function ActionScreen() {
   })
   const { handleSubmit, setValue } = editActionForm
   const { allChecklists } = useChecklist()
+  const { equipments } = useEquipments()
+  const { locations } = useLocations()
   const { actions, updateAction } = useActions()
   const { currentImages } = useCamera()
-  // const { equipments } = useEquipments()
   const { responsibles } = useResponsibles()
   const { actionId } = useLocalSearchParams()
   const toast = useToast()
   const [currentAction, setCurrentAction] = useState<Action | null>(null)
-  // const [currentEquipment, setCurrentEquipment] = useState<Equipment | null>(
-  //   null,
-  // )
+  const [title, setTitle] = useState<string | null>('')
   const [currentPeriod, setCurrentPeriod] = useState<ChecklistPeriod | null>(
     null,
   )
@@ -76,8 +80,8 @@ export default function ActionScreen() {
   const [isAnswering, setIsAnswering] = useState(false)
   const [images, setImages] = useState<ChecklistPeriodImage[]>([])
 
-  // const deviceWidth = Dimensions.get('window').width
-  // const isSmallDevice = deviceWidth < 400
+  const deviceWidth = Dimensions.get('window').width
+  const isSmallDevice = deviceWidth < 400
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () =>
@@ -93,8 +97,6 @@ export default function ActionScreen() {
       setCurrentAction(action)
     }
   }, [actions, actionId])
-  // console.log('ACTION', currentAction)
-  // console.log('CHECKLISTS', allChecklists)
 
   useEffect(() => {
     if (currentAction) {
@@ -112,8 +114,6 @@ export default function ActionScreen() {
         .find((item) => item.id === currentAction.checklistPeriodId)
       setCurrentPeriod(period)
 
-      // console.log(checklist)
-
       // if (checklist) {
       //   const period = checklist.checklistPeriods.find(
       //     (item) => item.id === currentAction.checklistPeriodId,
@@ -123,12 +123,27 @@ export default function ActionScreen() {
       //   }
       // }
 
-      // const equipment = equipments?.find(
-      //   (item) => item.id === currentAction.equipmentId,
-      // )
-      // if (equipment) {
-      //   setCurrentEquipment(equipment)
-      // }
+      const currentChecklist = allChecklists.find(
+        (checklist) => checklist.id === currentAction.checklistId,
+      )
+
+      console.log(
+        `CURRENT CHECKLIST: ${JSON.stringify(currentChecklist, null, 2)}`,
+      )
+
+      if (currentChecklist.equipmentId) {
+        const equipment = equipments?.find(
+          (item) => item.id === currentChecklist.equipmentId,
+        )
+
+        setTitle(`${equipment.code} - ${equipment.description}`)
+      } else if (currentChecklist.locationId) {
+        const location = locations?.find(
+          (item) => item.id === currentChecklist.locationId,
+        )
+
+        setTitle(`${location.location}`)
+      }
     }
   }, [currentAction, allChecklists])
 
@@ -194,7 +209,10 @@ export default function ActionScreen() {
     }
   }
 
-  console.log(`ACTION: ${JSON.stringify(currentAction, null, 2)}`)
+  // console.log(`ACTION: ${JSON.stringify(currentAction, null, 2)}`)
+  // console.log(`PERIOD: ${JSON.stringify(currentPeriod, null, 2)}`)
+  // console.log(`CHECKLISTS: ${JSON.stringify(allChecklists, null, 2)}`)
+  // console.log(`EQUIPMENT: ${JSON.stringify(currentEquipment, null, 2)}`)
 
   if (!currentAction || !currentPeriod) {
     return (
@@ -212,9 +230,7 @@ export default function ActionScreen() {
             <IconContainer>
               <XCircle color="white" />
             </IconContainer>
-            {/* <TitleText isSmallDevice={isSmallDevice}>
-              {currentEquipment.code} - {currentEquipment.description}
-            </TitleText> */}
+            <TitleText isSmallDevice={isSmallDevice}>{title}</TitleText>
           </Title>
           <Button.Trigger
             rounded
@@ -226,6 +242,7 @@ export default function ActionScreen() {
             <Button.Icon.Pencil />
           </Button.Trigger>
         </HeaderUpper>
+
         <SubTitleRow>
           <InfoCardText>
             <InfoCardLabel>Id Checklist:</InfoCardLabel>
@@ -254,10 +271,12 @@ export default function ActionScreen() {
               <InfoCardBody>
                 <InfoCardRow>
                   <InfoCardText>
-                    <InfoCardLabel>
+                    <InfoCardLabelTask>
                       {currentPeriod.task.description}:
-                    </InfoCardLabel>
-                    <InfoCardValue>{currentPeriod.task.answer}</InfoCardValue>
+                    </InfoCardLabelTask>
+                    <InfoCardValueTask>
+                      {currentPeriod.task.answer}
+                    </InfoCardValueTask>
                   </InfoCardText>
                 </InfoCardRow>
                 <InfoCardRow>

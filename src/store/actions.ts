@@ -155,7 +155,7 @@ export const useActions = create<ActionsData>((set, get) => {
           (item) => item.syncStatus !== 'synced',
         )
 
-        if (actions.length) {
+        if (actions.length > 0) {
           const options = {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -198,7 +198,6 @@ export const useActions = create<ActionsData>((set, get) => {
                   } else {
                     console.log(err)
                   }
-                  console.log(postAction)
                   throw new Error(`Erro ao enviar ação de id ${action.id}`)
                 })
             } else {

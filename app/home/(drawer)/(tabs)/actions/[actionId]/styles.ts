@@ -115,6 +115,17 @@ export const InfoCardValue = styled.Text`
   color: ${({ theme }) => theme.color['zinc-600']};
 `
 
+export const InfoCardLabelTask = styled.Text`
+  font-size: 24px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.color['zinc-600']};
+`
+
+export const InfoCardValueTask = styled.Text`
+  font-size: 24px;
+  color: ${({ theme }) => theme.color['zinc-600']};
+`
+
 export const FormInputs = styled.View`
   width: 100%;
   flex-direction: row;

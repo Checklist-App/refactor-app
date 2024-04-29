@@ -50,6 +50,8 @@ export default function NewAction() {
     null,
   )
 
+  console.log(`PERIOD ID => ${checklistPeriodId}`)
+
   function handleStop() {
     Alert.alert('Sair', 'Deseja abandonar essa ação?', [
       {
@@ -71,7 +73,7 @@ export default function NewAction() {
     try {
       createNewAction({
         checklistId: Number(checklistId),
-        checklistPeriodId: currentPeriod.id,
+        checklistPeriodId: Number(checklistPeriodId),
         description: '',
         dueDate: new Date(data.dueDate),
         responsible: data.responsible,
@@ -105,6 +107,8 @@ export default function NewAction() {
     const checklist = allChecklists.find(
       (item) => item.id === Number(checklistId),
     )
+    console.log(checklist.checklistPeriods)
+
     if (checklist) {
       // setCurrentChecklist(checklist)
       const period = checklist.checklistPeriods.find(
@@ -115,6 +119,8 @@ export default function NewAction() {
       }
     }
   }, [checklistId, checklistPeriodId])
+
+  // console.log(`PERIOD: ${JSON.stringify(currentPeriod, null, 2)}`)
 
   if (!currentPeriod || !responsibles) {
     return (

@@ -17,7 +17,6 @@ export default function QrCodeScanner() {
   const { updateLocation, locations } = useLocations()
 
   const handleBarCodeScanned = ({ data }) => {
-    console.log(locations.map((item) => item.id))
     if (mode === 'equipment') {
       const foundEquipment = equipments.find((eq) => eq.id === Number(data))
       if (!foundEquipment) {

@@ -1,6 +1,6 @@
 import { Button } from '@/src/components/Button'
 import { useActions } from '@/src/store/actions'
-import { Link, router } from 'expo-router'
+import { Link, router, useLocalSearchParams } from 'expo-router'
 import { Modal } from 'native-base'
 import { Dot } from 'phosphor-react-native'
 import { SetStateAction } from 'react'
@@ -26,13 +26,15 @@ export function EditModal({
   modalData,
 }: EditModalProps) {
   const { actions } = useActions()
-  console.log(actions)
+  const { checklistId } = useLocalSearchParams()
+
+  console.log(`EDIT MODAL => ${JSON.stringify(modalData, null, 2)}`)
 
   function handleEditAsk() {
     setShowModal(false)
-    console.log(modalData.checklistId)
+    console.log(checklistId)
     router.push({
-      pathname: `/home/answer/${modalData.checklistId}`,
+      pathname: `/home/answer/${checklistId}`,
       params: {
         checklistPeriodIndex: String(modalData.checklistPeriodIndex),
         isEditing: 'true',
@@ -109,10 +111,10 @@ export function EditModal({
                 <Link
                   asChild
                   href={{
-                    pathname: `/home/checklist/edit-checklist/${modalData.checklistId}/new-action`,
-                    params: {
-                      checklistPeriodId: String(modalData.checklistPeriodId),
-                    },
+                    pathname: `/home/checklist/edit-checklist/${checklistId}/${modalData.checklistPeriodId}/new-action`,
+                    // params: {
+                    //   checklistPeriodId: String(modalData.checklistPeriodId),
+                    // },
                   }}
                 >
                   <Button.Trigger

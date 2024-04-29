@@ -13,12 +13,14 @@ export const Title = styled.Text`
   font-family: 'Poppins_700Bold';
 `
 
-export const ActionCardView = styled.View`
+export const ActionCardView = styled.TouchableOpacity`
   flex-direction: row;
   width: 100%;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 48px;
+  gap: 16px;
+  margin-bottom: 16px;
+  border: 1px solid ${({ theme }) => theme.color['slate-300']};
+  border-radius: 8px;
+  padding: 16px;
 `
 
 export const ActionCardInfo = styled.View`
@@ -39,10 +41,16 @@ export const ActionCardTitle = styled.Text`
 `
 
 export const ActionCardFooter = styled.View`
+  flex-direction: column;
+  gap: 2px;
+`
+
+export const ActionCardFooterInfo = styled.View`
   flex-direction: row;
   align-items: center;
   gap: 2px;
 `
+
 export const ActionCardFooterText = styled.Text`
   color: ${({ theme }) => theme.color['slate-500']};
   font-size: 14px;
@@ -58,7 +66,7 @@ export const ActionsTitle = styled.Text`
   font-size: 16px;
 `
 
-export const IconContainer = styled.TouchableOpacity`
+export const IconContainer = styled.View`
   width: 64px;
   height: 64px;
   border-radius: 12px;
