@@ -3,9 +3,11 @@ import * as MediaLibrary from 'expo-media-library'
 
 export async function downloadImage(imageUrl: string) {
   console.log('Baixando imagem...')
+
   return new Promise<string>((resolve, reject) => {
-    const date = new Date().toISOString()
-    const fileUri = FileSystem.documentDirectory + `${date}.jpg`
+    //const date = new Date().toISOString()
+    const fileUri = FileSystem.documentDirectory + `${imageUrl.split("Z-")[1]}`
+    console.log("fileUri =>", fileUri)
     FileSystem.downloadAsync(imageUrl, fileUri)
       .then((res) => res.uri)
       .then((uri) => saveFile(uri))
@@ -44,11 +46,13 @@ export async function saveFile(fileUri: string) {
 
 export async function storeFile(fileUri: string) {
   try {
-    const date = new Date().toISOString()
-    const newUri = FileSystem.documentDirectory + `${date}.jpg`
-
-    // const oldUri = await saveFile(fileUri)
+    console.log("fileUri.split =>", fileUri.split("Camera/")[1]);
+    
+    const newUri = FileSystem.documentDirectory + `${fileUri.split("Camera/")[1]}`
     await FileSystem.copyAsync({ from: fileUri, to: newUri })
+
+    console.log("newUri =>", newUri);
+    
 
     return newUri
   } catch (err) {

@@ -459,7 +459,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         console.log('Erro generate')
         console.log(err)
         throw new Error('Falha ao escrever checklists', {
-          cause: err,
+          cause: err, 
         })
       }
     },
