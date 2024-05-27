@@ -72,6 +72,7 @@ export function useSync(): SyncData {
         console.log('Erro ao sincronizar checklists')
         console.log(err)
       })
+
     await syncActions(login, token)
       .then(() => increaseDoneRequests())
       .catch((err) => {

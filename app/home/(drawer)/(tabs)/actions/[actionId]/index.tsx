@@ -26,7 +26,8 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { Alert, BackHandler, Dimensions } from 'react-native'
 import { z } from 'zod'
 import { ListImages } from '../../checklist/edit-checklist/[checklistId]/CardImage'
-import { IconContainer } from '../styles'
+import { StatusTag } from '../StatusTag'
+import { WrongContainer, WrongText, WrongWrapper } from '../styles'
 import {
   Buttons,
   Container,
@@ -41,10 +42,7 @@ import {
   InfoCardRow,
   InfoCardText,
   InfoCardValue,
-  InfoCardValueTask,
   InfoField,
-  StatusContainer,
-  StatusText,
   SubTitleRow,
   Title,
   TitleText,
@@ -53,7 +51,7 @@ import {
 const editActionSchema = z.object({
   responsible: z.string(),
   title: z.string(),
-  endDate: z.date().nullable(),
+  dueDate: z.date().optional(),
 })
 
 type EditActionData = z.infer<typeof editActionSchema>
@@ -104,32 +102,19 @@ export default function ActionScreen() {
       setValue('title', currentAction.title)
       setObservationText(currentAction.description)
       setImages(currentAction.img)
-      if (currentAction?.endDate) {
-        setValue('endDate', new Date(currentAction.endDate))
+      console.log(currentAction.dueDate)
+
+      if (currentAction?.dueDate) {
+        setValue('dueDate', new Date(currentAction.dueDate))
       }
-
-      const period = allChecklists
-        .map(({ checklistPeriods }) => checklistPeriods)
-        .flat()
-        .find((item) => item.id === currentAction.checklistPeriodId)
-      setCurrentPeriod(period)
-
-      // if (checklist) {
-      //   const period = checklist.checklistPeriods.find(
-      //     (item) => item.id === currentAction.checklistPeriodId,
-      //   )
-      //   if (period) {
-      //     setCurrentPeriod(period)
-      //   }
-      // }
 
       const currentChecklist = allChecklists.find(
         (checklist) => checklist.id === currentAction.checklistId,
       )
 
-      console.log(
-        `CURRENT CHECKLIST: ${JSON.stringify(currentChecklist, null, 2)}`,
-      )
+      // console.log(
+      //   `CURRENT CHECKLIST: ${JSON.stringify(currentChecklist, null, 2)}`,
+      // )
 
       if (currentChecklist.equipmentId) {
         const equipment = equipments?.find(
@@ -143,6 +128,26 @@ export default function ActionScreen() {
         )
 
         setTitle(`${location.location}`)
+      }
+
+      // const period = allChecklists
+      //   .map(({ checklistPeriods }) => checklistPeriods)
+      //   .flat()
+      //   .find((item) => item.id === currentAction.checklistPeriodId)
+      // setCurrentPeriod(period)
+
+      if (currentChecklist) {
+        // console.log(
+        //   JSON.stringify(currentChecklist.checklistPeriods, null, 2),
+        //   currentAction.checklistPeriodId,
+        // )
+
+        const period = currentChecklist.checklistPeriods.find(
+          (item) => item.id === currentAction.checklistPeriodId,
+        )
+        if (period) {
+          setCurrentPeriod(period)
+        }
       }
     }
   }, [currentAction, allChecklists])
@@ -167,13 +172,19 @@ export default function ActionScreen() {
           render: () => <Toast.Error>Adicione uma ou mais imagens</Toast.Error>,
         })
       }
-      updateAction({
+
+      console.log(data.dueDate)
+
+      const actionBody = {
         ...currentAction,
-        endDate: new Date(data.endDate) || currentAction.endDate,
+        dueDate: data.dueDate,
         responsible: data.responsible || currentAction.responsible,
         description: observationText,
         img: images,
-      })
+      }
+      console.log(`ACTION EDITED BODY ${JSON.stringify(actionBody, null, 2)}`)
+
+      updateAction(actionBody)
       setIsAnswering(false)
       toast.show({
         render: () => <Toast.Success>Ação Salva!</Toast.Success>,
@@ -227,15 +238,15 @@ export default function ActionScreen() {
       <ContainerHeader>
         <HeaderUpper>
           <Title>
-            <IconContainer>
+            {/* <IconContainer>
               <XCircle color="white" />
-            </IconContainer>
+            </IconContainer> */}
             <TitleText isSmallDevice={isSmallDevice}>{title}</TitleText>
           </Title>
           <Button.Trigger
             rounded
             onlyIcon
-            size="sm"
+            size="md"
             disabled={isAnswering}
             onPress={() => setIsAnswering(true)}
           >
@@ -248,15 +259,11 @@ export default function ActionScreen() {
             <InfoCardLabel>Id Checklist:</InfoCardLabel>
             <InfoCardValue> {currentAction.checklistId}</InfoCardValue>
           </InfoCardText>
-          <StatusContainer>
-            <StatusText>
-              {currentAction.endDate
-                ? dayjs(currentAction.endDate).isBefore(currentAction.dueDate)
-                  ? 'CONCLUÍDO'
-                  : 'VENCIDO'
-                : 'EM ANDAMENTO'}
-            </StatusText>
-          </StatusContainer>
+          <StatusTag
+            dueDate={currentAction.dueDate}
+            endDate={currentAction.endDate}
+            startDate={currentAction.startDate}
+          />
         </SubTitleRow>
       </ContainerHeader>
       <KeyboardCoverPrevent>
@@ -269,16 +276,18 @@ export default function ActionScreen() {
             <InfoCard>
               {/* <InfoCardTitle>Informações</InfoCardTitle> */}
               <InfoCardBody>
-                <InfoCardRow>
-                  <InfoCardText>
-                    <InfoCardLabelTask>
-                      {currentPeriod.task.description}:
-                    </InfoCardLabelTask>
-                    <InfoCardValueTask>
-                      {currentPeriod.task.answer}
-                    </InfoCardValueTask>
-                  </InfoCardText>
-                </InfoCardRow>
+                <WrongWrapper>
+                  <InfoCardLabelTask>
+                    {currentPeriod.task.description}:
+                  </InfoCardLabelTask>
+                  {/* <InfoCardValueTask>
+                    {currentPeriod.task.answer}
+                  </InfoCardValueTask> */}
+                  <WrongContainer>
+                    <XCircle color="red" />
+                    <WrongText>{currentPeriod.task.answer}</WrongText>
+                  </WrongContainer>
+                </WrongWrapper>
                 <InfoCardRow>
                   <InfoCardText>
                     <InfoCardLabel>Data Início:</InfoCardLabel>
@@ -289,7 +298,7 @@ export default function ActionScreen() {
                   <InfoCardText>
                     <InfoCardLabel>Prazo:</InfoCardLabel>
                     <InfoCardValue>
-                      {dayjs(currentAction.dueDate).format('DD/MM/YY HH:mm')}
+                      {dayjs(currentAction.endDate).format('DD/MM/YY HH:mm')}
                     </InfoCardValue>
                   </InfoCardText>
                 </InfoCardRow>
@@ -320,14 +329,14 @@ export default function ActionScreen() {
                   <Form.Label>Data Conclusão: </Form.Label>
                   {isAnswering ? (
                     <Form.DatePicker
-                      name="endDate"
+                      name="dueDate"
                       placehilderFormat="DD/MM/YYYY HH:mm"
                       mode="datetime"
                       disabled={!isAnswering}
                     />
-                  ) : currentAction.endDate ? (
+                  ) : currentAction.dueDate ? (
                     <Form.DatePicker
-                      name="endDate"
+                      name="dueDate"
                       placehilderFormat="DD/MM/YYYY HH:mm"
                       mode="datetime"
                       disabled={!isAnswering}

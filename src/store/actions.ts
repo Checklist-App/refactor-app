@@ -16,14 +16,14 @@ interface ActionsData {
     title,
     responsible,
     description,
-    dueDate,
+    endDate,
   }: {
     checklistPeriodId: number
     checklistId: number
     title: string
     responsible: string
     description: string
-    dueDate: Date
+    endDate: Date
   }) => Action
   updateAction: (action: Action) => void
   updateActionSync: ({ oldId, newId }: { oldId: number; newId: number }) => void
@@ -38,6 +38,7 @@ export const useActions = create<ActionsData>((set, get) => {
     loadActions: async (user) => {
       try {
         const actions = db.retrieveActions(user)
+        // console.log(`LOADED ACTIONS => ${JSON.stringify(actions, null, 2)}`)
 
         set({ actions })
       } catch {
@@ -53,8 +54,8 @@ export const useActions = create<ActionsData>((set, get) => {
         title: props.title,
         description: props.description,
         startDate: new Date(),
-        dueDate: props.dueDate,
-        endDate: null,
+        dueDate: null,
+        endDate: props.endDate,
         responsible: props.responsible,
         img: [],
         syncStatus: 'inserted',
@@ -118,8 +119,10 @@ export const useActions = create<ActionsData>((set, get) => {
             checklistId: action.id_checklist,
             title: action.descricao,
             description: action.descricao_acao,
-            startDate: new Date(action.data_inicio),
-            dueDate: new Date(action.data_fechamento),
+            startDate: action.data_inicio ? new Date(action.data_inicio) : null,
+            dueDate: action.data_fechamento
+              ? new Date(action.data_fechamento)
+              : null,
             endDate: action.data_fim ? new Date(action.data_fim) : null,
             responsible: action.responsavel,
             img: await Promise.all(
@@ -144,6 +147,8 @@ export const useActions = create<ActionsData>((set, get) => {
     },
 
     syncActions: async (user, token) => {
+      console.log('sync actions')
+
       try {
         const storedActions = db.retrieveActions(user)
 
@@ -164,6 +169,11 @@ export const useActions = create<ActionsData>((set, get) => {
 
           for await (const action of actions) {
             const updatedAction = { ...action }
+            console
+              .log
+              // `ACTION CHECKLIST ID => ${action.checklistId} ACTION STATUS ${action.syncStatus}`,
+              ()
+
             const postAction = {
               checklistPeriodId: action.checklistPeriodId,
               description: action.description,
@@ -175,7 +185,11 @@ export const useActions = create<ActionsData>((set, get) => {
               title: action.title,
             }
 
+            console.log(`ACTION BODY => ${JSON.stringify(postAction, null, 2)}`)
+
             if (action.syncStatus === 'inserted') {
+              console.log('post')
+
               await api
                 .post('/actions', postAction, options)
                 .then((res) => res.data)
@@ -201,6 +215,7 @@ export const useActions = create<ActionsData>((set, get) => {
                   throw new Error(`Erro ao enviar ação de id ${action.id}`)
                 })
             } else {
+              console.log('put')
               await api
                 .put(`/actions/${action.id}`, postAction, options)
                 .then((res) => res.data)

@@ -45,9 +45,25 @@ export const ActionCardFooter = styled.View`
   gap: 2px;
 `
 
+export const ActionCardFooterRow = styled.View`
+  flex-direction: row;
+  align-items: start;
+  gap: 8px;
+`
+
+export const DividerVertical = styled.View`
+  height: 100%;
+  width: 1px;
+  background-color: ${({ theme }) => theme.color['slate-200']};
+`
+
 export const ActionCardFooterInfo = styled.View`
   flex-direction: row;
   align-items: center;
+  gap: 2px;
+`
+
+export const ActionCardFooterItem = styled.View`
   gap: 2px;
 `
 
@@ -73,6 +89,26 @@ export const IconContainer = styled.View`
   align-items: center;
   justify-content: center;
   background-color: ${({ theme }) => theme.color['red-400']};
+`
+
+export const WrongWrapper = styled.View`
+  gap: 4px;
+`
+
+export const WrongContainer = styled.View`
+  gap: 12px;
+  flex-direction: row;
+  padding: 16px;
+  justify-content: center;
+  align-items: center;
+  border: 3px solid ${({ theme }) => theme.color['red-400']};
+  border-radius: 16px;
+`
+
+export const WrongText = styled.Text`
+  font-weight: bold;
+  font-size: 16px;
+  color: ${({ theme }) => theme.color['red-400']};
 `
 
 export const StatusContainer = styled.View`

@@ -1,6 +1,5 @@
 import { Button } from '@/src/components/Button'
 import { Loading } from '@/src/components/Loading'
-import { Toast } from '@/src/components/Toast'
 import db from '@/src/libs/database'
 import { useChecklist } from '@/src/store/checklist'
 import { useEquipments } from '@/src/store/equipments'
@@ -10,11 +9,10 @@ import { ChecklistPeriodImage } from '@/src/types/ChecklistPeriod'
 import { ChecklistStatus } from '@/src/types/ChecklistStatus'
 import { ChecklistStatusAction } from '@/src/types/ChecklistStatusAction'
 import { FlashList } from '@shopify/flash-list'
-import { useLocalSearchParams } from 'expo-router'
-import { Text, useToast } from 'native-base'
+import { Link, useLocalSearchParams } from 'expo-router'
+import { Text } from 'native-base'
 import { Dot } from 'phosphor-react-native'
 import { useEffect, useState } from 'react'
-import { Alert } from 'react-native'
 import { CardImage, ListImages } from './CardImage'
 import { EditModal } from './EditModal'
 import { ItemStatus } from './ItemStatus'
@@ -55,7 +53,6 @@ export interface ModalData {
 export default function EditChecklist() {
   const { allChecklists, loadChecklists } = useChecklist()
   const { checklistId } = useLocalSearchParams()
-  const toast = useToast()
   const [currentChecklist, setCurrentChecklist] = useState<Checklist | null>(
     null,
   )
@@ -98,36 +95,6 @@ export default function EditChecklist() {
     setCanCloseChecklist(update)
   }, [currentChecklist])
 
-  function handleFinalizeChecklist() {
-    Alert.alert('Fechar Checklist', 'Deseja fechar esse checklist?', [
-      {
-        text: 'Não',
-        style: 'cancel',
-      },
-      {
-        text: 'Sim',
-        style: 'destructive',
-        onPress: () => {
-          try {
-            toast.show({
-              render: () => (
-                <Toast.Success>Checklist finalizado com sucesso!</Toast.Success>
-              ),
-            })
-          } catch (err) {
-            toast.show({
-              render: () => (
-                <Toast.Error>Não foi possível salvar o checklist</Toast.Error>
-              ),
-            })
-            console.log(err)
-          }
-        },
-      },
-    ])
-    return true
-  }
-
   if (!currentChecklist) {
     return (
       <Container>
@@ -166,9 +133,20 @@ export default function EditChecklist() {
           </Button.Trigger>
         )}
         {canCloseChecklist && currentChecklist.status === 'open' && (
-          <Button.Trigger size="sm" onPress={handleFinalizeChecklist}>
-            <Button.Text>Fechar Checklist</Button.Text>
-          </Button.Trigger>
+          <Link
+            asChild
+            href={{
+              pathname: `/home/answer/${checklistId}`,
+              params: {
+                // checklistPeriodIndex: String(checklistPeriodIndex),
+                isEditing: 'false',
+              },
+            }}
+          >
+            <Button.Trigger size="sm">
+              <Button.Text>Responder checklist</Button.Text>
+            </Button.Trigger>
+          </Link>
         )}
       </TitleView>
       <FlashList
@@ -199,7 +177,7 @@ export default function EditChecklist() {
               setShowModal(true)
             }}
           >
-            <CardQuestion>{item.task.description}</CardQuestion>
+            <CardQuestion>{item.task?.description}</CardQuestion>
             {item.syncStatus === 'errored' && (
               <ItemStatus status={item.syncStatus} />
             )}
@@ -213,7 +191,7 @@ export default function EditChecklist() {
                     {
                       item.task.children.find(
                         (child) => child.id === item.statusNC,
-                      ).description
+                      )?.description
                     }
                   </CardAnswerDescription>
                 </>

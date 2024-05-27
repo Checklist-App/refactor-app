@@ -28,8 +28,6 @@ export function EditModal({
   const { actions } = useActions()
   const { checklistId } = useLocalSearchParams()
 
-  console.log(`EDIT MODAL => ${JSON.stringify(modalData, null, 2)}`)
-
   function handleEditAsk() {
     setShowModal(false)
     console.log(checklistId)

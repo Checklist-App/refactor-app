@@ -59,8 +59,7 @@ export default function Page() {
         ListEmptyComponent={() => (
           <Loading>
             <ErrorText>
-              Não há checklists registrados para essa filial nas últimas 24
-              horas
+              Não há checklists registrados para essa filial hoje
             </ErrorText>
           </Loading>
         )}

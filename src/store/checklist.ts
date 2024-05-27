@@ -74,10 +74,12 @@ interface ChecklistsData {
     oldId,
     newId,
     productionRegisterId,
+    oldChecklistId,
     syncStatus,
   }: {
     oldId: number
     newId: number
+    oldChecklistId: number
     productionRegisterId: number
     syncStatus: 'synced' | 'updated' | 'errored'
   }) => void
@@ -127,6 +129,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         if (item.id === checklist.id) {
           checklist.syncStatus =
             item.syncStatus === 'inserted' ? 'inserted' : 'updated'
+          // checklist.
           newChecklists.push(checklist)
         } else {
           newChecklists.push(item)
@@ -280,7 +283,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
 
     updateChecklistSync: ({ newId, oldId, syncStatus }) => {
       const checklists = get().allChecklists
-      // const storedActions = db.retrieveActions(db.retrieveLastUser().login)
+      const storedActions = db.retrieveActions(db.retrieveLastUser().login)
 
       const newChecklists: Checklist[] = []
       const newActions: Action[] = []
@@ -293,29 +296,45 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         newChecklists.push(checklist)
       })
 
-      // storedActions.forEach((action) => {
-      //   if (action.checklistId === oldId) {
-      //     action.checklistId = newId
-      //   }
-      //   newActions.push(action)
-      // })
+      console.log(`OLD ID => ${oldId}`)
+      storedActions.forEach((action) => {
+        console.log(action.checklistId, action.checklistId === oldId)
+
+        if (action.checklistId === oldId) {
+          console.log(`ACTION => ${JSON.stringify(action, null, 2)}`)
+
+          action.checklistId = newId
+        }
+        newActions.push(action)
+      })
 
       db.storeChecklists(newChecklists)
       db.storeActions(newActions)
       set({ allChecklists: newChecklists })
     },
 
-    updatePeriodSync: ({ newId, oldId, productionRegisterId, syncStatus }) => {
+    updatePeriodSync: ({
+      newId,
+      oldId,
+      productionRegisterId,
+      oldChecklistId,
+      syncStatus,
+    }) => {
       const checklists = get().allChecklists
-      // const storedActions = db.retrieveActions(db.retrieveLastUser().login)
+      const storedActions = db.retrieveActions(db.retrieveLastUser().login)
+      console.log(
+        `OLD ID: ${oldId}; NEW ID: ${newId} PRODUCTION ID: ${productionRegisterId}`,
+      )
 
       const newChecklists: Checklist[] = []
       const newActions: Action[] = []
       checklists.forEach((checklist) => {
-        if (checklist.id === productionRegisterId) {
+        if (checklist.id === oldChecklistId) {
           const newPeriods: ChecklistPeriod[] = []
           checklist.checklistPeriods.forEach((period) => {
             if (period.id === oldId) {
+              console.log(`PERIOD ID ${period.id}`)
+
               period.id = newId
               period.productionRegisterId = productionRegisterId
               period.syncStatus = syncStatus
@@ -326,12 +345,13 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         newChecklists.push(checklist)
       })
 
-      // storedActions.forEach((action) => {
-      //   if (action.checklistPeriodId === oldId) {
-      //     action.checklistId = newId
-      //   }
-      //   newActions.push(action)
-      // })
+      storedActions.forEach((action) => {
+        if (action.checklistPeriodId === oldId) {
+          action.checklistId = productionRegisterId
+          action.checklistPeriodId = newId
+        }
+        newActions.push(action)
+      })
 
       db.storeChecklists(newChecklists)
       db.storeActions(newActions)
@@ -524,6 +544,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
                         get().updatePeriodSync({
                           newId: insertedPeriod.id,
                           oldId: checklistPeriod.id,
+                          oldChecklistId: checklist.id,
                           productionRegisterId: newId,
                           syncStatus: 'synced',
                         })

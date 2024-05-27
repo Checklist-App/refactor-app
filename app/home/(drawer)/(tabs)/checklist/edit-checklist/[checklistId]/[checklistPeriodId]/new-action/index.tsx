@@ -27,7 +27,7 @@ import {
 const newActionSchema = z.object({
   title: z.string({ required_error: 'Escreva o nome da ação ' }),
   responsible: z.string({ required_error: 'Selecione um responsável' }),
-  dueDate: z.date(),
+  endDate: z.date(),
 })
 
 type NewActionData = z.infer<typeof newActionSchema>
@@ -75,7 +75,7 @@ export default function NewAction() {
         checklistId: Number(checklistId),
         checklistPeriodId: Number(checklistPeriodId),
         description: '',
-        dueDate: new Date(data.dueDate),
+        endDate: new Date(data.endDate),
         responsible: data.responsible,
         title: data.title,
       })
@@ -162,7 +162,7 @@ export default function NewAction() {
               <Form.Label>Prazo:</Form.Label>
               <Form.DatePicker
                 placehilderFormat="DD/MM/YYYY"
-                name="dueDate"
+                name="endDate"
                 mode="datetime"
               />
             </Form.Field>

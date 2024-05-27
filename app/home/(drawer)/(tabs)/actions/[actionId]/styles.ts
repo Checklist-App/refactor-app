@@ -32,7 +32,7 @@ export const IconContainer = styled.View`
 
 export const TitleText = styled.Text`
   font-size: ${(props) => (props.isSmallDevice ? '18px' : '24px')};
-  max-width: 75%;
+  /* max-width: 75%; */
   font-weight: 700;
   font-family: 'Poppins_700Bold';
   color: ${({ theme }) => theme.color['zinc-600']};
@@ -62,15 +62,18 @@ export const StatusLabel = styled.Text`
 `
 
 export const StatusContainer = styled.View`
-  background-color: ${({ theme }) => theme.color['zinc-400']};
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 82px;
+  background-color: ${({ theme }) => theme.color['violet-200']};
   padding: 8px;
-  margin-top: 8px;
+  border-radius: 99px;
 `
 
 export const StatusText = styled.Text`
-  color: ${({ theme }) => theme.color['zinc-700']};
+  color: ${({ theme }) => theme.color['violet-600']};
   font-size: 12px;
-  font-weight: bold;
 `
 
 export const InfoField = styled.View`
