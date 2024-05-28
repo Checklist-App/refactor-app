@@ -14,6 +14,7 @@ export default class DataBaseRepository implements IDataBaseRepository {
 
   retrieveChecklists(user: string) {
     const storedChecklists = this.mmkv.getString(`${user}/checklists`)
+
     if (storedChecklists) {
       const checklists: Checklist[] = JSON.parse(storedChecklists)
       return checklists
