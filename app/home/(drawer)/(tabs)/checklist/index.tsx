@@ -68,26 +68,22 @@ export default function Page() {
   }
 
   function handleSearch(data: SearchChecklistSchema) {
-    console.log("data =>", data)
-    console.log("allChecklists =>", allChecklists)
-    
     const filteredEquipments = equipments.filter((eq) => (
       eq.code.includes(data.query)
     ))
-
-    console.log("filteredEquipments =>", filteredEquipments)
-
     const filteredChecklists = allChecklists.filter((value) => (
       (
-        dayjs(data.initialDate).format('YYYY-MM-DD') >= 
+        dayjs(data.initialDate).format('YYYY-MM-DD') <=
         dayjs(value.initialTime).format('YYYY-MM-DD')
       ) &&
       (
-        dayjs(data.finishedDate).format('YYYY-MM-DD') <= 
+        dayjs(data.finishedDate).format('YYYY-MM-DD') >=  
         dayjs(value.finalTime ?? new Date()).format('YYYY-MM-DD')
       ) &&
-      (data.query ? filteredEquipments.find((eq) => eq.id === value.equipmentId) : true)
-    ))
+      (
+        data.query ? filteredEquipments.find((eq) => eq.id === value.equipmentId) : true)
+      )
+    )
     setChecklists(filteredChecklists)
   }
 
