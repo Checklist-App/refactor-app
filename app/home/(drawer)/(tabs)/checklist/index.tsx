@@ -84,11 +84,16 @@ export default function Page() {
         data.query ? filteredEquipments.find((eq) => eq.id === value.equipmentId) : true)
       )
     )
-    setChecklists(filteredChecklists)
+
+    setChecklists(sortByDate(filteredChecklists))
   }
 
+  function sortByDate(data: Checklist[]){
+    return data.sort((a, b) => a.initialTime.getTime() - b.finalTime.getTime())
+  }
+ 
   useEffect(() => {
-    setChecklists(allChecklists)
+    setChecklists(sortByDate(allChecklists))
   }, [])
 
   return (
@@ -100,7 +105,7 @@ export default function Page() {
           <Title>Checklists Criados</Title>
           <Link href="/home/checklist/new-checklist" asChild>
             {/* <Link href="/home/answer/2784696" asChild> */}
-            <Button.Trigger rounded onlyIcon size="lg" disabled={isSyncing}>
+            <Button.Trigger rounded onlyIcon size="md" disabled={isSyncing}>
               <Button.Icon.Plus />
             </Button.Trigger>
           </Link>

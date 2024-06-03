@@ -6,15 +6,15 @@
     "preview": {
       "distribution": "internal",
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://checklist-api.smartnewservices.com.br"
+        "EXPO_PUBLIC_API_URL": "https://checklist-api-homolog.smartnewservices.com.br"
       }
     },
     "production": {
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://checklist-api.smartnewservices.com.br"
+        "EXPO_PUBLIC_API_URL": "https://checklist-api-homolog.smartnewservices.com.br"
       }
     }
   },

@@ -45,7 +45,7 @@ export const Header = styled.View`
 `
 
 export const Title = styled.Text`
-  font-size: 32px;
+  font-size: 24px;
   font-weight: bold;
 `
 
