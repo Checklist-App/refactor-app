@@ -89,7 +89,7 @@ export default function Page() {
   }
 
   function sortByDate(data: Checklist[]){
-    return data.sort((a, b) => a.initialTime.getTime() - b.finalTime.getTime())
+    return data.sort((a, b) => dayjs(b.initialTime).valueOf() - dayjs(a.initialTime).valueOf())
   }
  
   useEffect(() => {
