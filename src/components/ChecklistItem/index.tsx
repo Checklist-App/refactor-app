@@ -30,10 +30,11 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
   return (
     <ChecklistItemView>
       <Container>
+        <TextBold screenWidth={width}>{checklist.id}</TextBold>
         <TextContentUpper>
           <TextContent>
             <Text screenWidth={width}>
-              {dayjs(checklist.initialTime).format('DD/MM/YYYY HH:mm')}
+              {dayjs(checklist.initialTime).format('DD/MM/YY HH:mm')}
             </Text>
             <Dot />
             {checklist.period && (
@@ -45,9 +46,6 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
             <Text screenWidth={width}>
               {checklist.status === 'open' ? 'ABERTO' : 'FECHADO'}
             </Text>
-          </TextContent>
-          <TextContent>
-            <TextBold screenWidth={width}>{checklist.id}</TextBold>
           </TextContent>
         </TextContentUpper>
         {checklist.equipmentId && equipments ? (

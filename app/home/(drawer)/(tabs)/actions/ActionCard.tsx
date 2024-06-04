@@ -67,21 +67,23 @@ export function ActionCard({ action }: { action: Action }) {
         </IconContainer>
         <ActionCardInfo>
           <ActionCardBody>
+            <ActionCardTitle>{action.title}</ActionCardTitle>
+
             <StatusTag
               dueDate={action.dueDate}
               endDate={action.endDate}
               startDate={action.startDate}
             />
-            <ActionCardTitle>{action.title}</ActionCardTitle>
           </ActionCardBody>
           <ActionCardFooter>
             <ActionCardFooterText>{description}</ActionCardFooterText>
+
             <ActionCardFooterRow>
               <User size={14} color="#64748B" />
               <ActionCardFooterText>{action.responsible}</ActionCardFooterText>
+            </ActionCardFooterRow>
 
-              <DividerVertical />
-
+            <ActionCardFooterRow>
               <ActionCardFooterItem>
                 <ActionCardFooterText>Data inicio:</ActionCardFooterText>
                 <ActionCardFooterInfo>

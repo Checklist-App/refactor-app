@@ -12,9 +12,9 @@ export const ChecklistItemView = styled.View`
 `
 
 export const Container = styled.View`
-  padding: 32px 16px;
+  padding: 16px;
   flex: 1;
-  gap: 8px;
+  gap: 4px;
 `
 
 export const TextContent = styled.View`
@@ -46,6 +46,7 @@ export const ChecklistButton = styled(Button.Trigger)`
   aspect-ratio: 1/1;
   justify-content: center;
   align-items: center;
+  border-radius: 0 8px 8px 0;
 `
 export const Dot = styled.View`
   width: 4px;
@@ -64,8 +65,8 @@ export const ContainerSynced = styled.View<{ status: string }>`
     status === 'synced'
       ? theme.color['green-200']
       : status === 'errored'
-      ? theme.color['yellow-200']
-      : theme.color['red-200']};
+        ? theme.color['yellow-200']
+        : theme.color['red-200']};
 `
 
 // export const Container = styled(YStack, {

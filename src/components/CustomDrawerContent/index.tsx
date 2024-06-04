@@ -49,7 +49,7 @@ export function CustomDrawerContent(props: DrawerContentComponentProps) {
           }
         />
         <DrawerItem
-          label={user.name}
+          label={user?.name || 'Usuário sem nome'}
           icon={({ color, size }) => <User color={color} size={size} />}
           onPress={() => {}}
         />

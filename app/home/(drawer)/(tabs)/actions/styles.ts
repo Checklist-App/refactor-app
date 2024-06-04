@@ -31,6 +31,8 @@ export const ActionCardInfo = styled.View`
 export const ActionCardBody = styled.View`
   flex: 1;
   gap: 2px;
+  flex-direction: row;
+  justify-content: space-between;
 `
 
 export const ActionCardTitle = styled.Text`

@@ -6,7 +6,7 @@ import { useTheme } from 'styled-components'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FormProvider, useForm } from 'react-hook-form'
-import * as zod from "zod"
+import * as zod from 'zod'
 
 import { Button } from '@/src/components/Button'
 import { ChecklistItem } from '@/src/components/ChecklistItem'
@@ -32,9 +32,9 @@ import { Checklist } from '@/src/types/Checklist'
 import dayjs from 'dayjs'
 
 const searchChecklistSchema = zod.object({
-  query: zod.string({required_error: "Digite algo."}),
+  query: zod.string({ required_error: 'Digite algo.' }),
   initialDate: zod.date().default(new Date()),
-  finishedDate: zod.date().default(new Date())
+  finishedDate: zod.date().default(new Date()),
 })
 
 type SearchChecklistSchema = zod.infer<typeof searchChecklistSchema>
@@ -46,17 +46,45 @@ export default function Page() {
   const { user } = useAuth()
   const { allChecklists } = useChecklist()
   const { equipments } = useEquipments()
-  
+
   const [checklists, setChecklists] = useState<Checklist[]>([])
 
   const searchChecklistForm = useForm<SearchChecklistSchema>({
-    resolver: zodResolver(searchChecklistSchema)
+    resolver: zodResolver(searchChecklistSchema),
   })
 
   const { handleSubmit } = searchChecklistForm
 
   const [openSearchInput, setOpenSearchInput] = useState<boolean>()
   const [openSearchFilter, setOpenSearchFilter] = useState<boolean>()
+
+  function handleSearch(data: SearchChecklistSchema) {
+    const filteredEquipments = equipments.filter((eq) =>
+      eq.code.includes(data.query),
+    )
+    const filteredChecklists = allChecklists.filter(
+      (value) =>
+        dayjs(data.initialDate).format('YYYY-MM-DD') <=
+          dayjs(value.initialTime).format('YYYY-MM-DD') &&
+        dayjs(data.finishedDate).format('YYYY-MM-DD') >=
+          dayjs(value.finalTime ?? new Date()).format('YYYY-MM-DD') &&
+        (data.query
+          ? filteredEquipments.find((eq) => eq.id === value.equipmentId)
+          : true),
+    )
+
+    setChecklists(sortByDate(filteredChecklists))
+  }
+
+  function sortByDate(data: Checklist[]) {
+    return data.sort(
+      (a, b) => dayjs(b.initialTime).valueOf() - dayjs(a.initialTime).valueOf(),
+    )
+  }
+
+  useEffect(() => {
+    setChecklists(sortByDate(allChecklists))
+  }, [allChecklists])
 
   if (!user && isConnected) {
     return (
@@ -67,40 +95,9 @@ export default function Page() {
     )
   }
 
-  function handleSearch(data: SearchChecklistSchema) {
-    const filteredEquipments = equipments.filter((eq) => (
-      eq.code.includes(data.query)
-    ))
-    const filteredChecklists = allChecklists.filter((value) => (
-      (
-        dayjs(data.initialDate).format('YYYY-MM-DD') <=
-        dayjs(value.initialTime).format('YYYY-MM-DD')
-      ) &&
-      (
-        dayjs(data.finishedDate).format('YYYY-MM-DD') >=  
-        dayjs(value.finalTime ?? new Date()).format('YYYY-MM-DD')
-      ) &&
-      (
-        data.query ? filteredEquipments.find((eq) => eq.id === value.equipmentId) : true)
-      )
-    )
-
-    setChecklists(sortByDate(filteredChecklists))
-  }
-
-  function sortByDate(data: Checklist[]){
-    return data.sort((a, b) => dayjs(b.initialTime).valueOf() - dayjs(a.initialTime).valueOf())
-  }
- 
-  useEffect(() => {
-    setChecklists(sortByDate(allChecklists))
-  }, [allChecklists])
-
   return (
     <Container>
-      <VStack
-        space={4}
-      >
+      <VStack space={4}>
         <HomeHeader>
           <Title>Checklists Criados</Title>
           <Link href="/home/checklist/new-checklist" asChild>
@@ -111,23 +108,19 @@ export default function Page() {
           </Link>
         </HomeHeader>
         <VStack>
-          <HStack
-            space={2}
-            w={"full"}
-          >
-            {
-              !openSearchInput &&
+          <HStack space={2} w={'full'}>
+            {!openSearchInput && (
               <Box
                 flex={1}
                 style={{
-                  justifyContent:"flex-end",
-                  alignItems: "flex-end"
+                  justifyContent: 'flex-end',
+                  alignItems: 'flex-end',
                 }}
               >
                 <NBButton
-                  bgColor={"transparent"}
+                  bgColor={'transparent'}
                   _pressed={{
-                    bgColor: color['violet-200']
+                    bgColor: color['violet-200'],
                   }}
                   onPress={() => setOpenSearchInput(true)}
                 >
@@ -138,66 +131,56 @@ export default function Page() {
                   />
                 </NBButton>
               </Box>
-            }
-            {
-              openSearchInput &&
-              <VStack
-                flex={1}
-              >
+            )}
+            {openSearchInput && (
+              <VStack flex={1}>
                 <FormProvider {...searchChecklistForm}>
-                  <HStack
-                    space={2}
-                  >
-                    <Form.Field
-                      style={{flex: 1}}
-                    >
-                      <Form.Input name='query' placeholder='Digite a código'/>
-                      <Form.ErrorMessage field='query' />
+                  <HStack space={2}>
+                    <Form.Field style={{ flex: 1 }}>
+                      <Form.Input name="query" placeholder="Digite a código" />
+                      <Form.ErrorMessage field="query" />
                     </Form.Field>
-                    <Button.Trigger
-                      onPress={handleSubmit(handleSearch)}
-                    >
-                      <Button.Icon.MagnifyingGlass/>
+                    <Button.Trigger onPress={handleSubmit(handleSearch)}>
+                      <Button.Icon.MagnifyingGlass />
                     </Button.Trigger>
                     <Button.Trigger
-                      variant='transparent'
-                      onPress={() => {setOpenSearchFilter(!openSearchFilter)}}
+                      variant="transparent"
+                      onPress={() => {
+                        setOpenSearchFilter(!openSearchFilter)
+                      }}
                     >
-                      <Button.Icon.FunnelSimple/>
+                      <Button.Icon.FunnelSimple />
                     </Button.Trigger>
                   </HStack>
-                  {
-                    openSearchFilter &&
-                        <HStack
-                          mt={4}
-                          justifyContent="center"
-                          alignItems="center"
-                          space={2}
-                        >
-                          <Form.Field>
-                            <Form.DatePicker
-                              name='initialDate'
-                              placehilderFormat='DD/MM/YYYY'
-                              mode='date'
-                            />
-                            <Form.ErrorMessage field='initialDate' />
-                          </Form.Field>
-                          <Text>
-                            Até
-                          </Text>
-                          <Form.Field>
-                            <Form.DatePicker
-                              name='finishedDate'
-                              placehilderFormat='DD/MM/YYYY'
-                              mode='date'
-                            />
-                            <Form.ErrorMessage field='finishedDate' />
-                          </Form.Field>
-                        </HStack>
-                  }
+                  {openSearchFilter && (
+                    <HStack
+                      mt={4}
+                      justifyContent="center"
+                      alignItems="center"
+                      space={2}
+                    >
+                      <Form.Field>
+                        <Form.DatePicker
+                          name="initialDate"
+                          placehilderFormat="DD/MM/YYYY"
+                          mode="date"
+                        />
+                        <Form.ErrorMessage field="initialDate" />
+                      </Form.Field>
+                      <Text>Até</Text>
+                      <Form.Field>
+                        <Form.DatePicker
+                          name="finishedDate"
+                          placehilderFormat="DD/MM/YYYY"
+                          mode="date"
+                        />
+                        <Form.ErrorMessage field="finishedDate" />
+                      </Form.Field>
+                    </HStack>
+                  )}
                 </FormProvider>
               </VStack>
-            }
+            )}
           </HStack>
         </VStack>
       </VStack>
