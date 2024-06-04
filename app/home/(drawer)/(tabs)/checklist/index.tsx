@@ -42,9 +42,9 @@ type SearchChecklistSchema = zod.infer<typeof searchChecklistSchema>
 export default function Page() {
   const { color } = useTheme()
   const { isConnected } = useConnection()
-  const { allChecklists } = useChecklist()
   const { isSyncing } = useSyncStatus()
   const { user } = useAuth()
+  const { allChecklists } = useChecklist()
   const { equipments } = useEquipments()
   
   const [checklists, setChecklists] = useState<Checklist[]>([])
@@ -94,7 +94,7 @@ export default function Page() {
  
   useEffect(() => {
     setChecklists(sortByDate(allChecklists))
-  }, [])
+  }, [allChecklists])
 
   return (
     <Container>

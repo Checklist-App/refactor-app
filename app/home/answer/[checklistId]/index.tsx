@@ -109,7 +109,7 @@ export default function AnswerPage() {
 
   function verifyExtraData(checklistPeriod: ChecklistPeriod, statusId: number) {
     const option = checklistPeriod.options.find((opt) => opt.id === statusId)
-    if (option.action && !currentShowImages.length) {
+    if (option?.action && !currentShowImages.length) {
       return true // Se tiver ação e não tiver fotos
     }
 

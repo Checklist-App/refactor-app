@@ -77,6 +77,8 @@ export default class DataBaseRepository implements IDataBaseRepository {
     const stored = this.mmkv.getString(user + path)
     if (stored) {
       const data = JSON.parse(stored)
+      //console.log("data =>", data)
+      
       return data
     } else {
       return []

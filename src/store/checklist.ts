@@ -30,12 +30,16 @@ interface ChecklistsData {
     location,
     user,
     model,
+    mileage,
+    hourmeter
   }: {
     period?: Checklist['period']
     equipment: Equipment | null
     location: Location | null
     user: string
-    model: number[]
+    model: number[],
+    mileage?: number,
+    hourmeter?: number
   }) => Checklist
   deleteChecklist: (checklistId: number) => void
   finalizeChecklist: (checklistId: number) => void
@@ -141,10 +145,12 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       set({ allChecklists: newChecklists })
     },
 
-    createChecklist: ({ period, equipment, model, user, location }) => {
+    createChecklist: ({ period, equipment, model, user, location, mileage, hourmeter }) => {
       const productionRegisterId = Number(
         new Date().getTime().toFixed().slice(6),
       )
+
+      console.log("mileage | hourmeter =>", mileage, hourmeter);
 
       const newChecklist: Checklist = {
         id: productionRegisterId,
@@ -163,6 +169,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         }),
         error: null,
         syncStatus: 'inserted',
+        mileage: mileage,
+        hourmeter: hourmeter
       }
 
       const checklists = get().allChecklists
@@ -446,6 +454,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
             }),
             syncStatus: 'synced',
             error: null,
+
+            
           }
 
           return data
@@ -494,6 +504,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
               initialTime: checklist.initialTime,
               finalTime: checklist.finalTime,
               status: checklist.status,
+              hourMeter: checklist.hourmeter,
+              mileage: checklist.mileage
             }
 
             const updateChecklist = {

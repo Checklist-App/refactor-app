@@ -33,6 +33,8 @@ const newChecklistSchema = z.object({
   model: z.coerce.number(),
   equipmentSearch: z.string().optional(),
   period: z.string().optional(),
+  mileage: z.string().optional(),
+  hourmeter: z.string().optional(),
   initialTime: z.date(),
 })
 
@@ -71,6 +73,8 @@ export default function NewChecklist() {
       setSelectedEquipment(
         equipments.find((equipment) => equipment.id === Number(equipmentValue)),
       )
+      setValue('mileage', String(selectedEquipment?.mileage ?? "0"))
+      setValue('hourmeter', String(selectedEquipment?.hourMeter ?? "0"))
     }
   }, [equipmentValue])
 
@@ -93,6 +97,8 @@ export default function NewChecklist() {
         location: null,
         user: user.login,
         model: [data.model],
+        hourmeter: +data.hourmeter,
+        mileage: +data.mileage
       })
 
       toast.show({
@@ -133,6 +139,11 @@ export default function NewChecklist() {
       </ContainerLoading>
     )
   }
+
+  console.log("selectedEquipment =>", selectedEquipment)
+  console.log("selectedEquipment mileage =>", selectedEquipment?.hasMileage)
+
+
 
   return (
     <KeyboardCoverPrevent>
@@ -189,6 +200,30 @@ export default function NewChecklist() {
                   <Form.ErrorMessage field="period" />
                 </Form.Field>
               )}
+
+              {
+                selectedEquipment?.hasMileage && (
+                  <Form.Field>
+                    <Form.Label>Quilometragem</Form.Label>
+                    <Form.Input
+                      name="mileage"
+                      inputMode='numeric'
+                    />
+                  </Form.Field>
+                )
+              }
+
+              {
+                selectedEquipment?.hasHourMeter && (
+                  <Form.Field>
+                    <Form.Label>Horímetro</Form.Label>
+                    <Form.Input
+                      name="hourmeter"
+                      inputMode='numeric'
+                    />
+                  </Form.Field>
+                )
+              }
 
             <Form.Field>
               <Form.Label>Hora inicial:</Form.Label>
