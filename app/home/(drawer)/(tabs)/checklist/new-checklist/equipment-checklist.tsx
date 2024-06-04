@@ -10,9 +10,9 @@ import { useSyncStatus } from '@/src/store/syncStatus'
 import { Equipment } from '@/src/types/Equipment'
 import { Period } from '@/src/types/Period'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, router } from 'expo-router'
+import { Link, router, useFocusEffect } from 'expo-router'
 import { useToast } from 'native-base'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { ActivityIndicator } from 'react-native'
 import { useTheme } from 'styled-components/native'
@@ -53,7 +53,7 @@ export default function NewChecklist() {
   const { user } = useAuth()
   const { color } = useTheme()
   const { createChecklist, updateAnswering } = useChecklist()
-  const { equipments, loadEquipments, equipmentId, updateEquipmentId } =
+  const { equipments, loadEquipments, equipmentId, updateEquipmentId, updateEquipmentById } =
     useEquipments()
   const { isSyncing } = useSyncStatus()
   const toast = useToast()
@@ -76,13 +76,20 @@ export default function NewChecklist() {
       setValue('mileage', String(selectedEquipment?.mileage ?? "0"))
       setValue('hourmeter', String(selectedEquipment?.hourMeter ?? "0"))
     }
-  }, [equipmentValue])
+  }, [equipmentValue, selectedEquipment])
 
   useEffect(() => {
     if (equipmentId) {
       setValue('equipment', String(equipmentId))
     }
   }, [equipmentId])
+
+  useFocusEffect(useCallback(() => {
+    console.log("Entrou")
+    console.log("selectedEquipment =>", selectedEquipment);
+    
+    //loadEquipments(user.login)
+  }, []))
 
   async function handleNewChecklist(data: NewChecklistData) {
     if (!user) {
@@ -109,7 +116,18 @@ export default function NewChecklist() {
           </ToastChecklistCreated>
         ),
       })
+
+      updateEquipmentId(equipmentId)
+
+      if(selectedEquipment.hasMileage && selectedEquipment.hasHourMeter){
+        updateEquipmentById(
+          user.login,
+          {...selectedEquipment, mileage: +data.mileage ?? 0, hourMeter: +data.hourmeter ?? 0}
+        )
+      }
+
       updateAnswering(true)
+
       router.replace(`/home/answer/${newChecklist.id}`)
     } catch (err) {
       const error: Error = err
@@ -139,11 +157,6 @@ export default function NewChecklist() {
       </ContainerLoading>
     )
   }
-
-  console.log("selectedEquipment =>", selectedEquipment)
-  console.log("selectedEquipment mileage =>", selectedEquipment?.hasMileage)
-
-
 
   return (
     <KeyboardCoverPrevent>
