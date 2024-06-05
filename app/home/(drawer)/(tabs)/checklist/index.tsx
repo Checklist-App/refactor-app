@@ -15,7 +15,7 @@ import { useChecklist } from '@/src/store/checklist'
 import { useConnection } from '@/src/store/connection'
 import { useSyncStatus } from '@/src/store/syncStatus'
 import { Ionicons } from '@expo/vector-icons'
-import { Box, HStack, Button as NBButton, Text, VStack } from 'native-base'
+import { Box, HStack, Button as NBButton, Spinner, VStack } from 'native-base'
 import { useEffect, useState } from 'react'
 import {
   Container,
@@ -47,6 +47,8 @@ export default function Page() {
   const { allChecklists } = useChecklist()
   const { equipments } = useEquipments()
 
+  const [isSearching, setIsSearching] = useState<boolean>(false)
+
   const [checklists, setChecklists] = useState<Checklist[]>([])
 
   const searchChecklistForm = useForm<SearchChecklistSchema>({
@@ -59,20 +61,27 @@ export default function Page() {
   const [openSearchFilter, setOpenSearchFilter] = useState<boolean>()
 
   function handleSearch(data: SearchChecklistSchema) {
+    
+    setIsSearching(true)
+
     const filteredEquipments = equipments.filter((eq) =>
       eq.code.includes(data.query),
     )
+    
     const filteredChecklists = allChecklists.filter(
       (value) =>
-        dayjs(data.initialDate).format('YYYY-MM-DD') <=
-          dayjs(value.initialTime).format('YYYY-MM-DD') &&
-        dayjs(data.finishedDate).format('YYYY-MM-DD') >=
-          dayjs(value.finalTime ?? new Date()).format('YYYY-MM-DD') &&
-        (data.query
+        dayjs(data.initialDate).isSame(value.initialTime, "day") &&
+        (
+          value.finalTime ? dayjs(data.finishedDate).isSame(value.finalTime, "day") : true
+        ) &&
+        (
+          data.query
           ? filteredEquipments.find((eq) => eq.id === value.equipmentId)
-          : true),
+          : true
+        ),
     )
 
+    setIsSearching(false)
     setChecklists(sortByDate(filteredChecklists))
   }
 
@@ -140,7 +149,7 @@ export default function Page() {
                       <Form.Input name="query" placeholder="Digite a código" />
                       <Form.ErrorMessage field="query" />
                     </Form.Field>
-                    <Button.Trigger onPress={handleSubmit(handleSearch)}>
+                    <Button.Trigger onPress={handleSubmit(handleSearch)} loading={isSearching} >
                       <Button.Icon.MagnifyingGlass />
                     </Button.Trigger>
                     <Button.Trigger
@@ -155,11 +164,13 @@ export default function Page() {
                   {openSearchFilter && (
                     <HStack
                       mt={4}
-                      justifyContent="center"
+                      justifyContent="space-between"
                       alignItems="center"
-                      space={2}
                     >
                       <Form.Field>
+                        <Form.Label>
+                          Início
+                        </Form.Label>
                         <Form.DatePicker
                           name="initialDate"
                           placehilderFormat="DD/MM/YYYY"
@@ -167,8 +178,10 @@ export default function Page() {
                         />
                         <Form.ErrorMessage field="initialDate" />
                       </Form.Field>
-                      <Text>Até</Text>
                       <Form.Field>
+                        <Form.Label>
+                          Finalização
+                        </Form.Label>
                         <Form.DatePicker
                           name="finishedDate"
                           placehilderFormat="DD/MM/YYYY"
@@ -184,24 +197,37 @@ export default function Page() {
           </HStack>
         </VStack>
       </VStack>
-      <FlashList
-        estimatedItemSize={40}
-        data={checklists}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item, index }) => (
-          <ChecklistItem
-            key={Math.random() * 100000 + '-' + index}
-            checklist={item}
+      {
+        isSearching ?
+        <Box
+          flex={1}
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Spinner
+            size={32}
+            color={"violet-400"}
           />
-        )}
-        ListEmptyComponent={() => (
-          <Loading>
-            <ErrorText>
-              Não há checklists registrados para essa filial hoje
-            </ErrorText>
-          </Loading>
-        )}
-      />
+        </Box> :
+        <FlashList
+          estimatedItemSize={40}
+          data={checklists}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={({ item, index }) => (
+            <ChecklistItem
+              key={Math.random() * 100000 + '-' + index}
+              checklist={item}
+            />
+          )}
+          ListEmptyComponent={() => (
+            <Loading>
+              <ErrorText>
+                Não há checklists registrados para esta data
+              </ErrorText>
+            </Loading>
+          )}
+        />
+      }
     </Container>
   )
 }

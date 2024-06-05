@@ -133,7 +133,6 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         if (item.id === checklist.id) {
           checklist.syncStatus =
             item.syncStatus === 'inserted' ? 'inserted' : 'updated'
-          // checklist.
           newChecklists.push(checklist)
         } else {
           newChecklists.push(item)
@@ -218,6 +217,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       const checklist = get().findChecklist(checklistId)
 
       checklist.status = 'close'
+      checklist.finalTime = new Date()
 
       get().updateChecklist(checklist)
     },

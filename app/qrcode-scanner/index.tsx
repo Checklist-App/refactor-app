@@ -15,6 +15,7 @@ export default function QrCodeScanner() {
   const { mode } = useLocalSearchParams()
   const { updateEquipmentId, equipments } = useEquipments()
   const { updateLocation, locations } = useLocations()
+  
 
   const handleBarCodeScanned = ({ data }) => {
     if (mode === 'equipment') {

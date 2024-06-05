@@ -10,9 +10,9 @@ import { useSyncStatus } from '@/src/store/syncStatus'
 import { Equipment } from '@/src/types/Equipment'
 import { Period } from '@/src/types/Period'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, router, useFocusEffect } from 'expo-router'
+import { Link, router } from 'expo-router'
 import { useToast } from 'native-base'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { ActivityIndicator } from 'react-native'
 import { useTheme } from 'styled-components/native'
@@ -67,7 +67,7 @@ export default function NewChecklist() {
   useEffect(() => {
     updateEquipmentId(null)
   }, [])
-
+  
   useEffect(() => {
     if (equipmentValue) {
       setSelectedEquipment(
@@ -83,13 +83,6 @@ export default function NewChecklist() {
       setValue('equipment', String(equipmentId))
     }
   }, [equipmentId])
-
-  useFocusEffect(useCallback(() => {
-    console.log("Entrou")
-    console.log("selectedEquipment =>", selectedEquipment);
-    
-    //loadEquipments(user.login)
-  }, []))
 
   async function handleNewChecklist(data: NewChecklistData) {
     if (!user) {
