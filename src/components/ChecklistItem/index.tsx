@@ -3,6 +3,7 @@ import { useLocations } from '@/src/store/location'
 import { Checklist } from '@/src/types/Checklist'
 import dayjs from 'dayjs'
 import { Link } from 'expo-router'
+import { HStack } from 'native-base'
 import { Dimensions } from 'react-native'
 import { useTheme } from 'styled-components'
 import { useChecklist } from '../../store/checklist'
@@ -10,13 +11,12 @@ import { Button } from '../Button'
 import { SyncedItem } from './SyncedItem'
 import {
   ChecklistButton,
-  ChecklistItemView,
   Container,
   Dot,
   Text,
   TextBold,
   TextContent,
-  TextContentUpper,
+  TextContentUpper
 } from './styles'
 
 const { width } = Dimensions.get('screen')
@@ -28,7 +28,13 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
   const { locations } = useLocations()
 
   return (
-    <ChecklistItemView>
+    <HStack
+      borderWidth={1}
+      borderColor={theme.color['zinc-200']}
+      borderRadius={10}
+      bg={"white"}
+      mb={2}
+    >
       <Container>
         <TextBold screenWidth={width}>{checklist.id}</TextBold>
         <TextContentUpper>
@@ -100,6 +106,6 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
           />
         </ChecklistButton>
       </Link>
-    </ChecklistItemView>
+    </HStack>
   )
 }

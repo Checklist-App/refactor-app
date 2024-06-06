@@ -14,8 +14,8 @@ export const Container = styled.View`
 `
 
 export const TitleView = styled.View`
-  flex-direction: row;
-  align-items: center;
+  flex-direction: column;
+  align-items: start;
   justify-content: space-between;
 `
 
