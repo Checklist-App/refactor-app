@@ -84,7 +84,7 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
         />
       </Container>
       <Link
-        disabled={checklistLoadingId === checklist.id}
+        disabled={checklistLoadingId === checklist.id && !checklist.error}
         // onPress={() => {
         //   setCurrentChecklist(checklist.id)
         // }}
