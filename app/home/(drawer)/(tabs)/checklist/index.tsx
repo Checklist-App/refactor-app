@@ -58,16 +58,15 @@ export default function Page() {
   const { handleSubmit } = searchChecklistForm
 
   const [openSearchInput, setOpenSearchInput] = useState<boolean>()
-  const [openSearchFilter, setOpenSearchFilter] = useState<boolean>()
 
   function handleSearch(data: SearchChecklistSchema) {
-    
+
     setIsSearching(true)
 
     const filteredEquipments = equipments.filter((eq) =>
       eq.code.includes(data.query),
     )
-    
+
     const filteredChecklists = allChecklists.filter(
       (value) =>
         dayjs(data.initialDate).isSame(value.initialTime, "day") &&
@@ -76,8 +75,8 @@ export default function Page() {
         ) &&
         (
           data.query
-          ? filteredEquipments.find((eq) => eq.id === value.equipmentId)
-          : true
+            ? filteredEquipments.find((eq) => eq.id === value.equipmentId)
+            : true
         ),
     )
 
@@ -153,44 +152,41 @@ export default function Page() {
                       <Button.Icon.MagnifyingGlass />
                     </Button.Trigger>
                     <Button.Trigger
-                      variant="transparent"
-                      onPress={() => {
-                        setOpenSearchFilter(!openSearchFilter)
-                      }}
+                      variant='transparent'
+                      onPress={() => setOpenSearchInput(false)}
                     >
-                      <Button.Icon.FunnelSimple />
+                      <Button.Icon.X color={"red"} />
                     </Button.Trigger>
                   </HStack>
-                  {openSearchFilter && (
-                    <HStack
-                      mt={4}
-                      justifyContent="space-between"
-                      alignItems="center"
-                    >
-                      <Form.Field>
-                        <Form.Label>
-                          Início
-                        </Form.Label>
-                        <Form.DatePicker
-                          name="initialDate"
-                          placehilderFormat="DD/MM/YYYY"
-                          mode="date"
-                        />
-                        <Form.ErrorMessage field="initialDate" />
-                      </Form.Field>
-                      <Form.Field>
-                        <Form.Label>
-                          Finalização
-                        </Form.Label>
-                        <Form.DatePicker
-                          name="finishedDate"
-                          placehilderFormat="DD/MM/YYYY"
-                          mode="date"
-                        />
-                        <Form.ErrorMessage field="finishedDate" />
-                      </Form.Field>
-                    </HStack>
-                  )}
+
+                  <HStack
+                    mt={4}
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <Form.Field>
+                      <Form.Label>
+                        Início
+                      </Form.Label>
+                      <Form.DatePicker
+                        name="initialDate"
+                        placehilderFormat="DD/MM/YYYY"
+                        mode="date"
+                      />
+                      <Form.ErrorMessage field="initialDate" />
+                    </Form.Field>
+                    <Form.Field>
+                      <Form.Label>
+                        Finalização
+                      </Form.Label>
+                      <Form.DatePicker
+                        name="finishedDate"
+                        placehilderFormat="DD/MM/YYYY"
+                        mode="date"
+                      />
+                      <Form.ErrorMessage field="finishedDate" />
+                    </Form.Field>
+                  </HStack>
                 </FormProvider>
               </VStack>
             )}
@@ -199,34 +195,34 @@ export default function Page() {
       </VStack>
       {
         isSearching ?
-        <Box
-          flex={1}
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Spinner
-            size={32}
-            color={"violet-400"}
-          />
-        </Box> :
-        <FlashList
-          estimatedItemSize={40}
-          data={checklists}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={({ item, index }) => (
-            <ChecklistItem
-              key={Math.random() * 100000 + '-' + index}
-              checklist={item}
+          <Box
+            flex={1}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Spinner
+              size={32}
+              color={"violet-400"}
             />
-          )}
-          ListEmptyComponent={() => (
-            <Loading>
-              <ErrorText>
-                Não há checklists registrados para esta data
-              </ErrorText>
-            </Loading>
-          )}
-        />
+          </Box> :
+          <FlashList
+            estimatedItemSize={40}
+            data={checklists}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={({ item, index }) => (
+              <ChecklistItem
+                key={Math.random() * 100000 + '-' + index}
+                checklist={item}
+              />
+            )}
+            ListEmptyComponent={() => (
+              <Loading>
+                <ErrorText>
+                  Não há checklists registrados para esta data
+                </ErrorText>
+              </Loading>
+            )}
+          />
       }
     </Container>
   )
