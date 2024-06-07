@@ -24,6 +24,8 @@ export default interface IDataBaseRepository {
   storeUser: (user: User) => void
   storeToken: (token: string) => void
 
+  updateEquipment: (user: string, equipment: Equipment) => void
+
   checkNeedToUpdate: () => boolean
   setNeedToUpdate: (arg: boolean) => void
   deleteKey: (key: string) => void

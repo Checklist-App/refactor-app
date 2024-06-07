@@ -270,8 +270,8 @@ export default function AnswerPage() {
   return (
     <>
       <AnswerHeader />
-      <KeyboardCoverPrevent style={{ height: '100%' }}>
-        <Container style={{ height: height * 0.9 }}>
+      <KeyboardCoverPrevent style={{ height: '100%', flex: 1 }}>
+        <Container>
           <ChecklistQuestion
             currentChecklistPeriod={
               currentChecklist.checklistPeriods[currentChecklistPeriod]
@@ -317,7 +317,7 @@ export default function AnswerPage() {
               prevDisabled={!(currentChecklistPeriod > 0)}
             />
           )}
-        </Container>
+          </Container>
       </KeyboardCoverPrevent>
     </>
   )

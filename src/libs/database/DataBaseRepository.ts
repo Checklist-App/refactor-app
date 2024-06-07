@@ -114,6 +114,20 @@ export default class DataBaseRepository implements IDataBaseRepository {
     }
   }
 
+  updateEquipment(user: string, equipment: Equipment){
+    const equipments = this.retrieveEquipments(user)
+
+    console.log("updatedEquipment =>", equipment)
+
+    equipments.map((eq) => (
+      eq.id === equipment.id ? {...equipment} : eq
+    ))
+
+    console.log("updatedEquipments =>", equipments)
+
+    this.mmkv.set(`${user}/@equipments`, JSON.stringify(equipment))
+  }
+
   storeChecklists(checklists: Checklist[]) {
     const user = this.retrieveLastUser()
     if (user) {

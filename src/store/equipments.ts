@@ -8,6 +8,7 @@ interface EquipmentsData {
 
   loadEquipments: (user: string) => void
   updateEquipmentId: (arg: number) => void
+  updateEquipmentById: (user: string, equipment: Equipment) => void
 }
 
 export const useEquipments = create<EquipmentsData>((set) => {
@@ -23,5 +24,15 @@ export const useEquipments = create<EquipmentsData>((set) => {
     updateEquipmentId: (arg) => {
       set({ equipmentId: arg })
     },
+
+    updateEquipmentById: (user, equipment) => {
+      console.log(`${user} / mileage => ${equipment.mileage} | hourmeter => ${equipment.hourMeter}`);
+      
+      set((state) => ({
+        equipments: state.equipments?.map((eq) => eq.id === equipment.id ? equipment : eq)
+      }))
+
+      db.updateEquipment(user, equipment)
+    }
   }
 })

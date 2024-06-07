@@ -53,7 +53,7 @@ export default function NewChecklist() {
   const { user } = useAuth()
   const { color } = useTheme()
   const { createChecklist, updateAnswering } = useChecklist()
-  const { equipments, loadEquipments, equipmentId, updateEquipmentId } =
+  const { equipments, loadEquipments, equipmentId, updateEquipmentId, updateEquipmentById } =
     useEquipments()
   const { isSyncing } = useSyncStatus()
   const toast = useToast()
@@ -67,7 +67,7 @@ export default function NewChecklist() {
   useEffect(() => {
     updateEquipmentId(null)
   }, [])
-
+  
   useEffect(() => {
     if (equipmentValue) {
       setSelectedEquipment(
@@ -76,7 +76,7 @@ export default function NewChecklist() {
       setValue('mileage', String(selectedEquipment?.mileage ?? "0"))
       setValue('hourmeter', String(selectedEquipment?.hourMeter ?? "0"))
     }
-  }, [equipmentValue])
+  }, [equipmentValue, selectedEquipment])
 
   useEffect(() => {
     if (equipmentId) {
@@ -109,7 +109,18 @@ export default function NewChecklist() {
           </ToastChecklistCreated>
         ),
       })
+
+      updateEquipmentId(equipmentId)
+
+      if(selectedEquipment.hasMileage && selectedEquipment.hasHourMeter){
+        updateEquipmentById(
+          user.login,
+          {...selectedEquipment, mileage: +data.mileage ?? 0, hourMeter: +data.hourmeter ?? 0}
+        )
+      }
+
       updateAnswering(true)
+
       router.replace(`/home/answer/${newChecklist.id}`)
     } catch (err) {
       const error: Error = err
@@ -139,11 +150,6 @@ export default function NewChecklist() {
       </ContainerLoading>
     )
   }
-
-  console.log("selectedEquipment =>", selectedEquipment)
-  console.log("selectedEquipment mileage =>", selectedEquipment?.hasMileage)
-
-
 
   return (
     <KeyboardCoverPrevent>
