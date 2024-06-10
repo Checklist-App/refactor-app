@@ -16,7 +16,7 @@ import {
   Text,
   TextBold,
   TextContent,
-  TextContentUpper
+  TextContentUpper,
 } from './styles'
 
 const { width } = Dimensions.get('screen')
@@ -32,7 +32,7 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
       borderWidth={1}
       borderColor={theme.color['zinc-200']}
       borderRadius={10}
-      bg={"white"}
+      bg={'white'}
       mb={2}
     >
       <Container>
@@ -57,7 +57,8 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
         {checklist.equipmentId && equipments ? (
           <TextContent>
             <Text screenWidth={width}>
-              {equipments.find((eq) => eq.id === checklist.equipmentId).code}
+              {equipments.find((eq) => eq.id === checklist.equipmentId)?.code ||
+                ''}
             </Text>
             <Dot />
             <Text screenWidth={width}>
