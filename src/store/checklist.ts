@@ -31,14 +31,14 @@ interface ChecklistsData {
     user,
     model,
     mileage,
-    hourmeter
+    hourmeter,
   }: {
     period?: Checklist['period']
     equipment: Equipment | null
     location: Location | null
     user: string
-    model: number[],
-    mileage?: number,
+    model: number[]
+    mileage?: number
     hourmeter?: number
   }) => Checklist
   deleteChecklist: (checklistId: number) => void
@@ -144,12 +144,20 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       set({ allChecklists: newChecklists })
     },
 
-    createChecklist: ({ period, equipment, model, user, location, mileage, hourmeter }) => {
+    createChecklist: ({
+      period,
+      equipment,
+      model,
+      user,
+      location,
+      mileage,
+      hourmeter,
+    }) => {
       const productionRegisterId = Number(
         new Date().getTime().toFixed().slice(6),
       )
 
-      console.log("mileage | hourmeter =>", mileage, hourmeter);
+      console.log('mileage | hourmeter =>', mileage, hourmeter)
 
       const newChecklist: Checklist = {
         id: productionRegisterId,
@@ -168,8 +176,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         }),
         error: null,
         syncStatus: 'inserted',
-        mileage: mileage,
-        hourmeter: hourmeter
+        mileage,
+        hourmeter,
       }
 
       const checklists = get().allChecklists
@@ -454,8 +462,6 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
             }),
             syncStatus: 'synced',
             error: null,
-
-            
           }
 
           return data
@@ -469,7 +475,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         console.log('Erro generate')
         console.log(err)
         throw new Error('Falha ao escrever checklists', {
-          cause: err, 
+          cause: err,
         })
       }
     },
@@ -505,7 +511,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
               finalTime: checklist.finalTime,
               status: checklist.status,
               hourMeter: checklist.hourmeter,
-              mileage: checklist.mileage
+              mileage: checklist.mileage,
             }
 
             const updateChecklist = {

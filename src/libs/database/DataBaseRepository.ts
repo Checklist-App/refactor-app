@@ -77,8 +77,8 @@ export default class DataBaseRepository implements IDataBaseRepository {
     const stored = this.mmkv.getString(user + path)
     if (stored) {
       const data = JSON.parse(stored)
-      //console.log("data =>", data)
-      
+      // console.log("data =>", data)
+
       return data
     } else {
       return []
@@ -114,16 +114,14 @@ export default class DataBaseRepository implements IDataBaseRepository {
     }
   }
 
-  updateEquipment(user: string, equipment: Equipment){
+  updateEquipment(user: string, equipment: Equipment) {
     const equipments = this.retrieveEquipments(user)
 
-    console.log("updatedEquipment =>", equipment)
+    console.log('updatedEquipment =>', equipment)
 
-    equipments.map((eq) => (
-      eq.id === equipment.id ? {...equipment} : eq
-    ))
+    equipments.map((eq) => (eq.id === equipment.id ? { ...equipment } : eq))
 
-    console.log("updatedEquipments =>", equipments)
+    console.log('updatedEquipments =>', equipments)
 
     this.mmkv.set(`${user}/@equipments`, JSON.stringify(equipment))
   }

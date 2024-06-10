@@ -26,13 +26,17 @@ export const useEquipments = create<EquipmentsData>((set) => {
     },
 
     updateEquipmentById: (user, equipment) => {
-      console.log(`${user} / mileage => ${equipment.mileage} | hourmeter => ${equipment.hourMeter}`);
-      
+      console.log(
+        `${user} / mileage => ${equipment.mileage} | hourmeter => ${equipment.hourMeter}`,
+      )
+
       set((state) => ({
-        equipments: state.equipments?.map((eq) => eq.id === equipment.id ? equipment : eq)
+        equipments: state.equipments?.map((eq) =>
+          eq.id === equipment.id ? equipment : eq,
+        ),
       }))
 
       db.updateEquipment(user, equipment)
-    }
+    },
   }
 })
