@@ -26,9 +26,11 @@ export async function saveFile(fileUri: string) {
     if (permission.status === 'granted') {
       const asset = await MediaLibrary.createAssetAsync(fileUri)
       const album = await MediaLibrary.getAlbumAsync('Smartlist')
+      const albums = await MediaLibrary.getAlbumsAsync()
+      console.log(`ALBUMS LIST: ${JSON.stringify(albums, null, 2)}`)
       if (album == null) {
         const newAlbum = await MediaLibrary.createAlbumAsync(
-          'Checklist',
+          'Smartlist',
           asset,
           true,
         )
@@ -53,6 +55,7 @@ export async function storeFile(fileUri: string) {
     await FileSystem.copyAsync({ from: fileUri, to: newUri })
 
     console.log('newUri =>', newUri)
+    console.log(`FILE URI: ${fileUri} NEW URI: ${newUri}`)
 
     return newUri
   } catch (err) {
