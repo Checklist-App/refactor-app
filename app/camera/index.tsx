@@ -100,7 +100,7 @@ export default function CameraPage() {
       {
         id: id.toString(),
         image: {
-          name: new Date().toISOString() + '-' + picture.uri,
+          name: picture.uri.split("Camera/")[1],
           path: picture.uri,
           url: '',
         },

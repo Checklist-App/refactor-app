@@ -1,12 +1,15 @@
-import * as FileSystem from 'expo-file-system'
-import * as MediaLibrary from 'expo-media-library'
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
+import db from '../libs/database';
 
 export async function downloadImage(imageUrl: string) {
   console.log('Baixando imagem...')
 
   return new Promise<string>((resolve, reject) => {
-    //const date = new Date().toISOString()
-    const fileUri = FileSystem.documentDirectory + `${imageUrl.split("Z-")[1]}`
+    console.log("imageUrl =>", imageUrl);
+    
+    const parts = imageUrl.split("/")
+    const fileUri = FileSystem.documentDirectory + (imageUrl.includes("Z-") ? `${imageUrl.split("Z-")[1]}` : `${parts[parts.length -1 ]}`)
     console.log("fileUri =>", fileUri)
     FileSystem.downloadAsync(imageUrl, fileUri)
       .then((res) => res.uri)
@@ -24,19 +27,10 @@ export async function saveFile(fileUri: string) {
     const permission = await MediaLibrary.requestPermissionsAsync()
 
     if (permission.status === 'granted') {
-      const asset = await MediaLibrary.createAssetAsync(fileUri)
-      const album = await MediaLibrary.getAlbumAsync('Smartlist')
-      if (album == null) {
-        const newAlbum = await MediaLibrary.createAlbumAsync(
-          'Checklist',
-          asset,
-          true,
-        )
-        await MediaLibrary.addAssetsToAlbumAsync(asset, newAlbum, false)
-      } else {
-        await MediaLibrary.addAssetsToAlbumAsync(asset, album, false)
-      }
 
+      const asset = await MediaLibrary.createAssetAsync(fileUri)
+      db.storeImage(asset)
+      
       return asset.uri
     }
   } catch (err) {
@@ -44,16 +38,37 @@ export async function saveFile(fileUri: string) {
   }
 }
 
+export async function saveFileToAlbum() {
+  const assets = db.retrieveImages()
+
+  const albumName = "Smartlist"
+  let album = await MediaLibrary.getAlbumAsync(albumName)
+  if (album == null) {
+    album = await MediaLibrary.createAlbumAsync(
+      albumName,
+      assets ? assets[0] : null,
+      true,
+    )
+  }
+  
+  try {
+    const imagesInAlbum = await MediaLibrary.getAssetsAsync({album: album})
+    const assetsToAdd = assets.filter(asset => !imagesInAlbum.assets.includes(asset))
+    await MediaLibrary.addAssetsToAlbumAsync(assetsToAdd, album, false)
+  } catch (error) {
+    console.log("Erro ao salvar imagem: ", error);
+  }
+}
+
 export async function storeFile(fileUri: string) {
   try {
-    console.log("fileUri.split =>", fileUri.split("Camera/")[1]);
+    console.log("fileUri =>", fileUri);
     
-    const newUri = FileSystem.documentDirectory + `${fileUri.split("Camera/")[1]}`
+    const newUri = FileSystem.documentDirectory + (fileUri.includes("Camera/") ? `${fileUri.split("Camera/")[1]}` : fileUri)
     await FileSystem.copyAsync({ from: fileUri, to: newUri })
 
     console.log("newUri =>", newUri);
     
-
     return newUri
   } catch (err) {
     console.log('Store err: ', err)

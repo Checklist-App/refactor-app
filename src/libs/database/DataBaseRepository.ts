@@ -5,6 +5,8 @@ import { Equipment } from '@/src/types/Equipment'
 import { Location } from '@/src/types/Location'
 import { Responsible } from '@/src/types/Responsible'
 import { User } from '@/src/types/User'
+import * as MediaLibrary from 'expo-media-library'
+import { Asset } from 'expo-media-library'
 import IDataBaseRepository from './IDataBaseRepository'
 import IDataBaseService from './IDataBaseService'
 
@@ -114,6 +116,16 @@ export default class DataBaseRepository implements IDataBaseRepository {
     }
   }
 
+  retrieveImages(){
+    const allImagesString = this.mmkv.getString('images')
+    if(allImagesString){
+      const allImages: MediaLibrary.Asset[] = JSON.parse(allImagesString) 
+      return allImages
+    }else{
+      return null
+    }
+  }
+
   updateEquipment(user: string, equipment: Equipment){
     const equipments = this.retrieveEquipments(user)
 
@@ -167,6 +179,19 @@ export default class DataBaseRepository implements IDataBaseRepository {
 
   storeToken(token: string) {
     this.mmkv.set('activeToken', token)
+  }
+  
+  storeImage(image: Asset){
+    try {
+      const allImages: MediaLibrary.Asset[] = this.retrieveImages() ?? []
+      allImages.push(image)
+      const allImagesString = JSON.stringify(allImages)
+
+      this.mmkv.set("images", allImagesString)
+    } catch (error) {
+      console.log("StoreImage error:", error);
+      
+    }
   }
 
   checkNeedToUpdate() {

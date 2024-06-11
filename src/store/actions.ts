@@ -2,7 +2,7 @@ import { AxiosError } from 'axios'
 import { create } from 'zustand'
 import { api } from '../libs/api'
 import db from '../libs/database'
-import { downloadImage } from '../services/downloadImage'
+import { downloadImage, saveFileToAlbum } from '../services/downloadImage'
 import { uploadSingleImage } from '../services/uploadImages'
 import { Action, ReceivedAction } from '../types/Action'
 
@@ -135,6 +135,7 @@ export const useActions = create<ActionsData>((set, get) => {
             syncStatus: 'synced',
           })
         }
+        saveFileToAlbum()
         db.storeActions(actions)
         if (!actions.length) {
           console.log('Nenhuma ação')
