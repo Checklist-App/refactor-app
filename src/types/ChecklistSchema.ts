@@ -6,7 +6,7 @@ export interface ChecklistSchema {
   login: string
   initialTime: Date
   finalTime: Date | null
-  status: 'open' | 'close',
-  hourmeter?: number,
+  status: 'open' | 'close'
+  hourmeter?: number
   mileage?: number
 }

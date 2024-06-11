@@ -18,7 +18,7 @@ export interface Checklist {
   syncStatus: 'inserted' | 'synced' | 'updated'
   error: string | null
 
-  mileage?: number,
+  mileage?: number
   hourmeter?: number
 }
 

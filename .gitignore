@@ -38,3 +38,4 @@ yarn-error.*
 credentials.json
 credentials/*
 smartlist-app-gc.json
+upload_cert.der

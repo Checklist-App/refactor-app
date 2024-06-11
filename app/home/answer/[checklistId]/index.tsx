@@ -233,6 +233,7 @@ export default function AnswerPage() {
         : []
 
     if (images.length) {
+      // TALVES PRECISE MUDAR
       for (const img of images) {
         console.log('Lendo imagens')
         img.path = await storeFile(img.path)
@@ -317,7 +318,7 @@ export default function AnswerPage() {
               prevDisabled={!(currentChecklistPeriod > 0)}
             />
           )}
-          </Container>
+        </Container>
       </KeyboardCoverPrevent>
     </>
   )

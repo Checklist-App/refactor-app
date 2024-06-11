@@ -60,7 +60,6 @@ export default function Page() {
   const [openSearchInput, setOpenSearchInput] = useState<boolean>()
 
   function handleSearch(data: SearchChecklistSchema) {
-
     setIsSearching(true)
 
     const filteredEquipments = equipments.filter((eq) =>
@@ -69,15 +68,13 @@ export default function Page() {
 
     const filteredChecklists = allChecklists.filter(
       (value) =>
-        dayjs(data.initialDate).isSame(value.initialTime, "day") &&
-        (
-          value.finalTime ? dayjs(data.finishedDate).isSame(value.finalTime, "day") : true
-        ) &&
-        (
-          data.query
-            ? filteredEquipments.find((eq) => eq.id === value.equipmentId)
-            : true
-        ),
+        dayjs(data.initialDate).isSame(value.initialTime, 'day') &&
+        (value.finalTime
+          ? dayjs(data.finishedDate).isSame(value.finalTime, 'day')
+          : true) &&
+        (data.query
+          ? filteredEquipments.find((eq) => eq.id === value.equipmentId)
+          : true),
     )
 
     setIsSearching(false)
@@ -148,14 +145,17 @@ export default function Page() {
                       <Form.Input name="query" placeholder="Digite a código" />
                       <Form.ErrorMessage field="query" />
                     </Form.Field>
-                    <Button.Trigger onPress={handleSubmit(handleSearch)} loading={isSearching} >
+                    <Button.Trigger
+                      onPress={handleSubmit(handleSearch)}
+                      loading={isSearching}
+                    >
                       <Button.Icon.MagnifyingGlass />
                     </Button.Trigger>
                     <Button.Trigger
-                      variant='transparent'
+                      variant="transparent"
                       onPress={() => setOpenSearchInput(false)}
                     >
-                      <Button.Icon.X color={"red"} />
+                      <Button.Icon.X color={'red'} />
                     </Button.Trigger>
                   </HStack>
 
@@ -165,9 +165,7 @@ export default function Page() {
                     alignItems="center"
                   >
                     <Form.Field>
-                      <Form.Label>
-                        Início
-                      </Form.Label>
+                      <Form.Label>Início</Form.Label>
                       <Form.DatePicker
                         name="initialDate"
                         placehilderFormat="DD/MM/YYYY"
@@ -176,9 +174,7 @@ export default function Page() {
                       <Form.ErrorMessage field="initialDate" />
                     </Form.Field>
                     <Form.Field>
-                      <Form.Label>
-                        Finalização
-                      </Form.Label>
+                      <Form.Label>Finalização</Form.Label>
                       <Form.DatePicker
                         name="finishedDate"
                         placehilderFormat="DD/MM/YYYY"
@@ -193,37 +189,30 @@ export default function Page() {
           </HStack>
         </VStack>
       </VStack>
-      {
-        isSearching ?
-          <Box
-            flex={1}
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Spinner
-              size={32}
-              color={"violet-400"}
+      {isSearching ? (
+        <Box flex={1} justifyContent="center" alignItems="center">
+          <Spinner size={32} color={'violet-400'} />
+        </Box>
+      ) : (
+        <FlashList
+          estimatedItemSize={40}
+          data={checklists}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={({ item, index }) => (
+            <ChecklistItem
+              key={Math.random() * 100000 + '-' + index}
+              checklist={item}
             />
-          </Box> :
-          <FlashList
-            estimatedItemSize={40}
-            data={checklists}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={({ item, index }) => (
-              <ChecklistItem
-                key={Math.random() * 100000 + '-' + index}
-                checklist={item}
-              />
-            )}
-            ListEmptyComponent={() => (
-              <Loading>
-                <ErrorText>
-                  Não há checklists registrados para esta data
-                </ErrorText>
-              </Loading>
-            )}
-          />
-      }
+          )}
+          ListEmptyComponent={() => (
+            <Loading>
+              <ErrorText>
+                Não há checklists registrados para esta data
+              </ErrorText>
+            </Loading>
+          )}
+        />
+      )}
     </Container>
   )
 }
