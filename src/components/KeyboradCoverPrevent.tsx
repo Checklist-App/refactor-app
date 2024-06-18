@@ -4,7 +4,7 @@ import {
   KeyboardAvoidingView,
   KeyboardAvoidingViewProps,
   ScrollView,
-  TouchableWithoutFeedback,
+  TouchableWithoutFeedback
 } from 'react-native'
 
 interface KeyboardCoverPreventProps extends KeyboardAvoidingViewProps {
@@ -17,7 +17,7 @@ export function KeyboardCoverPrevent({
 }: KeyboardCoverPreventProps) {
   return (
     <KeyboardAvoidingView style={{ flex: 1, height: '100%' }} {...props}>
-      <ScrollView style={{ flex: 1, height: '100%' }}>
+      <ScrollView style={{ flex: 1, height: '100%' }} contentContainerStyle={{flexGrow: 1}}>
         <TouchableWithoutFeedback
           onPress={Keyboard.dismiss}
           style={{ flex: 1, height: '100%' }}

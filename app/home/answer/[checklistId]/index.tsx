@@ -16,12 +16,13 @@ import {
   ChildType,
 } from '@/src/types/ChecklistPeriod'
 import { router, useLocalSearchParams } from 'expo-router'
-import { useToast } from 'native-base'
+import { HStack, VStack, useTheme, useToast } from 'native-base'
 import { useEffect, useState } from 'react'
 import { Alert, BackHandler, Dimensions } from 'react-native'
-import { Buttons, Container } from './styles'
+import { Container } from './styles'
 
 const { height } = Dimensions.get('window')
+
 
 export default function AnswerPage() {
   const {
@@ -31,6 +32,7 @@ export default function AnswerPage() {
     updateAnswering,
   } = useChecklist()
   const { currentImages } = useCamera()
+  const theme = useTheme()
   const { checklistId, isEditing, checklistPeriodIndex } =
     useLocalSearchParams()
   const toast = useToast()
@@ -271,8 +273,14 @@ export default function AnswerPage() {
   return (
     <>
       <AnswerHeader />
-      <KeyboardCoverPrevent style={{ height: '100%', flex: 1 }}>
-        <Container>
+      <KeyboardCoverPrevent style={{ flex: 1, height: '100%' }}>
+        <VStack
+          flex={1}
+          bg={theme.colors['zinc-100']}
+          py={10}
+          p={4}
+          space={4}
+        >
           <ChecklistQuestion
             currentChecklistPeriod={
               currentChecklist.checklistPeriods[currentChecklistPeriod]
@@ -286,39 +294,47 @@ export default function AnswerPage() {
             images={currentShowImages}
           />
 
-          <Buttons>
-            <Button.Trigger
-              onPress={handleStop}
-              variant="secondary"
-              style={{ width: '49%' }}
+          <VStack
+            space={4}
+          >
+            <HStack
+              space={2}
+              justifyContent="space-between"
+              alignItems="center"
             >
-              <Button.Text>Sair</Button.Text>
-            </Button.Trigger>
-            <Button.Trigger
-              disabled={checkConfirmDisabled()}
-              variant="green"
-              style={{ width: '49%' }}
-              onPress={handleConfirm}
-              loading={buttonLoading}
-            >
-              <Button.Text>Confirmar</Button.Text>
-              <Button.Icon.CheckCircle />
-            </Button.Trigger>
-          </Buttons>
+              <Button.Trigger
+                onPress={handleStop}
+                variant="secondary"
+                style={{ width: '49%' }}
+              >
+                <Button.Text>Sair</Button.Text>
+              </Button.Trigger>
+              <Button.Trigger
+                disabled={checkConfirmDisabled()}
+                variant="green"
+                style={{ width: '49%' }}
+                onPress={handleConfirm}
+                loading={buttonLoading}
+              >
+                <Button.Text>Confirmar</Button.Text>
+                <Button.Icon.CheckCircle />
+              </Button.Trigger>
+            </HStack>
 
-          {isEditing === 'true' ? (
-            ''
-          ) : (
-            <QuestionPaginator
-              currentQuestionIndex={currentChecklistPeriod}
-              handleNext={handleNext}
-              handlePrev={handlePrev}
-              nextDisabled={checkNextDisabled()}
-              numberOfQuestions={currentChecklist.checklistPeriods.length}
-              prevDisabled={!(currentChecklistPeriod > 0)}
-            />
-          )}
-        </Container>
+            {isEditing === 'true' ? (
+              ''
+            ) : (
+              <QuestionPaginator
+                currentQuestionIndex={currentChecklistPeriod}
+                handleNext={handleNext}
+                handlePrev={handlePrev}
+                nextDisabled={checkNextDisabled()}
+                numberOfQuestions={currentChecklist.checklistPeriods.length}
+                prevDisabled={!(currentChecklistPeriod > 0)}
+              />
+            )}
+          </VStack>
+        </VStack>
       </KeyboardCoverPrevent>
     </>
   )

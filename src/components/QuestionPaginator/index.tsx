@@ -1,9 +1,9 @@
+import { HStack } from 'native-base'
 import { Button } from '../Button'
 import {
   IndicatorContainer,
   IndicatorThumb,
-  PaginationContainer,
-  PaginationText,
+  PaginationText
 } from './styles'
 
 interface QuestionPaginatorProps {
@@ -24,7 +24,10 @@ export function QuestionPaginator({
   nextDisabled,
 }: QuestionPaginatorProps) {
   return (
-    <PaginationContainer>
+    <HStack
+      space={2}
+      alignItems="center"
+    >
       <Button.Trigger onPress={handlePrev} disabled={prevDisabled} onlyIcon>
         <Button.Icon.CaretLeft />
       </Button.Trigger>
@@ -39,6 +42,6 @@ export function QuestionPaginator({
       <Button.Trigger onPress={handleNext} onlyIcon disabled={nextDisabled}>
         <Button.Icon.CaretRight />
       </Button.Trigger>
-    </PaginationContainer>
+    </HStack>
   )
 }
