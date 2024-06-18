@@ -330,19 +330,19 @@ export default function ActionScreen() {
                   {isAnswering ? (
                     <Form.DatePicker
                       name="dueDate"
-                      placehilderFormat="DD/MM/YYYY HH:mm"
+                      placehilderFormat="DD/MM/YYYY"
                       mode="datetime"
                       disabled={!isAnswering}
                     />
                   ) : currentAction.dueDate ? (
                     <Form.DatePicker
                       name="dueDate"
-                      placehilderFormat="DD/MM/YYYY HH:mm"
+                      placehilderFormat="DD/MM/YYYY"
                       mode="datetime"
                       disabled={!isAnswering}
                     />
                   ) : (
-                    <EmptyDateInput placeholder="DD/MM/YYYY HH:mm" />
+                    <EmptyDateInput placeholder="DD/MM/YYYY" />
                   )}
                 </Form.Field>
               </FormInput>
