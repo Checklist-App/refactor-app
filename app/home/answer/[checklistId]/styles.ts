@@ -8,6 +8,7 @@ export const Container = styled.View`
   width: 100%;
   background-color: ${({ theme }) => theme.color['zinc-100']};
   gap: 16px;
+  border: 1px solid black;
 `
 
 export const ContainerList = styled.View`
