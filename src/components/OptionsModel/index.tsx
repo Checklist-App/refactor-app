@@ -1,5 +1,7 @@
 import { ChecklistStatus } from '@/src/types/ChecklistStatus'
 import { CheckCircle, Question, XCircle } from 'phosphor-react-native'
+import { useState } from 'react'
+import { Dimensions } from 'react-native'
 import { Container, Option, TextOption } from './styles'
 
 interface OptionsModelProps {
@@ -11,7 +13,7 @@ interface OptionsModelProps {
 export function OptionsModel({
   options,
   alternativeSelected,
-  setAlternativeSelected,
+  setAlternativeSelected
 }: OptionsModelProps) {
   const icons = {
     'remove-circle': Question,
@@ -19,10 +21,24 @@ export function OptionsModel({
     'checkmark-circle': CheckCircle,
   }
 
+  const [width] = useState(Dimensions.get('window').width)
+  const [desc, setDesc] = useState('')
+
   const colors = {
     dark: 'black',
     success: 'green',
     danger: 'red',
+  }
+
+  function resumedDesc(index: number): string {
+    switch (index) {
+      case 0:
+        return "OK"
+      case 1:
+        return "NC"
+      default:
+        return "NA"
+    }
   }
 
   return (
@@ -41,7 +57,7 @@ export function OptionsModel({
             }}
           >
             <TextOption color={color} selected={selected} numberOfLines={2}>
-              {option.description}
+              {width > 720 ? option.description : resumedDesc(index)}
             </TextOption>
             <Icon color={selected ? 'white' : color} size={40} weight="bold" />
           </Option>
