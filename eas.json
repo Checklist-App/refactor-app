@@ -19,6 +19,10 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://checklist-api.smartnewservices.com.br"
+      }
+    }
   }
 }
