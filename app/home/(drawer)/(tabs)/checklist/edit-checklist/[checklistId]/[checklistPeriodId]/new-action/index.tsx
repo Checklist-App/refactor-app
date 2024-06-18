@@ -6,7 +6,7 @@ import { Toast } from '@/src/components/Toast'
 import { useChecklist } from '@/src/store/checklist'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { router, useLocalSearchParams } from 'expo-router'
-import { useToast } from 'native-base'
+import { HStack, Heading, Text, VStack, useTheme, useToast } from 'native-base'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Alert, BackHandler } from 'react-native'
@@ -15,13 +15,13 @@ import { z } from 'zod'
 import { useActions } from '@/src/store/actions'
 import { useResponsibles } from '@/src/store/responsibles'
 import { ChecklistPeriod } from '@/src/types/ChecklistPeriod'
+import { XCircle } from 'phosphor-react-native'
 import {
   Buttons,
   Container,
   FormContainer,
   Header,
-  SubTitle,
-  Title,
+  Title
 } from './styles'
 
 const newActionSchema = z.object({
@@ -50,7 +50,13 @@ export default function NewAction() {
     null,
   )
 
+  const { colors } = useTheme()
+
   console.log(`PERIOD ID => ${checklistPeriodId}`)
+
+  function replaceLastChar(str: string): string{
+    return str.endsWith('.') ? str.slice(0, -1) + ':' : str
+  } 
 
   function handleStop() {
     Alert.alert('Sair', 'Deseja abandonar essa ação?', [
@@ -135,9 +141,33 @@ export default function NewAction() {
       <Container>
         <Header>
           <Title>Registrar nova Ação</Title>
-          <SubTitle>
-            {currentPeriod.task.description} - {currentPeriod.task.answer}
-          </SubTitle>
+          <VStack>
+            <Heading
+              fontSize={24}
+              fontWeight={"bold"}
+              color={colors['zinc-600']}
+            >
+              {replaceLastChar(currentPeriod.task.description)}
+            </Heading>
+            <HStack
+              space={3}
+              p={4}
+              justifyContent={"center"}
+              alignItems={"center"}
+              borderWidth={3}
+              borderColor={colors.red[400]}
+              borderRadius={16}
+            >
+              <XCircle color='red'/>
+              <Text
+                color={colors.red[400]}
+                fontWeight={"bold"}
+                fontSize={16}
+              >
+                {currentPeriod.task.answer}
+              </Text>
+            </HStack>
+          </VStack>
         </Header>
 
         <FormProvider {...newActionForm}>
