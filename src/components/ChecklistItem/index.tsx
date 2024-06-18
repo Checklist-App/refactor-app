@@ -62,10 +62,8 @@ export function ChecklistItem({ checklist }: { checklist: Checklist }) {
             </Text>
             <Dot />
             <Text screenWidth={width}>
-              {
-                equipments.find((eq) => eq.id === checklist.equipmentId)
-                  .description
-              }
+              {equipments.find((eq) => eq.id === checklist.equipmentId)
+                ?.description || ''}
             </Text>
           </TextContent>
         ) : checklist.locationId && locations ? (
