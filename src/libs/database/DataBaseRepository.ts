@@ -119,8 +119,12 @@ export default class DataBaseRepository implements IDataBaseRepository {
   retrieveImages(){
     const allImagesString = this.mmkv.getString('images')
     if(allImagesString){
-      const allImages: MediaLibrary.Asset[] = JSON.parse(allImagesString) 
-      return allImages
+      try {
+        const allImages: MediaLibrary.Asset[] = JSON.parse(allImagesString) 
+        return allImages
+      } catch (error) {
+        console.log(`retrieveImages error: ${error}`);
+      }
     }else{
       return null
     }
@@ -188,7 +192,6 @@ export default class DataBaseRepository implements IDataBaseRepository {
       this.mmkv.set("images", allImagesString)
     } catch (error) {
       console.log("StoreImage error:", error);
-      
     }
   }
 

@@ -17,12 +17,5 @@
         "EXPO_PUBLIC_API_URL": "https://checklist-api.smartnewservices.com.br"
       }
     }
-  },
-  "submit": {
-    "production": {
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://checklist-api.smartnewservices.com.br"
-      }
-    }
   }
 }
