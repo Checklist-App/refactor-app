@@ -55,6 +55,7 @@ export default function NewChecklist() {
   const { createChecklist, updateAnswering } = useChecklist()
   const { equipments, loadEquipments, equipmentId, updateEquipmentId, updateEquipmentById } =
     useEquipments()
+  const [searchedEquipments, setSearchedEquipments] = useState(equipments)
   const { isSyncing } = useSyncStatus()
   const toast = useToast()
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(
@@ -63,10 +64,21 @@ export default function NewChecklist() {
   const periods: Period[] = db.retrieveReceivedData(user.login, '/@periods')
   const models = db.retrieveModels(user.login)
   const equipmentValue = watch('equipment')
+  const equipmentSearch = watch('equipmentSearch')
 
   useEffect(() => {
     updateEquipmentId(null)
   }, [])
+
+  useEffect(() => {
+    setSearchedEquipments(
+      equipmentSearch ?
+      equipments.filter((equipment) => (
+        `${equipment.code} - ${equipment.description}`.includes(equipmentSearch)
+      )) :
+      equipments
+    )
+  }, [equipmentSearch])
   
   useEffect(() => {
     if (equipmentValue) {
@@ -170,7 +182,7 @@ export default function NewChecklist() {
               <Form.Label>Equipamento:</Form.Label>
               <Form.SelectFlash
                 name="equipment"
-                options={equipments.map((equipment) => {
+                options={searchedEquipments.map((equipment) => {
                   return {
                     label: `${equipment.code} - ${equipment.description}`,
                     value: String(equipment.id),
