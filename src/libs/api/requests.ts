@@ -261,6 +261,7 @@ export async function fetchControlIds(login: string, token: string) {
 
 export async function fetchActions(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
+    
     const route = '/actions'
     api
       .get(route, {
@@ -288,6 +289,7 @@ export async function fetchActions(login: string, token: string) {
 export async function fetchEquipments(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
     const route = '/equipment/byBranch'
+    
     api
       .get(route, {
         headers: {

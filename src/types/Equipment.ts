@@ -1,3 +1,5 @@
+import { Family } from "./Family"
+
 export interface Equipment {
   id: number
   code: string
@@ -10,5 +12,6 @@ export interface Equipment {
   branchId: number
   mileage: number
   familyId: number
+  family: Family
   hourMeter: number
 }

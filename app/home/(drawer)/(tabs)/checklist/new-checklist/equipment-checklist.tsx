@@ -55,6 +55,10 @@ export default function NewChecklist() {
   const { createChecklist, updateAnswering } = useChecklist()
   const { equipments, loadEquipments, equipmentId, updateEquipmentId, updateEquipmentById } =
     useEquipments()
+
+  console.log("equipments =>", equipments);
+  
+    
   const [searchedEquipments, setSearchedEquipments] = useState(equipments)
   const { isSyncing } = useSyncStatus()
   const toast = useToast()
@@ -74,7 +78,7 @@ export default function NewChecklist() {
     setSearchedEquipments(
       equipmentSearch ?
       equipments.filter((equipment) => (
-        `${equipment.code} - ${equipment.description}`.includes(equipmentSearch)
+        `${equipment.code} - ${equipment.description} | ${equipment.family.name}`.includes(equipmentSearch)
       )) :
       equipments
     )
@@ -184,7 +188,7 @@ export default function NewChecklist() {
                 name="equipment"
                 options={searchedEquipments.map((equipment) => {
                   return {
-                    label: `${equipment.code} - ${equipment.description}`,
+                    label: `${equipment.code} - ${equipment.description} | ${equipment.family?.name}`,
                     value: String(equipment.id),
                   }
                 })}
