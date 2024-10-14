@@ -74,6 +74,10 @@ export default function HomeLayout() {
     return () => clearInterval(interval)
   }, [])
 
+  useEffect(() => {
+    console.log("doneRequests =>", doneRequests)
+  }, [doneRequests])
+
   if (isSyncing && syncCount === 0) {
     return (
       <Container>

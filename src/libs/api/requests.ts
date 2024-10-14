@@ -46,7 +46,10 @@ export async function fetchChecklists(login: string, token: string) {
           Authorization: `bearer ${token}`,
         },
       })
-      .then((response) => response.data)
+      .then((response) => {
+        console.log("fetchChecklists =>", response);
+        return response.data
+      })
       .then((data: ReceivedChecklist[]) => {
         db.storeReceivedData(login + '/@checklistSchemas', data)
         resolve()
@@ -70,7 +73,10 @@ export async function fetchPeriods(login: string, token: string) {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => response.data)
+      .then((response) => {
+        console.log("fetchPeriods =>", response);
+        return response.data}
+        )
       .then((data: Period[]) => {
         db.storeReceivedData(login + '/@periods', data)
         resolve()
@@ -93,6 +99,10 @@ export async function fetchTasks(login: string, token: string) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+      })
+      .then((response) => {
+        console.log("fetchTasks =>", response)
+        return response
       })
       .then((response) => response.data)
       .then((data: TaskResponse) => {
@@ -118,6 +128,10 @@ export async function fetchChecklistItems(login: string, token: string) {
           Authorization: `Bearer ${token}`,
         },
       })
+      .then((response) => {
+        console.log("fetchChecklistItems =>", response)
+        return response
+      })
       .then((response) => response.data)
       .then((data: ChecklistItemResponse) => {
         db.storeReceivedData(login + '/@checklistItems', data.checkListItem)
@@ -141,6 +155,10 @@ export async function fetchCheckListPeriods(login: string, token: string) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+      })
+      .then((response) => {
+        console.log("fetchCheckListPeriods =>", response)
+        return response
       })
       .then((response) => response.data)
       .then((data: CheckListPeriodResponse) => {
@@ -166,6 +184,10 @@ export async function fetchChecklistProductions(login: string, token: string) {
           Authorization: `Bearer ${token}`,
         },
       })
+      .then((response) => {
+        console.log("fetchChecklistProductions =>", response)
+        return response
+      })
       .then((response) => response.data)
       .then((data: ChecklistProductionResponse) => {
         db.storeReceivedData(login + '/@checklistProductions', data.checkList)
@@ -189,6 +211,10 @@ export async function fetchChecklistStatuses(login: string, token: string) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+      })
+      .then((response) => {
+        console.log("fetchChecklistStatuses =>", response)
+        return response
       })
       .then((response) => response.data)
       .then((data: ChecklistStatusResponse) => {
@@ -217,6 +243,10 @@ export async function fetchChecklistStatusActions(
           Authorization: `Bearer ${token}`,
         },
       })
+      .then((response) => {
+        console.log("fetchChecklistStatusActions =>", response)
+        return response
+      })
       .then((response) => response.data)
       .then((data: ChecklistStatusActionResponse) => {
         db.storeReceivedData(
@@ -244,6 +274,10 @@ export async function fetchControlIds(login: string, token: string) {
           Authorization: `Bearer ${token}`,
         },
       })
+      .then((response) => {
+        console.log("fetchControlIds =>", response)
+        return response
+      })
       .then((response) => response.data)
       .then((data: ControlId[]) => {
         db.storeReceivedData(login + '/@controlIds', data)
@@ -268,6 +302,10 @@ export async function fetchActions(login: string, token: string) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+      })
+      .then((response) => {
+        console.log("fetchActions =>", response)
+        return response
       })
       .then((response) => response.data)
       .then((data: object) => {
@@ -296,6 +334,10 @@ export async function fetchEquipments(login: string, token: string) {
           Authorization: `Bearer ${token}`,
         },
       })
+      .then((response) => {
+        console.log("fetchEquipments =>", response)
+        return response
+      })
       .then((response) => response.data)
       .then((data: Equipment[]) => {
         db.storeReceivedData(login + '/@equipments', data)
@@ -318,7 +360,11 @@ export async function fetchResponsibles(login: string, token: string) {
         Authorization: `Bearer ${token}`,
       },
     })
-    .then((res) => res.data)
+    .then((response) => {
+      console.log("fetchResponsibles =>", response)
+      return response
+    })
+    .then((res) =>  res.data)
     .then((data) => db.storeReceivedData(login + '/@responsibles', data))
 }
 
@@ -329,6 +375,10 @@ export async function fetchLocations(login: string, token: string) {
         Authorization: `Bearer ${token}`,
       },
     })
-    .then((res) => res.data)
+    .then((response) => {
+      console.log("fetchLocations =>", response)
+      return response
+    })
+    .then((res) =>  res.data)
     .then((data) => db.storeReceivedData(login + '/@locations', data))
 }

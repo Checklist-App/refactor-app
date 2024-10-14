@@ -56,7 +56,7 @@ export default function NewChecklist() {
   const { equipments, loadEquipments, equipmentId, updateEquipmentId, updateEquipmentById } =
     useEquipments()
 
-  console.log("equipments =>", equipments);
+  console.log("equipment-checklist.equipments =>", equipments);
   
     
   const [searchedEquipments, setSearchedEquipments] = useState(equipments)
@@ -140,6 +140,7 @@ export default function NewChecklist() {
       router.replace(`/home/answer/${newChecklist.id}`)
     } catch (err) {
       const error: Error = err
+      console.log("equipment-checklist.err =>", err);
       toast.show({
         render: () => <Toast.Error>{error.message}</Toast.Error>,
       })

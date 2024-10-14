@@ -38,7 +38,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   retrieveEquipments(user: string) {
     const storedEquipments = this.mmkv.getString(`${user}/@equipments`)
     if (storedEquipments) {
+      console.log("storedEquipments =>", storedEquipments);
       const equipments: Equipment[] = JSON.parse(storedEquipments)
+      console.log("retrieveEquipments.storedEquipments =>", equipments);
       return equipments
     } else {
       return []
@@ -133,13 +135,16 @@ export default class DataBaseRepository implements IDataBaseRepository {
   updateEquipment(user: string, equipment: Equipment) {
     const equipments = this.retrieveEquipments(user)
 
+    console.log("updateEquipment.equipments =>", equipments);
     console.log('updatedEquipment =>', equipment)
-
+    
     equipments.map((eq) => (eq.id === equipment.id ? { ...equipment } : eq))
-
     console.log('updatedEquipments =>', equipments)
-
-    this.mmkv.set(`${user}/@equipments`, JSON.stringify(equipment))
+    
+    const equipmentList: Equipment[] = Array.isArray(equipment) ? equipment : [equipment]
+    console.log('equipmentToList =>', equipmentList)
+    
+    this.mmkv.set(`${user}/@equipments`, JSON.stringify(equipmentList))
   }
 
   storeChecklists(checklists: Checklist[]) {

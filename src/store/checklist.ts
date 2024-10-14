@@ -1,4 +1,5 @@
 import { AxiosError } from 'axios'
+import { getTime } from 'date-fns'
 import dayjs from 'dayjs'
 import { create } from 'zustand'
 import { api } from '../libs/api'
@@ -491,7 +492,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         const checklists = storedChecklists.filter(
           (item) =>
             item.syncStatus === 'inserted' || item.syncStatus === 'updated',
-        )
+        ).sort(((a, b) => getTime(a.initialTime) - getTime(b.initialTime))) 
 
         if (checklists.length) {
           const options = {
