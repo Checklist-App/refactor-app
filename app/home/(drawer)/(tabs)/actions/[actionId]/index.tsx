@@ -8,6 +8,7 @@ import { Toast } from '@/src/components/Toast'
 import { useActions } from '@/src/store/actions'
 import { useCamera } from '@/src/store/camera'
 import { useChecklist } from '@/src/store/checklist'
+import { useCrashlytics } from '@/src/store/crashlytics-report'
 import { useEquipments } from '@/src/store/equipments'
 import { useLocations } from '@/src/store/location'
 import { useResponsibles } from '@/src/store/responsibles'
@@ -19,6 +20,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod'
 import dayjs from 'dayjs'
 import { Link, router, useLocalSearchParams } from 'expo-router'
+import { useRouteInfo } from 'expo-router/build/hooks'
 import { ScrollView, useToast } from 'native-base'
 import { XCircle } from 'phosphor-react-native'
 import { useEffect, useState } from 'react'
@@ -78,8 +80,15 @@ export default function ActionScreen() {
   const [isAnswering, setIsAnswering] = useState(false)
   const [images, setImages] = useState<ChecklistPeriodImage[]>([])
 
+  const { sendPathname, sendLog, reportError, sendStacktrace } = useCrashlytics()
+  const { pathname } = useRouteInfo()
+
   const deviceWidth = Dimensions.get('window').width
   const isSmallDevice = deviceWidth < 400
+
+  useEffect(() => {
+    sendPathname(pathname)
+  }, [pathname])
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () =>
@@ -94,10 +103,13 @@ export default function ActionScreen() {
     if (action) {
       setCurrentAction(action)
     }
+    sendLog(`actionId: ${actionId}`)
   }, [actions, actionId])
 
   useEffect(() => {
     if (currentAction) {
+      sendLog(`currentAction: ${JSON.stringify(currentAction)}`)
+
       setValue('responsible', currentAction.responsible)
       setValue('title', currentAction.title)
       setObservationText(currentAction.description)
@@ -111,6 +123,8 @@ export default function ActionScreen() {
       const currentChecklist = allChecklists.find(
         (checklist) => checklist.id === currentAction.checklistId,
       )
+
+      sendLog(`currentChecklist: ${JSON.stringify(currentChecklist)}`)
 
       // console.log(
       //   `CURRENT CHECKLIST: ${JSON.stringify(currentChecklist, null, 2)}`,
@@ -147,6 +161,7 @@ export default function ActionScreen() {
         )
         if (period) {
           setCurrentPeriod(period)
+          sendLog(`currentPeriod: ${JSON.stringify(currentPeriod)}`)
         }
       }
     }
@@ -161,15 +176,20 @@ export default function ActionScreen() {
   }, [currentImages, currentAction])
 
   function handleEdit(data: EditActionData) {
+    sendStacktrace(handleEdit)
     try {
       if (!observationText) {
+        const addDescErrorMessage = `Adicione uma descrição`
+        sendLog(addDescErrorMessage)
         return toast.show({
-          render: () => <Toast.Error>Adicione uma descrição</Toast.Error>,
+          render: () => <Toast.Error>{addDescErrorMessage}</Toast.Error>,
         })
       }
       if (!images.length) {
+        const addImagesErrorMessage = `Adicione uma ou mais imagens`
+        sendLog(addImagesErrorMessage)
         return toast.show({
-          render: () => <Toast.Error>Adicione uma ou mais imagens</Toast.Error>,
+          render: () => <Toast.Error>{addImagesErrorMessage}</Toast.Error>,
         })
       }
 
@@ -182,23 +202,31 @@ export default function ActionScreen() {
         description: observationText,
         img: images,
       }
-      console.log(`ACTION EDITED BODY ${JSON.stringify(actionBody, null, 2)}`)
+      const actionEditedBody = `ACTION EDITED BODY ${JSON.stringify(actionBody, null, 2)}`
+      console.log(actionEditedBody)
+      sendLog(actionEditedBody)
 
       updateAction(actionBody)
       setIsAnswering(false)
+      const actionMessage = `Ação Salva!`
+      sendLog(actionMessage)
       toast.show({
-        render: () => <Toast.Success>Ação Salva!</Toast.Success>,
+        render: () => <Toast.Success>{actionMessage}</Toast.Success>,
       })
     } catch (err) {
+      reportError(err)
+      const actionErrorMessage = `Erro ao salvar ação!`
       setIsAnswering(false)
       console.log(err)
+      sendLog(actionErrorMessage)
       toast.show({
-        render: () => <Toast.Error>Erro ao salvar ação!</Toast.Error>,
+        render: () => <Toast.Error>{actionErrorMessage}</Toast.Error>,
       })
     }
   }
 
   function handleStopEditing(isEditing: boolean) {
+    sendStacktrace(handleStopEditing)
     if (isEditing) {
       Alert.alert('Cancelar', 'Deseja cancelar a edição dessa ação?', [
         {

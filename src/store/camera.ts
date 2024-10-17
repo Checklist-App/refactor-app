@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { ChecklistPeriodImage } from '../types/ChecklistPeriod'
+import { useCrashlytics } from './crashlytics-report'
 
 interface CameraData {
   currentImages: {
@@ -21,7 +22,10 @@ interface CameraData {
   }) => void
 }
 
-export const useCamera = create<CameraData>((set) => {
+export const useCamera = create<CameraData>((set, get) => {
+
+  const { sendLog, reportError, sendStacktrace } = useCrashlytics.getState()
+
   return {
     currentImages: null,
 
@@ -31,6 +35,8 @@ export const useCamera = create<CameraData>((set) => {
       actionId,
       images,
     }) => {
+      sendStacktrace(get().saveCurrentImages)
+      sendLog(`checklistId: ${checklistId} | checklistPeriodId: ${checklistPeriodId} | actionId: ${actionId} | images: ${images}`)
       set({
         currentImages: {
           checklistId: checklistId || null,

@@ -1,3 +1,4 @@
+import { CrashlyticsReportProps } from '@/src/store/crashlytics-report'
 import { Action } from '@/src/types/Action'
 import { Checklist } from '@/src/types/Checklist'
 import { ChecklistProduction } from '@/src/types/ChecklistProduction'
@@ -12,11 +13,30 @@ import IDataBaseService from './IDataBaseService'
 
 export default class DataBaseRepository implements IDataBaseRepository {
   // eslint-disable-next-line no-useless-constructor
-  constructor(private mmkv: IDataBaseService) {}
+
+  private sendLog: (message: string) => void;
+  private reportError: (error: Error) => void;
+  private sendStacktrace: (fn: Function) => void;
+
+  constructor(private mmkv: IDataBaseService, private crashlyticsOperations: CrashlyticsReportProps) {
+    const {
+      sendLog,
+      reportError,
+      sendStacktrace
+    } = crashlyticsOperations
+
+    this.sendLog = sendLog
+    this.reportError = reportError
+    this.sendStacktrace = sendStacktrace
+  }
+  
 
   retrieveChecklists(user: string) {
+    this.sendStacktrace(this.retrieveChecklists)
     const storedChecklists = this.mmkv.getString(`${user}/checklists`)
 
+    this.sendLog(`storedChecklists length: ${storedChecklists.length}`)
+    
     if (storedChecklists) {
       const checklists: Checklist[] = JSON.parse(storedChecklists)
       return checklists
@@ -26,7 +46,10 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   retrieveActions(user: string) {
+    this.sendStacktrace(this.retrieveActions)
     const storedActions = this.mmkv.getString(`${user}/actions`)
+
+    this.sendLog(`storedActions length: ${storedActions.length}`)
     if (storedActions) {
       const actions: Action[] = JSON.parse(storedActions)
       return actions
@@ -36,11 +59,12 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   retrieveEquipments(user: string) {
-    const storedEquipments = this.mmkv.getString(`${user}/@equipments`)
+    this.sendStacktrace(this.retrieveEquipments)
+    const storedEquipmentsKey = `${user}/@equipments`
+    const storedEquipments = this.mmkv.getString(storedEquipmentsKey)
+    this.sendLog(`storedEquipments length: ${storedEquipments.length}`)
     if (storedEquipments) {
-      console.log("storedEquipments =>", storedEquipments);
       const equipments: Equipment[] = JSON.parse(storedEquipments)
-      console.log("retrieveEquipments.storedEquipments =>", equipments);
       return equipments
     } else {
       return []
@@ -48,7 +72,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   retrieveLocations(user: string) {
+    this.sendStacktrace(this.retrieveLocations)
     const storedLocations = this.mmkv.getString(`${user}/@locations`)
+    this.sendLog(`storedLocations length: ${storedLocations.length}`)
     if (storedLocations) {
       const locations: Location[] = JSON.parse(storedLocations)
       return locations
@@ -58,7 +84,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   retrieveResponsibles(user: string) {
+    this.sendStacktrace(this.retrieveResponsibles)
     const storedResponsibles = this.mmkv.getString(`${user}/@responsibles`)
+    this.sendLog(`storedResponsibles length: ${storedResponsibles.length}`)
     if (storedResponsibles) {
       const responsibles: Responsible[] = JSON.parse(storedResponsibles)
       return responsibles
@@ -68,7 +96,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   retrieveModels(user: string) {
+    this.sendStacktrace(this.retrieveModels)
     const storedModels = this.mmkv.getString(`${user}/@checklistProductions`)
+    this.sendLog(`storedModels length: ${storedModels.length}`)
     if (storedModels) {
       const models: ChecklistProduction[] = JSON.parse(storedModels)
       return models
@@ -78,7 +108,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   retrieveReceivedData(user: string, path: string) {
+    this.sendStacktrace(this.retrieveReceivedData)
     const stored = this.mmkv.getString(user + path)
+    this.sendLog(`stored length: ${stored.length}`)
     if (stored) {
       const data = JSON.parse(stored)
       // console.log("data =>", data)
@@ -90,7 +122,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   retrieveLastUser() {
+    this.sendStacktrace(this.retrieveLastUser)
     const storedUser = this.mmkv.getString('lastUser')
+    this.sendLog(`storedUser: ${storedUser}`)
     if (storedUser) {
       const user: User = JSON.parse(storedUser)
       return user
@@ -100,7 +134,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   retrieveActiveToken() {
+    this.sendStacktrace(this.retrieveActiveToken)
     const token = this.mmkv.getString('activeToken')
+    this.sendLog(`token: ${token}`)
     if (token) {
       return token
     } else {
@@ -109,7 +145,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   retriveUsers() {
+    this.sendStacktrace(this.retriveUsers)
     const allUsersString = this.mmkv.getString('users')
+    this.sendLog(`allUsersString: ${allUsersString}`)
     if (allUsersString) {
       const allUsers: User[] = JSON.parse(allUsersString)
       return allUsers
@@ -119,7 +157,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   retrieveImages(){
+    this.sendStacktrace(this.retrieveImages)
     const allImagesString = this.mmkv.getString('images')
+    this.sendLog(`allImagesString: ${allImagesString}`)
     if(allImagesString){
       try {
         const allImages: MediaLibrary.Asset[] = JSON.parse(allImagesString) 
@@ -133,21 +173,26 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   updateEquipment(user: string, equipment: Equipment) {
+    this.sendStacktrace(this.updateEquipment)
     const equipments = this.retrieveEquipments(user)
+    this.sendLog(`equipments length: ${equipments.length}`)
 
     console.log("updateEquipment.equipments =>", equipments);
     console.log('updatedEquipment =>', equipment)
+    this.sendLog(`updatedEquipment: ${JSON.stringify(length)}`)
     
     equipments.map((eq) => (eq.id === equipment.id ? { ...equipment } : eq))
     console.log('updatedEquipments =>', equipments)
     
     const equipmentList: Equipment[] = Array.isArray(equipment) ? equipment : [equipment]
     console.log('equipmentToList =>', equipmentList)
+    this.sendLog(`equipmentList length: ${equipmentList.length}`)
     
     this.mmkv.set(`${user}/@equipments`, JSON.stringify(equipmentList))
   }
 
   storeChecklists(checklists: Checklist[]) {
+    this.sendStacktrace(this.storeChecklists)
     const user = this.retrieveLastUser()
     if (user) {
       this.mmkv.set(`${user.login}/checklists`, JSON.stringify(checklists))
@@ -157,6 +202,7 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   storeActions(actions: Action[]) {
+    this.sendStacktrace(this.storeActions)
     const user = this.retrieveLastUser()
     if (user) {
       this.mmkv.set(`${user.login}/actions`, JSON.stringify(actions))
@@ -166,10 +212,13 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   storeReceivedData(path: string, data: object) {
+    this.sendStacktrace(this.storeReceivedData)
     this.mmkv.set(path, JSON.stringify(data))
   }
 
   storeUser(user: User) {
+    this.sendStacktrace(this.storeUser)
+    this.sendLog(`user: ${user}`)
     this.mmkv.set('lastUser', JSON.stringify(user))
     const allUsers = this.retriveUsers()
     const newUsers: User[] = []
@@ -185,10 +234,14 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   storeToken(token: string) {
+    this.sendStacktrace(this.storeToken)
+    this.sendLog(`token: ${token}`)
     this.mmkv.set('activeToken', token)
   }
   
   storeImage(image: Asset){
+    this.sendStacktrace(this.storeImage)
+    this.sendLog(`image: ${image}`)
     try {
       const allImages: MediaLibrary.Asset[] = this.retrieveImages() ?? []
       allImages.push(image)
@@ -201,7 +254,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   checkNeedToUpdate() {
+    this.sendStacktrace(this.checkNeedToUpdate)
     const needToUpdate = this.mmkv.getBoolean('needToUpdate')
+    this.sendLog(`needToUpdate: ${needToUpdate}`)
     if (needToUpdate === undefined) {
       this.setNeedToUpdate(false)
       return false
@@ -211,10 +266,14 @@ export default class DataBaseRepository implements IDataBaseRepository {
   }
 
   setNeedToUpdate(arg: boolean) {
+    this.sendStacktrace(this.setNeedToUpdate)
+    this.sendLog(`arg: ${arg}`)
     this.mmkv.set('needToUpdate', arg)
   }
 
   deleteKey(key: string) {
+    this.sendStacktrace(this.deleteKey)
+    this.sendLog(`key: ${key}`)
     this.mmkv.delete(key)
   }
 }

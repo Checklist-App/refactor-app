@@ -5,12 +5,14 @@ import { Toast } from '@/src/components/Toast'
 import db from '@/src/libs/database'
 import { useAuth } from '@/src/store/auth'
 import { useChecklist } from '@/src/store/checklist'
+import { useCrashlytics } from '@/src/store/crashlytics-report'
 import { useEquipments } from '@/src/store/equipments'
 import { useSyncStatus } from '@/src/store/syncStatus'
 import { Equipment } from '@/src/types/Equipment'
 import { Period } from '@/src/types/Period'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, router } from 'expo-router'
+import { useRouteInfo } from 'expo-router/build/hooks'
 import { useToast } from 'native-base'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -70,6 +72,13 @@ export default function NewChecklist() {
   const equipmentValue = watch('equipment')
   const equipmentSearch = watch('equipmentSearch')
 
+  const { sendPathname, sendLog, reportError, sendStacktrace } = useCrashlytics()
+  const { pathname } = useRouteInfo()
+
+  useEffect(() => {
+    sendPathname(pathname)
+  }, [pathname])
+
   useEffect(() => {
     updateEquipmentId(null)
   }, [])
@@ -82,6 +91,7 @@ export default function NewChecklist() {
       )) :
       equipments
     )
+    sendLog(`equipmentSearch: ${equipmentSearch}`)
   }, [equipmentSearch])
   
   useEffect(() => {
@@ -92,17 +102,22 @@ export default function NewChecklist() {
       setValue('mileage', String(selectedEquipment?.mileage ?? "0"))
       setValue('hourmeter', String(selectedEquipment?.hourMeter ?? "0"))
     }
+    sendLog(`equipmentValue: ${equipmentValue}`)
+    sendLog(`selectedEquipment: ${selectedEquipment}`)
   }, [equipmentValue, selectedEquipment])
 
   useEffect(() => {
     if (equipmentId) {
       setValue('equipment', String(equipmentId))
     }
+    sendLog(`equipmentId: ${equipmentId}`)
   }, [equipmentId])
 
   async function handleNewChecklist(data: NewChecklistData) {
+    sendStacktrace(handleNewChecklist)
     if (!user) {
       console.log('Sem usuario')
+      sendLog(`Sem usuário`)
       return
     }
 
@@ -139,6 +154,7 @@ export default function NewChecklist() {
 
       router.replace(`/home/answer/${newChecklist.id}`)
     } catch (err) {
+      reportError(err)
       const error: Error = err
       console.log("equipment-checklist.err =>", err);
       toast.show({
@@ -149,21 +165,27 @@ export default function NewChecklist() {
 
   if (!equipments) {
     loadEquipments(user.login)
+    const loadEquipsMessage = `Carregando equipamentos, isso pode demorar um pouco...`
+    sendLog(loadEquipsMessage)
     return (
       <ContainerLoading>
         <ActivityIndicator size={80} color={color['violet-500']} />
         <LoadingText>
-          Carregando equipamentos, isso pode demorar um pouco...
+          {loadEquipsMessage}
         </LoadingText>
       </ContainerLoading>
     )
   }
 
   if (!equipments?.length) {
+    const emptyEquipsMessage = `Não há equipamentos vinculados a essa filial.`
+    sendLog(emptyEquipsMessage)
     return (
       <ContainerLoading>
         <ActivityIndicator size={80} color={color['violet-500']} />
-        <LoadingText>Não há equipamentos vinculados a essa filial.</LoadingText>
+        <LoadingText>
+          {emptyEquipsMessage}
+        </LoadingText>
       </ContainerLoading>
     )
   }

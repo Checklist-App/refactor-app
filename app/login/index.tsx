@@ -4,6 +4,7 @@ import { Toast } from '@/src/components/Toast'
 import db from '@/src/libs/database'
 import { useAuth } from '@/src/store/auth'
 import { useConnection } from '@/src/store/connection'
+import { useCrashlytics } from '@/src/store/crashlytics-report'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { router } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
@@ -39,7 +40,7 @@ const { width, height } = Dimensions.get('screen')
 
 export default function Login() {
   const { isConnected } = useConnection()
-  const { login, offlineLogin } = useAuth()
+  const { login, offlineLogin, getUser } = useAuth()
   const loginForm = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
   })
@@ -48,11 +49,15 @@ export default function Login() {
     handleSubmit,
     formState: { isSubmitting },
   } = loginForm
+  const { setUserId, sendLog, sendStacktrace } = useCrashlytics()
 
   async function handleFormLogin(data: LoginData) {
+    sendStacktrace(handleFormLogin)
     if (isConnected) {
       await login(data)
-        .then(() => {
+        .then(async () => {
+          const user = getUser()
+          setUserId(user.login).then(() => sendLog(`user.login: ${user.login}`))
           router.replace('/home')
           db.setNeedToUpdate(true)
         })

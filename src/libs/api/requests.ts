@@ -1,3 +1,4 @@
+import { useCrashlytics } from '@/src/store/crashlytics-report'
 import { ReceivedChecklist } from '@/src/types/Checklist'
 import { ChecklistItemType } from '@/src/types/ChecklistItemType'
 import { ReceivedChecklistPeriod } from '@/src/types/ChecklistPeriod'
@@ -36,9 +37,13 @@ interface ChecklistStatusActionResponse {
   checkListStatusAction: ChecklistStatusAction[]
 }
 
+const { sendLog, reportError, sendStacktrace } = useCrashlytics.getState()
+
 export async function fetchChecklists(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
     const route = '/checkList/checklists'
+    sendStacktrace(fetchChecklists)
+    sendLog(`fetching endpoint ${route}`)
 
     api
       .get(route, {
@@ -48,6 +53,7 @@ export async function fetchChecklists(login: string, token: string) {
       })
       .then((response) => {
         console.log("fetchChecklists =>", response);
+        sendLog(`status: ${response.status}`)
         return response.data
       })
       .then((data: ReceivedChecklist[]) => {
@@ -55,9 +61,11 @@ export async function fetchChecklists(login: string, token: string) {
         resolve()
       })
       .catch((error: AxiosError) => {
+        const errorMessage = `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`
+        reportError(error)
         reject(
           new Error(
-            `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`,
+            errorMessage,
           ),
         )
       })
@@ -67,6 +75,8 @@ export async function fetchChecklists(login: string, token: string) {
 export async function fetchPeriods(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
     const route = '/period/byClient'
+    sendStacktrace(fetchChecklists)
+    sendLog(`fetching endpoint ${route}`)
     api
       .get(route, {
         headers: {
@@ -75,18 +85,22 @@ export async function fetchPeriods(login: string, token: string) {
       })
       .then((response) => {
         console.log("fetchPeriods =>", response);
-        return response.data}
-        )
+        sendLog(`status: ${response.status}`)
+        return response.data
+      }
+      )
       .then((data: Period[]) => {
         db.storeReceivedData(login + '/@periods', data)
         resolve()
       })
-      .catch((error: AxiosError) =>
+      .catch((error: AxiosError) => {
+        reportError(error)
         reject(
           new Error(
             `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`,
           ),
-        ),
+        )
+      }
       )
   })
 }
@@ -94,6 +108,8 @@ export async function fetchPeriods(login: string, token: string) {
 export async function fetchTasks(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
     const route = '/checkList/task'
+    sendStacktrace(fetchChecklists)
+    sendLog(`fetching endpoint ${route}`)
     api
       .get(route, {
         headers: {
@@ -102,6 +118,8 @@ export async function fetchTasks(login: string, token: string) {
       })
       .then((response) => {
         console.log("fetchTasks =>", response)
+        sendLog(`status: ${response.status}`)
+
         return response
       })
       .then((response) => response.data)
@@ -109,12 +127,14 @@ export async function fetchTasks(login: string, token: string) {
         db.storeReceivedData(login + '/@tasks', data.task)
         resolve()
       })
-      .catch((error: AxiosError) =>
+      .catch((error: AxiosError) =>{
+        reportError(error)
         reject(
           new Error(
             `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`,
           ),
-        ),
+        )
+      }
       )
   })
 }
@@ -122,6 +142,9 @@ export async function fetchTasks(login: string, token: string) {
 export async function fetchChecklistItems(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
     const route = '/checkList/infoItem'
+
+    sendStacktrace(fetchChecklists)
+    sendLog(`fetching endpoint ${route}`)
     api
       .get(route, {
         headers: {
@@ -130,6 +153,8 @@ export async function fetchChecklistItems(login: string, token: string) {
       })
       .then((response) => {
         console.log("fetchChecklistItems =>", response)
+        sendLog(`status: ${response.status}`)
+
         return response
       })
       .then((response) => response.data)
@@ -137,12 +162,14 @@ export async function fetchChecklistItems(login: string, token: string) {
         db.storeReceivedData(login + '/@checklistItems', data.checkListItem)
         resolve()
       })
-      .catch((error: AxiosError) =>
+      .catch((error: AxiosError) => {
+        reportError(error)
         reject(
           new Error(
             `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`,
           ),
-        ),
+        )
+      }
       )
   })
 }
@@ -150,6 +177,8 @@ export async function fetchChecklistItems(login: string, token: string) {
 export async function fetchCheckListPeriods(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
     const route = '/checkList/period/infoByLogin'
+    sendStacktrace(fetchChecklists)
+    sendLog(`fetching endpoint ${route}`)
     api
       .get(route, {
         headers: {
@@ -158,6 +187,7 @@ export async function fetchCheckListPeriods(login: string, token: string) {
       })
       .then((response) => {
         console.log("fetchCheckListPeriods =>", response)
+        sendLog(`status: ${response.status}`)
         return response
       })
       .then((response) => response.data)
@@ -166,6 +196,7 @@ export async function fetchCheckListPeriods(login: string, token: string) {
         resolve()
       })
       .catch((error: AxiosError) => {
+        reportError(error)
         reject(
           new Error(
             `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`,
@@ -178,6 +209,8 @@ export async function fetchCheckListPeriods(login: string, token: string) {
 export async function fetchChecklistProductions(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
     const route = '/checkList/boundFamily'
+    sendStacktrace(fetchChecklists)
+    sendLog(`fetching endpoint ${route}`)
     api
       .get(route, {
         headers: {
@@ -186,6 +219,7 @@ export async function fetchChecklistProductions(login: string, token: string) {
       })
       .then((response) => {
         console.log("fetchChecklistProductions =>", response)
+        sendLog(`status: ${response.status}`)
         return response
       })
       .then((response) => response.data)
@@ -193,12 +227,13 @@ export async function fetchChecklistProductions(login: string, token: string) {
         db.storeReceivedData(login + '/@checklistProductions', data.checkList)
         resolve()
       })
-      .catch((error: AxiosError) =>
+      .catch((error: AxiosError) => {
+        reportError(error)
         reject(
           new Error(
             `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`,
           ),
-        ),
+        )}
       )
   })
 }
@@ -206,6 +241,8 @@ export async function fetchChecklistProductions(login: string, token: string) {
 export async function fetchChecklistStatuses(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
     const route = '/checkList/status'
+    sendStacktrace(fetchChecklists)
+    sendLog(`fetching endpoint ${route}`)
     api
       .get(route, {
         headers: {
@@ -214,6 +251,7 @@ export async function fetchChecklistStatuses(login: string, token: string) {
       })
       .then((response) => {
         console.log("fetchChecklistStatuses =>", response)
+        sendLog(`status: ${response.status}`)
         return response
       })
       .then((response) => response.data)
@@ -221,12 +259,13 @@ export async function fetchChecklistStatuses(login: string, token: string) {
         db.storeReceivedData(login + '/@checklistStatus', data.checkListStatus)
         resolve()
       })
-      .catch((error: AxiosError) =>
+      .catch((error: AxiosError) => {
+        reportError(error)
         reject(
           new Error(
             `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`,
           ),
-        ),
+        )}
       )
   })
 }
@@ -237,6 +276,8 @@ export async function fetchChecklistStatusActions(
 ) {
   return new Promise<void | Error>((resolve, reject) => {
     const route = '/checkList/infoStatusAction'
+    sendStacktrace(fetchChecklists)
+    sendLog(`fetching endpoint ${route}`)
     api
       .get(route, {
         headers: {
@@ -245,6 +286,7 @@ export async function fetchChecklistStatusActions(
       })
       .then((response) => {
         console.log("fetchChecklistStatusActions =>", response)
+        sendLog(`status: ${response.status}`)
         return response
       })
       .then((response) => response.data)
@@ -255,12 +297,13 @@ export async function fetchChecklistStatusActions(
         )
         resolve()
       })
-      .catch((error: AxiosError) =>
+      .catch((error: AxiosError) => {
+        reportError(error)
         reject(
           new Error(
             `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`,
           ),
-        ),
+        )}
       )
   })
 }
@@ -268,6 +311,8 @@ export async function fetchChecklistStatusActions(
 export async function fetchControlIds(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
     const route = '/checkListControl/info'
+    sendStacktrace(fetchChecklists)
+    sendLog(`fetching endpoint ${route}`)
     api
       .get(route, {
         headers: {
@@ -276,6 +321,7 @@ export async function fetchControlIds(login: string, token: string) {
       })
       .then((response) => {
         console.log("fetchControlIds =>", response)
+        sendLog(`status: ${response.status}`)
         return response
       })
       .then((response) => response.data)
@@ -283,20 +329,23 @@ export async function fetchControlIds(login: string, token: string) {
         db.storeReceivedData(login + '/@controlIds', data)
         resolve()
       })
-      .catch((error: AxiosError) =>
+      .catch((error: AxiosError) => {
+        reportError(error)
         reject(
           new Error(
             `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`,
           ),
-        ),
+        )}
       )
   })
 }
 
 export async function fetchActions(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
-    
+
     const route = '/actions'
+    sendStacktrace(fetchChecklists)
+    sendLog(`fetching endpoint ${route}`)
     api
       .get(route, {
         headers: {
@@ -305,6 +354,7 @@ export async function fetchActions(login: string, token: string) {
       })
       .then((response) => {
         console.log("fetchActions =>", response)
+        sendLog(`status: ${response.status}`)
         return response
       })
       .then((response) => response.data)
@@ -314,12 +364,13 @@ export async function fetchActions(login: string, token: string) {
         db.storeReceivedData(login + '/@actions', data)
         resolve()
       })
-      .catch((error: AxiosError) =>
+      .catch((error: AxiosError) => {
+        reportError(error)
         reject(
           new Error(
             `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`,
           ),
-        ),
+        )}
       )
   })
 }
@@ -327,7 +378,9 @@ export async function fetchActions(login: string, token: string) {
 export async function fetchEquipments(login: string, token: string) {
   return new Promise<void | Error>((resolve, reject) => {
     const route = '/equipment/byBranch'
-    
+    sendStacktrace(fetchChecklists)
+    sendLog(`fetching endpoint ${route}`)
+
     api
       .get(route, {
         headers: {
@@ -336,6 +389,7 @@ export async function fetchEquipments(login: string, token: string) {
       })
       .then((response) => {
         console.log("fetchEquipments =>", response)
+        sendLog(`status: ${response.status}`)
         return response
       })
       .then((response) => response.data)
@@ -343,42 +397,51 @@ export async function fetchEquipments(login: string, token: string) {
         db.storeReceivedData(login + '/@equipments', data)
         resolve()
       })
-      .catch((error: AxiosError) =>
+      .catch((error: AxiosError) => {
         reject(
           new Error(
             `Erro ao fazer requisição à rota ${route}: ${error.message}, ${error.cause}`,
           ),
-        ),
+        )
+      }
       )
   })
 }
 
 export async function fetchResponsibles(login: string, token: string) {
+  const route = `/responsibles`
+  sendStacktrace(fetchChecklists)
+  sendLog(`fetching endpoint ${route}`)
   return await api
-    .get('/responsibles', {
+    .get(route, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
     .then((response) => {
       console.log("fetchResponsibles =>", response)
+      sendLog(`status: ${response.status}`)
       return response
     })
-    .then((res) =>  res.data)
+    .then((res) => res.data)
     .then((data) => db.storeReceivedData(login + '/@responsibles', data))
 }
 
 export async function fetchLocations(login: string, token: string) {
+  const route = '/locations'
+  sendStacktrace(fetchChecklists)
+  sendLog(`fetching endpoint ${route}`)
   return await api
-    .get('/locations', {
+    .get(route, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
     .then((response) => {
       console.log("fetchLocations =>", response)
+      sendLog(`status: ${response.status}`)
       return response
     })
-    .then((res) =>  res.data)
+    .then((res) => res.data)
     .then((data) => db.storeReceivedData(login + '/@locations', data))
 }

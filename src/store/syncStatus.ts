@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { useCrashlytics } from './crashlytics-report'
 
 interface SyncStatus {
   isSyncing: boolean
@@ -9,12 +10,17 @@ interface SyncStatus {
 }
 
 export const useSyncStatus = create<SyncStatus>((set, get) => {
+
+  const {sendLog, sendStacktrace} = useCrashlytics.getState()
+
   return {
     isSyncing: false,
     syncCount: 0,
     doneRequests: 0,
 
     updateSyncing: (arg) => {
+      sendStacktrace(get().updateSyncing)
+      sendLog(`arg: ${arg}`)
       if (!arg) {
         set({ syncCount: get().syncCount + 1 })
       }
@@ -22,6 +28,7 @@ export const useSyncStatus = create<SyncStatus>((set, get) => {
     },
 
     increaseDoneRequests: () => {
+      sendStacktrace(get().increaseDoneRequests)
       set({ doneRequests: get().doneRequests + 1 })
     },
   }

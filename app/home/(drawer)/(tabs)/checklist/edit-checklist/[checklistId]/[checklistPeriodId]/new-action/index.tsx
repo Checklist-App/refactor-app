@@ -13,8 +13,10 @@ import { Alert, BackHandler } from 'react-native'
 import { z } from 'zod'
 // import { useResponsibles } from '@/src/store/responsibles'
 import { useActions } from '@/src/store/actions'
+import { useCrashlytics } from '@/src/store/crashlytics-report'
 import { useResponsibles } from '@/src/store/responsibles'
 import { ChecklistPeriod } from '@/src/types/ChecklistPeriod'
+import { useRouteInfo } from 'expo-router/build/hooks'
 import { XCircle } from 'phosphor-react-native'
 import {
   Buttons,
@@ -52,6 +54,9 @@ export default function NewAction() {
 
   const { colors } = useTheme()
 
+  const { sendPathname, sendLog, reportError, sendStacktrace } = useCrashlytics()
+  const { pathname } = useRouteInfo()
+
   console.log(`PERIOD ID => ${checklistPeriodId}`)
 
   function replaceLastChar(str: string): string{
@@ -59,6 +64,7 @@ export default function NewAction() {
   } 
 
   function handleStop() {
+    sendStacktrace(handleStop)
     Alert.alert('Sair', 'Deseja abandonar essa ação?', [
       {
         text: 'Não',
@@ -76,6 +82,7 @@ export default function NewAction() {
   }
 
   async function handleNewAction(data: NewActionData) {
+    sendStacktrace(handleNewAction)
     try {
       createNewAction({
         checklistId: Number(checklistId),
@@ -99,6 +106,10 @@ export default function NewAction() {
       })
     }
   }
+
+  useEffect(() => {
+    sendPathname(pathname)
+  }, [pathname])
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(

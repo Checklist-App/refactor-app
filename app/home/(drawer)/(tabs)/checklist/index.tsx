@@ -27,9 +27,11 @@ import {
 } from './styles'
 
 import { Form } from '@/src/components/Form'
+import { useCrashlytics } from '@/src/store/crashlytics-report'
 import { useEquipments } from '@/src/store/equipments'
 import { Checklist } from '@/src/types/Checklist'
 import dayjs from 'dayjs'
+import { useRouteInfo } from 'expo-router/build/hooks'
 
 const searchChecklistSchema = zod.object({
   query: zod.string({ required_error: 'Digite algo.' }),
@@ -46,6 +48,8 @@ export default function Page() {
   const { user } = useAuth()
   const { allChecklists } = useChecklist()
   const { equipments } = useEquipments()
+  const { sendStacktrace, sendPathname} = useCrashlytics()
+  const { pathname } = useRouteInfo()
 
   const [isSearching, setIsSearching] = useState<boolean>(false)
 
@@ -60,6 +64,7 @@ export default function Page() {
   const [openSearchInput, setOpenSearchInput] = useState<boolean>()
 
   function handleSearch(data: SearchChecklistSchema) {
+    sendStacktrace(handleSearch)
     setIsSearching(true)
 
     const filteredEquipments = equipments.filter((eq) =>
@@ -82,12 +87,14 @@ export default function Page() {
   }
 
   function sortByDate(data: Checklist[]) {
+    sendStacktrace(sortByDate)
     return data.sort(
       (a, b) => dayjs(b.initialTime).valueOf() - dayjs(a.initialTime).valueOf(),
     )
   }
 
   useEffect(() => {
+    sendPathname(pathname)
     setChecklists(sortByDate(allChecklists))
   }, [allChecklists])
 

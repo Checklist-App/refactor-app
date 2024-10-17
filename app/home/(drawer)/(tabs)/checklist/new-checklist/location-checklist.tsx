@@ -5,12 +5,14 @@ import { Toast } from '@/src/components/Toast'
 import db from '@/src/libs/database'
 import { useAuth } from '@/src/store/auth'
 import { useChecklist } from '@/src/store/checklist'
+import { useCrashlytics } from '@/src/store/crashlytics-report'
 import { useLocations } from '@/src/store/location'
 import { useSyncStatus } from '@/src/store/syncStatus'
 import { Location } from '@/src/types/Location'
 import { Period } from '@/src/types/Period'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, router } from 'expo-router'
+import { useRouteInfo } from 'expo-router/build/hooks'
 import { useToast } from 'native-base'
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -63,6 +65,13 @@ export default function NewChecklist() {
 
   const locationValue = watch('location')
 
+  const { sendPathname, sendLog, reportError, sendStacktrace } = useCrashlytics()
+  const { pathname } = useRouteInfo()
+
+  useEffect(() => {
+    sendPathname(pathname)
+  }, [pathname])
+
   useEffect(() => {
     updateLocation(null)
   }, [])
@@ -73,16 +82,20 @@ export default function NewChecklist() {
         locations.find((location) => location.id === Number(locationValue)),
       )
     }
+    sendLog(`selectedLocation: ${selectedLocation}`)
   }, [locationValue])
 
   useEffect(() => {
     if (locationId) {
       setValue('location', String(locationId))
     }
+    sendLog(`locationId: ${locationId}`)
   }, [locationId])
 
   async function handleNewChecklist(data: NewChecklistData) {
+    sendStacktrace(handleNewChecklist)
     if (!user) {
+      sendLog('Sem usuário')
       console.log('Sem usuario')
       return
     }
@@ -107,6 +120,7 @@ export default function NewChecklist() {
       updateAnswering(true)
       router.replace(`/home/answer/${newChecklist.id}`)
     } catch (err) {
+      reportError(err)
       const error: Error = err
       toast.show({
         render: () => <Toast.Error>{error.message}</Toast.Error>,
@@ -116,20 +130,26 @@ export default function NewChecklist() {
 
   if (!locations) {
     loadLocations(user.login)
+    const loadingDiversosMessage = `Carregando diversos, isso pode demorar um pouco...`
+    sendLog(loadingDiversosMessage)
     return (
       <ContainerLoading>
         <ActivityIndicator size={80} color={color['violet-500']} />
         <LoadingText>
-          Carregando diversos, isso pode demorar um pouco...
+          {loadingDiversosMessage}
         </LoadingText>
       </ContainerLoading>
     )
   }
 
   if (!locations.length) {
+    const emptyLocationsMessage = `Não há inspeções vinculadas a essa filial.`
+    sendLog(emptyLocationsMessage)
     return (
       <ContainerLoading>
-        <LoadingText>Não há inspeções vinculadas a essa filial.</LoadingText>
+        <LoadingText>
+          {emptyLocationsMessage}
+        </LoadingText>
       </ContainerLoading>
     )
   }

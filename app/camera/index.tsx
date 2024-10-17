@@ -1,9 +1,11 @@
 import { Button } from '@/src/components/Button'
 import { SheetModal } from '@/src/components/SheetModal'
 import { useCamera } from '@/src/store/camera'
+import { useCrashlytics } from '@/src/store/crashlytics-report'
 import { ChecklistPeriodImage } from '@/src/types/ChecklistPeriod'
 import { Camera, CameraType, FlashMode } from 'expo-camera'
 import { router, useLocalSearchParams } from 'expo-router'
+import { useRouteInfo } from 'expo-router/build/hooks'
 import { View, useDisclose } from 'native-base'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -40,6 +42,13 @@ export default function CameraPage() {
   const [modalImage, setModalImage] = useState(null)
   const modalControl = useDisclose()
 
+  const { sendPathname, sendLog, reportError, sendStacktrace } = useCrashlytics()
+  const { pathname } = useRouteInfo()
+
+  useEffect(() => {
+    sendPathname(pathname)
+  }, [pathname])
+
   useEffect(() => {
     if (
       currentImages &&
@@ -64,7 +73,7 @@ export default function CameraPage() {
     return (
       <NoPermissionCamera>
         <NoPermissionText style={{ textAlign: 'center' }}>
-          Sem permissão para acessar a câmera!
+          
         </NoPermissionText>
         <Button.Trigger onPress={requestPermission}>
           <Button.Icon.ShieldCheck />

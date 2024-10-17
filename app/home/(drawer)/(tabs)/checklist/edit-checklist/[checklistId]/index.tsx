@@ -2,6 +2,7 @@ import { Button } from '@/src/components/Button'
 import { Loading } from '@/src/components/Loading'
 import db from '@/src/libs/database'
 import { useChecklist } from '@/src/store/checklist'
+import { useCrashlytics } from '@/src/store/crashlytics-report'
 import { useEquipments } from '@/src/store/equipments'
 import { useLocations } from '@/src/store/location'
 import { Checklist } from '@/src/types/Checklist'
@@ -10,6 +11,7 @@ import { ChecklistStatus } from '@/src/types/ChecklistStatus'
 import { ChecklistStatusAction } from '@/src/types/ChecklistStatusAction'
 import { FlashList } from '@shopify/flash-list'
 import { Link, useLocalSearchParams } from 'expo-router'
+import { useRouteInfo } from 'expo-router/build/hooks'
 import { Text } from 'native-base'
 import { Dot } from 'phosphor-react-native'
 import { useEffect, useState } from 'react'
@@ -66,6 +68,15 @@ export default function EditChecklist() {
     loadChecklists(db.retrieveLastUser().login)
   }, [])
 
+  
+
+  const { sendPathname, sendLog, reportError, sendStacktrace } = useCrashlytics()
+  const { pathname } = useRouteInfo()
+
+  useEffect(() => {
+    sendPathname(pathname)
+  }, [pathname])
+
   // useEffect(() => {
   //   const interval = setInterval(() => {
   //     console.log({
@@ -96,6 +107,7 @@ export default function EditChecklist() {
   }, [currentChecklist])
 
   if (!currentChecklist) {
+    sendLog(`currentChecklist: ${JSON.stringify(currentChecklist)}`)
     return (
       <Container>
         <Loading />

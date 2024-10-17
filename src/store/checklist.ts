@@ -15,6 +15,7 @@ import { ChecklistSchema } from '../types/ChecklistSchema'
 import { Equipment } from '../types/Equipment'
 import { Location } from '../types/Location'
 import { Period } from '../types/Period'
+import { useCrashlytics } from './crashlytics-report'
 
 interface ChecklistsData {
   allChecklists: Checklist[] | null
@@ -94,28 +95,37 @@ interface ChecklistsData {
 }
 
 export const useChecklist = create<ChecklistsData>((set, get) => {
+
+  const { sendStacktrace, sendLog, reportError} = useCrashlytics.getState()
+
   return {
     allChecklists: null,
     checklistLoadingId: 0,
     isAnswering: false,
 
     updateAnswering: (arg) => {
+      sendStacktrace(get().updateAnswering)
+      sendLog(`arg: ${arg}`)
       set({ isAnswering: arg })
     },
 
     loadChecklists: async (user) => {
+      sendStacktrace(get().loadChecklists)
+      sendLog(`user: ${user}`)
       try {
         const checklists = db.retrieveChecklists(user)
 
         set({
           allChecklists: checklists,
         })
-      } catch {
+      } catch(err) {
+        reportError(err)
         // console.log(err)
       }
     },
 
     findChecklist: (checklistId) => {
+      sendStacktrace(get().findChecklist)
       const allChecklists = get().allChecklists
       if (!allChecklists) throw new Error('Checklists não carregados')
 
@@ -126,6 +136,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
     },
 
     updateChecklist: (checklist) => {
+      sendStacktrace(get().updateChecklist)
       const allChecklists = get().allChecklists
       const newChecklists: Checklist[] = []
       if (!allChecklists) throw new Error('Checklists não carregados')
@@ -154,6 +165,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       mileage,
       hourmeter,
     }) => {
+      sendStacktrace(get().createChecklist)
       const productionRegisterId = Number(
         new Date().getTime().toFixed().slice(6),
       )
@@ -215,6 +227,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
     },
 
     deleteChecklist: (checklistId) => {
+      sendStacktrace(get().deleteChecklist)
+
       const newChecklists = get().allChecklists.filter(
         (item) => item.id !== checklistId,
       )
@@ -223,6 +237,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
     },
 
     finalizeChecklist: (checklistId) => {
+      sendStacktrace(get().finalizeChecklist)
       const checklist = get().findChecklist(checklistId)
 
       checklist.status = 'close'
@@ -232,6 +247,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
     },
 
     findChecklistPeriod: (checklistPeriodId, checklistId) => {
+      sendStacktrace(get().findChecklistPeriod)
       const checklist = get().findChecklist(checklistId)
 
       const checklistPeriod = checklist.checklistPeriods.find(
@@ -244,6 +260,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
     },
 
     updateChecklistPeriod: (checklistPeriod) => {
+      sendStacktrace(get().updateChecklistPeriod)
       const allChecklists = get().allChecklists
       const newChecklists: Checklist[] = []
       if (!allChecklists) throw new Error('Checklists não carregados')
@@ -283,6 +300,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       statusNC,
       images = [],
     }) => {
+      sendStacktrace(get().answerChecklistPeriod)
       const period = get().findChecklistPeriod(checklistPeriodId, checklistId)
 
       period.statusId = statusId
@@ -294,11 +312,18 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
     },
 
     setChecklistLoadingId: (id) => {
-      if (id) console.log('Sincronizando checklist de id ' + id)
+      sendStacktrace(get().setChecklistLoadingId)
+      if (id) {
+        console.log('Sincronizando checklist de id ' + id)
+        sendLog(`Sincronizando checklist de id ${id}`)
+      }
       set({ checklistLoadingId: id })
     },
 
     updateChecklistSync: ({ newId, oldId, syncStatus }) => {
+      sendStacktrace(get().updateChecklistSync)
+      sendLog(`newId: ${newId} | oldId: ${oldId} | syncStatus: ${syncStatus}`)
+
       const checklists = get().allChecklists
       const storedActions = db.retrieveActions(db.retrieveLastUser().login)
 
@@ -337,11 +362,14 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       oldChecklistId,
       syncStatus,
     }) => {
+      sendStacktrace(get().updatePeriodSync)
       const checklists = get().allChecklists
       const storedActions = db.retrieveActions(db.retrieveLastUser().login)
+      const paramsMessage = `OLD ID: ${oldId}; NEW ID: ${newId} PRODUCTION ID: ${productionRegisterId}`
       console.log(
-        `OLD ID: ${oldId}; NEW ID: ${newId} PRODUCTION ID: ${productionRegisterId}`,
+        paramsMessage,
       )
+      sendLog(paramsMessage)
 
       const newChecklists: Checklist[] = []
       const newActions: Action[] = []
@@ -350,7 +378,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
           const newPeriods: ChecklistPeriod[] = []
           checklist.checklistPeriods.forEach((period) => {
             if (period.id === oldId) {
-              console.log(`PERIOD ID ${period.id}`)
+              const periodIdMessage = `PERIOD ID ${period.id}`
+              console.log(periodIdMessage)
 
               period.id = newId
               period.productionRegisterId = productionRegisterId
@@ -376,6 +405,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
     },
 
     loadImages: async (checklists) => {
+      sendStacktrace(get().loadImages)
       console.log('load images')
       try {
         const newChecklists: Checklist[] = []
@@ -398,8 +428,10 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
               )
               if (matchImg?.path) {
                 console.log('Imagem ja baixada')
+                sendLog('Imagem já baixada')
               }
               if (img.url && !matchImg?.path) {
+                sendLog(`Baixando imagem ${JSON.stringify(img)}`)
                 const newImgPath = await downloadImage(img.url)
                 newImages.push({ ...img, path: newImgPath })
               } else {
@@ -411,15 +443,17 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
           newChecklists.push({ ...checklist, checklistPeriods: newPeriods })
         }
         console.log('terminou load images')
-
+        sendLog('Terminou load images')
         db.storeChecklists(newChecklists)
       } catch (err) {
+        reportError(err)
         console.log('Erro ao carregar imagens')
         throw err
       }
     },
 
     generateChecklists: (user) => {
+      sendStacktrace(get().generateChecklists)
       try {
         console.log('generate')
         const equipments = db.retrieveEquipments(user)
@@ -470,9 +504,11 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
 
         if (!checklists || !checklists?.length) {
           console.log('Nenhum checklist')
+          sendLog('Nenhum checklist')
         }
         return checklists
       } catch (err) {
+        reportError(err)
         console.log('Erro generate')
         console.log(err)
         throw new Error('Falha ao escrever checklists', {
@@ -482,11 +518,14 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
     },
 
     syncChecklists: async (user, token) => {
+      sendStacktrace(get().syncChecklists)
       console.log('Sync checklists')
       try {
         const storedChecklists = db.retrieveChecklists(user)
         if (!storedChecklists) {
-          console.log('Não há checklists ')
+          const emptyChecklists = 'Não há checklists'
+          console.log(emptyChecklists)
+          sendLog(emptyChecklists)
           return get().loadImages(get().generateChecklists(user))
         }
         const checklists = storedChecklists.filter(
@@ -495,6 +534,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
         ).sort(((a, b) => getTime(a.initialTime) - getTime(b.initialTime))) 
 
         if (checklists.length) {
+          sendLog(`${checklists.length} para sincronizar.`)
           const options = {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -536,12 +576,17 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
             await requestMethod()
               .then((res) => res.data)
               .then(async ({ id: newId }: { id: number }) => {
-                console.log('Checklist enviado')
+                const sendedChecklistLog = 'Checklist enviado'
+                console.log(sendedChecklistLog)
+                const checklistSyncingLog = `Checklist newId ${newId} sincronizado`
+                sendLog(checklistSyncingLog)
                 for await (const checklistPeriod of checklist.checklistPeriods) {
                   if (checklistPeriod.syncStatus !== 'synced') {
+                    const sendingCheckistPeriodLog = `Enviando checklistPeriod de id ${checklistPeriod.id}...`
                     console.log(
-                      `Enviando checklistPeriod de id ${checklistPeriod.id}...`,
+                      sendingCheckistPeriodLog
                     )
+                    sendLog(sendingCheckistPeriodLog)
                     const period = {
                       type: checklistPeriod.syncStatus,
                       checkListPeriod: {
@@ -556,9 +601,15 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
                         observation: '',
                       },
                     }
+                    const checkListPeriodRoute = '/sync/checkListPeriod'
+                    const postingEndpointLog = `posting endpoint ${checkListPeriodRoute}`
+                    sendLog(postingEndpointLog)
                     await api
-                      .post('/sync/checkListPeriod', period, options)
-                      .then((res) => res.data)
+                      .post(checkListPeriodRoute, period, options)
+                      .then((res) => {
+                        sendLog(`${postingEndpointLog} status: ${res.status}`)
+                        return res.data
+                      })
                       .then(async (insertedPeriod: { id: number }) => {
                         get().updatePeriodSync({
                           newId: insertedPeriod.id,
@@ -579,6 +630,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
                             }
                           }
                         } catch (err) {
+                          reportError(err)
                           console.log(
                             'Erro ao enviar imagem para rota /image/upload',
                           )
@@ -591,6 +643,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
                       })
                       .catch((err) => {
                         console.log('Erro ao subir esse checklist:')
+                        reportError(err)
                         console.log(period)
                         if (err instanceof AxiosError) {
                           throw err
@@ -617,6 +670,7 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
                 get().setChecklistLoadingId(0)
               })
               .catch((err) => {
+                reportError(err)
                 console.log(err)
                 const erroredChecklist = get().findChecklist(checklist.id)
                 if (err instanceof AxiosError) {
@@ -639,11 +693,14 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
               })
           }
         } else {
-          console.log('Sem checklists')
+          const emptyChecklistsToSync = 'Não há checklists para sincronizar.'
+          console.log(emptyChecklistsToSync)
+          sendLog(emptyChecklistsToSync)
           return get().loadImages(get().generateChecklists(user))
         }
       } catch (err) {
         console.log('Erro na sincronização dos checklists')
+        reportError(err)
         get().setChecklistLoadingId(0)
         console.log(err)
       }

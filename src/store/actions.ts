@@ -5,6 +5,7 @@ import db from '../libs/database'
 import { downloadImage } from '../services/downloadImage'
 import { uploadSingleImage } from '../services/uploadImages'
 import { Action, ReceivedAction } from '../types/Action'
+import { useCrashlytics } from './crashlytics-report'
 
 interface ActionsData {
   actions: Action[] | null
@@ -32,21 +33,24 @@ interface ActionsData {
 }
 
 export const useActions = create<ActionsData>((set, get) => {
+  const { sendLog, sendStacktrace, reportError } = useCrashlytics.getState()
   return {
     actions: null,
 
     loadActions: async (user) => {
+      sendStacktrace(get().loadActions)
       try {
         const actions = db.retrieveActions(user)
         // console.log(`LOADED ACTIONS => ${JSON.stringify(actions, null, 2)}`)
-
         set({ actions })
-      } catch {
+      } catch(err) {
         // console.log(err)
+        reportError(err)
       }
     },
 
     createNewAction: ({ ...props }) => {
+      sendStacktrace(get().createNewAction)
       const newAction: Action = {
         id: Number(new Date().getTime()),
         checklistPeriodId: props.checklistPeriodId,
@@ -69,6 +73,9 @@ export const useActions = create<ActionsData>((set, get) => {
     },
 
     updateAction: (action) => {
+      sendStacktrace(get().updateAction)
+      sendLog(`action: ${action}`)
+
       const allActions = get().actions
       const newActions: Action[] = []
       if (!allActions) throw new Error('Ações não carregadas')
@@ -89,6 +96,8 @@ export const useActions = create<ActionsData>((set, get) => {
     },
 
     updateActionSync: ({ newId, oldId }) => {
+      sendStacktrace(get().updateActionSync)
+      sendLog(`newId: ${newId} | oldId: ${oldId}`)
       const actions = db.retrieveActions(db.retrieveLastUser().login)
 
       const newActions: Action[] = []
@@ -105,6 +114,8 @@ export const useActions = create<ActionsData>((set, get) => {
     },
 
     generateActions: async (user) => {
+      sendStacktrace(get().generateActions)
+      sendLog(`user: ${JSON.stringify(user)}`)
       try {
         const receivedActions: ReceivedAction[] = db.retrieveReceivedData(
           user,
@@ -138,23 +149,31 @@ export const useActions = create<ActionsData>((set, get) => {
         //saveFileToAlbum()
         db.storeActions(actions)
         if (!actions.length) {
-          console.log('Nenhuma ação')
+          const actionsEmptyMessage = 'Nenhuma ação'
+          console.log(actionsEmptyMessage)
+          sendLog(actionsEmptyMessage)
         }
       } catch (err) {
-        console.log('Erro ao gerar ações')
+        reportError(err)
+        const actionsGenerationErrorMessage = 'Erro ao gerar ações'
+        console.log(actionsGenerationErrorMessage)
+        sendLog(actionsGenerationErrorMessage)
         console.log(err)
         throw new Error('Falha ao escrever ações', { cause: err })
       }
     },
 
     syncActions: async (user, token) => {
+      sendStacktrace(get().syncActions)
       console.log('sync actions')
 
       try {
         const storedActions = db.retrieveActions(user)
 
         if (!storedActions) {
-          console.log('Não há ações carregadas')
+          const emptyStoredActionsMessage = 'Não há ações carregadas'
+          console.log(emptyStoredActionsMessage)
+          sendLog(emptyStoredActionsMessage)
           return get().generateActions(user)
         }
         const actions = storedActions.filter(
@@ -191,10 +210,12 @@ export const useActions = create<ActionsData>((set, get) => {
             if (action.syncStatus === 'inserted') {
               console.log('post')
 
+              sendLog('endpoint /actions post')
               await api
                 .post('/actions', postAction, options)
                 .then((res) => res.data)
                 .then(async (data: { id: number; id_grupo: number }) => {
+                  sendLog('upload image endpoint actions/image/upload')
                   updatedAction.id = data.id
                   for (const img of action.img) {
                     if (img.url === '') {
@@ -208,6 +229,7 @@ export const useActions = create<ActionsData>((set, get) => {
                   }
                 })
                 .catch((err) => {
+                  reportError(err)
                   if (err instanceof AxiosError) {
                     console.log(err.response?.data)
                   } else {
@@ -217,16 +239,20 @@ export const useActions = create<ActionsData>((set, get) => {
                 })
             } else {
               console.log('put')
+              const actionsEndpoint = `/actions/${action.id}`
+              sendLog(`endpoint ${actionsEndpoint} put`)
               await api
-                .put(`/actions/${action.id}`, postAction, options)
+                .put(actionsEndpoint, postAction, options)
                 .then((res) => res.data)
                 .then(async (data: { id: number; id_grupo: number }) => {
                   updatedAction.id = data.id
                   for (const img of action.img) {
                     if (img.url === '') {
+                      const actionsImageEndpoint = 'actions/image/upload'
+                      sendLog(`upload image endpoint ${actionsImageEndpoint}`)
                       await uploadSingleImage({
                         img,
-                        route: 'actions/image/upload',
+                        route: actionsImageEndpoint,
                         id: data.id_grupo,
                         token,
                       })
@@ -234,6 +260,7 @@ export const useActions = create<ActionsData>((set, get) => {
                   }
                 })
                 .catch((err) => {
+                  reportError(err)
                   console.log(err)
                   throw new Error(
                     `Erro ao atualizar ação para a rota /actions/${action.id}`,
@@ -250,6 +277,7 @@ export const useActions = create<ActionsData>((set, get) => {
           return get().generateActions(user)
         }
       } catch (err) {
+        reportError(err)
         console.log(err)
       }
     },

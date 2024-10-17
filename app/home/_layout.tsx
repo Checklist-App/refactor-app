@@ -6,6 +6,7 @@ import { useActions } from '@/src/store/actions'
 import { useAuth } from '@/src/store/auth'
 import { useChecklist } from '@/src/store/checklist'
 import { useConnection } from '@/src/store/connection'
+import { useCrashlytics } from '@/src/store/crashlytics-report'
 import { useEquipments } from '@/src/store/equipments'
 import { useLocations } from '@/src/store/location'
 import { useResponsibles } from '@/src/store/responsibles'
@@ -32,6 +33,7 @@ export default function HomeLayout() {
   const toast = useToast()
 
   const [counter, setCounter] = useState(0)
+  const { sendLog} = useCrashlytics()
 
   useEffect(() => {
     if (
@@ -76,6 +78,7 @@ export default function HomeLayout() {
 
   useEffect(() => {
     console.log("doneRequests =>", doneRequests)
+    sendLog(`doneRequests: ${doneRequests}`)
   }, [doneRequests])
 
   if (isSyncing && syncCount === 0) {

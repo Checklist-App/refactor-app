@@ -19,6 +19,7 @@ import db from '../libs/database'
 import { useActions } from '../store/actions'
 import { useChecklist } from '../store/checklist'
 import { useConnection } from '../store/connection'
+import { useCrashlytics } from '../store/crashlytics-report'
 import { useEquipments } from '../store/equipments'
 import { useLocations } from '../store/location'
 import { useResponsibles } from '../store/responsibles'
@@ -65,6 +66,8 @@ export function useSync(): SyncData {
   }
 
   async function syncData(login: string, token: string) {
+    const { sendStacktrace, sendLog, reportError } = useCrashlytics.getState()
+    sendStacktrace(syncData)
     console.log('sync data')
     await syncChecklists(login, token)
       .then(() => increaseDoneRequests())
