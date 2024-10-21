@@ -166,6 +166,8 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
       hourmeter,
     }) => {
       sendStacktrace(get().createChecklist)
+      console.log("Entrou createChecklist");
+      
       const productionRegisterId = Number(
         new Date().getTime().toFixed().slice(6),
       )
@@ -195,30 +197,35 @@ export const useChecklist = create<ChecklistsData>((set, get) => {
 
       const checklists = get().allChecklists
       if (!checklists) throw new Error('Checklists não carregados')
+      console.log("checklists: ", checklists);
 
+      console.log("newChecklist: ", newChecklist);
+      console.log("newChecklist.checklistPeriods: ", newChecklist.checklistPeriods);
+      console.log("newChecklist.checklistPeriods.length: ", newChecklist.checklistPeriods.length)
       if (!newChecklist.checklistPeriods.length) {
         throw new Error('Não há perguntas vinculadas para esse registro')
       }
-
+      
       checklists.forEach((checklist) => {
         if (
           checklist.equipmentId === equipment?.id ||
           checklist.locationId === location?.id
-        ) {
-          if (
-            checklist.period?.id === period?.id &&
-            dayjs(dayjs(checklist.initialTime).format('YYYY-MM-DD')).isSame(
-              dayjs().format('YYYY-MM-DD'),
-            )
           ) {
+            if (
+              checklist.period?.id === period?.id &&
+              dayjs(dayjs(checklist.initialTime).format('YYYY-MM-DD')).isSame(
+                dayjs().format('YYYY-MM-DD'),
+                )
+                ) {
             throw new Error(
               'Já existe um checklist para esse registro nesse turno',
             )
           }
         }
       })
-
+      
       const newChecklists = [...get().allChecklists, newChecklist]
+      console.log("newChecklist: ", newChecklist);
       set({ allChecklists: newChecklists })
       db.storeChecklists(newChecklists)
       db.setNeedToUpdate(true)

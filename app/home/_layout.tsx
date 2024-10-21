@@ -36,6 +36,7 @@ export default function HomeLayout() {
   const { sendLog} = useCrashlytics()
 
   useEffect(() => {
+    console.log("Entrou primeiro useEffect");
     if (
       (!allChecklists || !actions || !equipments || !responsibles) &&
       !syncCount &&
@@ -47,9 +48,11 @@ export default function HomeLayout() {
       loadLocations(user.login)
       loadResponsibles(user.login)
     }
+    console.log("Passou primeiro useEffect");
   }, [allChecklists, actions, equipments, responsibles, user])
 
   useEffect(() => {
+    console.log("Entrou segundo useEffect");
     if (
       isConnected &&
       user &&
@@ -67,18 +70,23 @@ export default function HomeLayout() {
         })
       }
     }
+    console.log("Passou segundo useEffect");
   }, [isConnected, counter, user, token])
 
   useEffect(() => {
+    console.log("Entrou terceiro useEffect");
     const interval = setInterval(() => {
       setCounter((prev) => prev + 1)
     }, 30000)
+    console.log("Passou terceiro useEffect");
     return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
+    console.log("Entrou quarto useEffect");
     console.log("doneRequests =>", doneRequests)
     sendLog(`doneRequests: ${doneRequests}`)
+    console.log("Passou quarto useEffect");
   }, [doneRequests])
 
   if (isSyncing && syncCount === 0) {

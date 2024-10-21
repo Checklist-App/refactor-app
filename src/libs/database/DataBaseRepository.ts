@@ -32,10 +32,7 @@ export default class DataBaseRepository implements IDataBaseRepository {
   
 
   retrieveChecklists(user: string) {
-    this.sendStacktrace(this.retrieveChecklists)
     const storedChecklists = this.mmkv.getString(`${user}/checklists`)
-
-    this.sendLog(`storedChecklists length: ${storedChecklists.length}`)
     
     if (storedChecklists) {
       const checklists: Checklist[] = JSON.parse(storedChecklists)
@@ -49,9 +46,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
     this.sendStacktrace(this.retrieveActions)
     const storedActions = this.mmkv.getString(`${user}/actions`)
 
-    this.sendLog(`storedActions length: ${storedActions.length}`)
     if (storedActions) {
       const actions: Action[] = JSON.parse(storedActions)
+      this.sendLog(`actions length: ${actions.length}`)
       return actions
     } else {
       return []
@@ -62,9 +59,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
     this.sendStacktrace(this.retrieveEquipments)
     const storedEquipmentsKey = `${user}/@equipments`
     const storedEquipments = this.mmkv.getString(storedEquipmentsKey)
-    this.sendLog(`storedEquipments length: ${storedEquipments.length}`)
     if (storedEquipments) {
       const equipments: Equipment[] = JSON.parse(storedEquipments)
+      this.sendLog(`equipments length: ${equipments.length}`)
       return equipments
     } else {
       return []
@@ -74,9 +71,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   retrieveLocations(user: string) {
     this.sendStacktrace(this.retrieveLocations)
     const storedLocations = this.mmkv.getString(`${user}/@locations`)
-    this.sendLog(`storedLocations length: ${storedLocations.length}`)
     if (storedLocations) {
       const locations: Location[] = JSON.parse(storedLocations)
+      this.sendLog(`locations length: ${locations.length}`)
       return locations
     } else {
       return []
@@ -86,9 +83,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   retrieveResponsibles(user: string) {
     this.sendStacktrace(this.retrieveResponsibles)
     const storedResponsibles = this.mmkv.getString(`${user}/@responsibles`)
-    this.sendLog(`storedResponsibles length: ${storedResponsibles.length}`)
     if (storedResponsibles) {
       const responsibles: Responsible[] = JSON.parse(storedResponsibles)
+      this.sendLog(`responsibles length: ${responsibles.length}`)
       return responsibles
     } else {
       return []
@@ -98,9 +95,9 @@ export default class DataBaseRepository implements IDataBaseRepository {
   retrieveModels(user: string) {
     this.sendStacktrace(this.retrieveModels)
     const storedModels = this.mmkv.getString(`${user}/@checklistProductions`)
-    this.sendLog(`storedModels length: ${storedModels.length}`)
     if (storedModels) {
       const models: ChecklistProduction[] = JSON.parse(storedModels)
+      this.sendLog(`models length: ${models.length}`)
       return models
     } else {
       return []
@@ -110,11 +107,11 @@ export default class DataBaseRepository implements IDataBaseRepository {
   retrieveReceivedData(user: string, path: string) {
     this.sendStacktrace(this.retrieveReceivedData)
     const stored = this.mmkv.getString(user + path)
-    this.sendLog(`stored length: ${stored.length}`)
     if (stored) {
       const data = JSON.parse(stored)
       // console.log("data =>", data)
-
+      
+      this.sendLog(`data length: ${data.length}`)
       return data
     } else {
       return []
@@ -175,11 +172,13 @@ export default class DataBaseRepository implements IDataBaseRepository {
   updateEquipment(user: string, equipment: Equipment) {
     this.sendStacktrace(this.updateEquipment)
     const equipments = this.retrieveEquipments(user)
+    console.log("equipments length: ", equipments.length);
+    
     this.sendLog(`equipments length: ${equipments.length}`)
 
     console.log("updateEquipment.equipments =>", equipments);
     console.log('updatedEquipment =>', equipment)
-    this.sendLog(`updatedEquipment: ${JSON.stringify(length)}`)
+    this.sendLog(`updatedEquipment: ${JSON.stringify(equipment)}`)
     
     equipments.map((eq) => (eq.id === equipment.id ? { ...equipment } : eq))
     console.log('updatedEquipments =>', equipments)

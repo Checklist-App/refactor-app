@@ -37,14 +37,14 @@ export const useEquipments = create<EquipmentsData>((set, get) => {
       sendStacktrace(get().updateEquipmentById)
       const logMessage = `${user} / mileage => ${equipment.mileage} | hourmeter => ${equipment.hourMeter}`
       sendLog(logMessage)
-      console.log(logMessage)
-
+      console.log("logMessage: ", logMessage)
+      
       set((state) => ({
         equipments: state.equipments?.map((eq) =>
-          eq.id === equipment.id ? equipment : eq,
+        eq.id === equipment.id ? equipment : eq,
         ),
       }))
-
+      
       db.updateEquipment(user, equipment)
     },
   }

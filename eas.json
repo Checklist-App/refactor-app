@@ -13,8 +13,12 @@
       }
     },
     "production": {
+      "distribution": "store",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://checklist-api.smartnewservices.com.br"
+      },
+      "android": {
+        "buildType": "app-bundle"
       }
     }
   },

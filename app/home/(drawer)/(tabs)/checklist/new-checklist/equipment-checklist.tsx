@@ -75,6 +75,8 @@ export default function NewChecklist() {
   const { sendPathname, sendLog, reportError, sendStacktrace } = useCrashlytics()
   const { pathname } = useRouteInfo()
 
+  
+
   useEffect(() => {
     sendPathname(pathname)
   }, [pathname])
@@ -115,6 +117,8 @@ export default function NewChecklist() {
 
   async function handleNewChecklist(data: NewChecklistData) {
     sendStacktrace(handleNewChecklist)
+    console.log("entrou handleNewChecklist");
+    
     if (!user) {
       console.log('Sem usuario')
       sendLog(`Sem usuário`)
@@ -122,6 +126,7 @@ export default function NewChecklist() {
     }
 
     try {
+      console.log("entrou handleNewChecklist try");
       const newChecklist = createChecklist({
         period: periods.find((period) => period.id === Number(data?.period)),
         equipment: selectedEquipment,
@@ -131,6 +136,9 @@ export default function NewChecklist() {
         hourmeter: +data.hourmeter,
         mileage: +data.mileage
       })
+      console.log("newChecklist: ", newChecklist);
+      
+      console.log("passou handleNewChecklist try createChecklist");
 
       toast.show({
         placement: 'top',
@@ -140,9 +148,10 @@ export default function NewChecklist() {
           </ToastChecklistCreated>
         ),
       })
-
+      
       updateEquipmentId(equipmentId)
 
+      console.log("selectedEquipment: ", selectedEquipment);
       if(selectedEquipment.hasMileage && selectedEquipment.hasHourMeter){
         updateEquipmentById(
           user.login,
@@ -150,10 +159,15 @@ export default function NewChecklist() {
         )
       }
 
+      console.log("Passou updateEquipmentById");
+
       updateAnswering(true)
 
+      console.log("antes router.replace(`/home/answer/${newChecklist.id}`)");
       router.replace(`/home/answer/${newChecklist.id}`)
+      console.log("passou router.replace(`/home/answer/${newChecklist.id}`)");
     } catch (err) {
+      console.log("err: ", err)
       reportError(err)
       const error: Error = err
       console.log("equipment-checklist.err =>", err);
@@ -176,6 +190,9 @@ export default function NewChecklist() {
       </ContainerLoading>
     )
   }
+
+  console.log("equipments: ", equipments);
+  
 
   if (!equipments?.length) {
     const emptyEquipsMessage = `Não há equipamentos vinculados a essa filial.`

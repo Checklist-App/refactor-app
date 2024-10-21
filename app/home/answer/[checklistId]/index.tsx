@@ -62,6 +62,8 @@ export default function AnswerPage() {
   // }, [])
 
   useEffect(() => {
+    console.log("Entrou answerPage");
+    
     if (allChecklists && checklistId) {
       const found = allChecklists.find(
         (item) => item.id === Number(checklistId),
