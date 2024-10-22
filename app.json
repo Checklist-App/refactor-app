@@ -22,7 +22,7 @@
     "android": {
       "googleServicesFile": "./google-services.json",
       "package": "com.smartlistapp.app",
-      "versionCode": 9,
+      "versionCode": 10,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#8F62F8"
